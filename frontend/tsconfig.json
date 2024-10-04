@@ -12,8 +12,9 @@
     }
   ],
   "compilerOptions": {
-    "module": "NodeNext",
+    "module": "esnext",
     "target": "ESNext",
-    "strict": true
+    "strict": true,
+    "esModuleInterop": true
   }
 }
