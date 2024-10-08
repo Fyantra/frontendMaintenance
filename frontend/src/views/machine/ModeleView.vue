@@ -4,14 +4,8 @@ import { useCrud } from "@/composables/useCrud";
 import useVuelidate from "@vuelidate/core";
 import { required } from "@vuelidate/validators";
 import SectionNavigation from "../templates/SectionNavigation.vue";
-import { useAuthStore } from "@/stores/authStore";
-import { useRouter } from "vue-router";
-
-interface Modele {
-  id: number;
-  nom_modele: string;
-  date_creation: Date | string;
-}
+import ErrorMessage from "../templates/ErrorMessage.vue";
+import { Modele } from "@/types/MachineType";
 
 const form = reactive<Modele>({
   //doit suivre les proprietes de Modele
@@ -45,15 +39,6 @@ const selectedItem = ref<Modele | null>(null); // Élément sélectionné pour l
 const clearError = () => {
   //reinitialiser le message d`erreur
   errorMessage.value = null;
-};
-
-//Pour la deconnexion en cas d`erreur 401
-const authStore = useAuthStore();
-const router = useRouter();
-
-const handleLogout = () => {
-  authStore.logout();
-  router.push("/login");
 };
 
 //Ajouter un nouveau item
@@ -110,7 +95,7 @@ onBeforeUnmount(() => {
     <button
       type="button"
       data-toggle="modal"
-      data-target=".modal-full"
+      data-target="#addModal"
       class="btn mb-2 btn-primary"
       style="width: 22%"
     >
@@ -122,70 +107,52 @@ onBeforeUnmount(() => {
 
   <!-- Formulaire d'ajout de modèle -->
   <div
-    class="modal fade modal-full"
-    tabindex="-1"
+    class="modal fade"
     id="addModal"
+    tabindex="-1"
     role="dialog"
-    aria-labelledby="mySmallModalLabel"
+    aria-labelledby="addModalLabel"
     aria-hidden="true"
   >
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModalLabel">Ajout de modèle</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
         <div class="modal-body">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="card shadow mb-4">
-                <div class="card-header">
-                  <strong class="card-title">Ajout de modele</strong>
-                </div>
-                <div class="card-body">
-                  <form class="form-inline" @submit.prevent="submitForm">
-                    <label class="sr-only" for="inlineFormInputName2"
-                      >Nom du modele</label
-                    >
-                    <input
-                      type="text"
-                      v-model="form.nom_modele"
-                      class="form-control mb-2 mr-sm-2"
-                      id="inlineFormInputName2"
-                      placeholder="Piqueuse Juki"
-                      style="width: 60%"
-                      :class="{
-                        'is-invalid': v$.nom_modele.$invalid && v$.nom_modele.$dirty,
-                      }"
-                    />
-                    <span v-if="v$.nom_modele.$error" class="error">
-                      Le nom du modèle est requis.
-                    </span>
-                    <button type="submit" class="btn btn-primary mb-2">Valider</button>
-                  </form>
-                </div>
-              </div>
+          <form @submit.prevent="submitForm">
+            <div class="form-group">
+              <label for="nom-marque" class="col-form-label">Nom du model:</label>
+              <input
+                type="text"
+                v-model="form.nom_modele"
+                class="form-control"
+                id="nom-marque"
+                :class="{ 'is-invalid': v$.nom_modele.$invalid && v$.nom_modele.$dirty }"
+              />
+              <span v-if="v$.nom_modele.$error" class="error">Nom de modèle requis.</span>
             </div>
-          </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                Annuler
+              </button>
+              <button type="submit" class="btn btn-primary">Ajouter</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
   </div>
-
   <!-- Afficher les messages d`erreur-->
-  <div v-if="errorMessage" class="col-12 mb-4">
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      <strong style="color: red">Une erreur est survenue: </strong> "{{ errorMessage }}"
-      <button
-        v-if="error401Message"
-        id="reconnect"
-        type="button"
-        class="btn btn-outline-warning btn-sm"
-        @click="handleLogout"
-      >
-        Se reconnecter ici
-      </button>
-      <button type="button" class="close" @click="clearError" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-  </div>
+  <ErrorMessage
+    v-if="errorMessage"
+    :errorMessage="errorMessage"
+    :error401Message="error401Message"
+    :clearError="clearError"
+  />
 
   <!-- Liste des modèles -->
   <div class="col-md-14 my-4">

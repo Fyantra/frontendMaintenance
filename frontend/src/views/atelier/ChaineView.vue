@@ -1,40 +1,39 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, onBeforeUnmount } from "vue";
 import { useCrud } from "@/composables/useCrud";
+import { useFindById } from "@/composables/useFindById";
 import useVuelidate from "@vuelidate/core";
 import { required } from "@vuelidate/validators";
 import SectionNavigation from "../templates/SectionNavigation.vue";
 import ErrorMessage from "../templates/ErrorMessage.vue";
-import { Type } from "@/types/MachineType";
+import { Chaine, Atelier } from "@/types/AtelierType";
 
-const form = reactive<Type>({
-  //doit suivre les proprietes de Type
+const form = reactive<Chaine>({
   id: 0,
-  nom_type: "",
-  date_creation: "",
+  nom_chaine: "",
+  date_creation: null,
+  atelier: null,
 });
 
 // Définir les règles de validation
 const validation = {
-  nom_type: { required },
+  nom_chaine: { required },
+  atelier: { required },
 };
 
 // Utilisation de Vuelidate avec les règles de validation
 const v$ = useVuelidate(validation, form);
 
-const nom_type = ref<string>("");
+const ateliers = useCrud<Atelier>("atelier/ateliers/", v$);
+const chaines = useCrud<Chaine>("atelier/chaines/", v$);
 
-const {
-  items,
-  errorMessage,
-  error401Message,
-  initializeDataTable,
-  addItem,
-  deleteItem,
-  updateItem,
-} = useCrud<Type>("machine/types/", v$);
+//recuperer la valeur des foreign key par l`ID
+const { findById: findAtelier } = useFindById(ateliers.items);
 
-const selectedItem = ref<Type | null>(null); // Élément sélectionné pour la modification
+const errorMessage = chaines.errorMessage;
+const error401Message = chaines.error401Message;
+
+const selectedItem = ref<Chaine | null>(null); // Élément sélectionné pour la modification
 
 const clearError = () => {
   //reinitialiser le message d`erreur
@@ -43,10 +42,12 @@ const clearError = () => {
 
 //Ajouter un nouveau item
 const submitForm = async () => {
-  v$.value.$touch(); // Typer les champs comme touchés pour la validation
+  v$.value.$touch(); // Marquer les champs comme touchés pour la validation
   if (!v$.value.$invalid) {
-    await addItem({ nom_type: form.nom_type });
-    nom_type.value = ""; // Réinitialiser le formulaire
+    await chaines.addItem({
+      nom_chaine: form.nom_chaine,
+      atelier: form.atelier,
+    });
     $("#addModal").modal("hide");
   } else {
     console.error("Formulaire invalide");
@@ -57,9 +58,11 @@ const submitForm = async () => {
 const submitUpdateForm = async () => {
   v$.value.$touch();
   if (!v$.value.$invalid && selectedItem.value) {
-    await updateItem(selectedItem.value.id, { nom_type: form.nom_type });
+    await chaines.updateItem(selectedItem.value.id, {
+      nom_chaine: form.nom_chaine,
+      atelier: form.atelier,
+    });
     selectedItem.value = null; // Réinitialiser après la mise à jour
-    nom_type.value = "";
     $("#updateModal").modal("hide");
   } else {
     console.error("Formulaire de mise à jour invalide");
@@ -67,15 +70,16 @@ const submitUpdateForm = async () => {
 };
 
 // Ouvrir le modal de modification
-const openUpdateModal = (item: Type) => {
+const openUpdateModal = (item: Chaine) => {
   form.id = item.id;
-  form.nom_type = item.nom_type;
-  selectedItem.value = item; // Stocker l'élément à mettre à jour
+  form.nom_chaine = item.nom_chaine;
+  form.atelier = item.atelier;
+  selectedItem.value = item;
 };
 
 // Charger les données au montage
 onMounted(async () => {
-  initializeDataTable();
+  await Promise.all([chaines.initializeDataTable(), ateliers.fetchItems()]);
 });
 
 onBeforeUnmount(() => {
@@ -89,7 +93,7 @@ onBeforeUnmount(() => {
 
   <div class="row">
     <div class="col-md-8">
-      <h2 class="page-title">Types de machine</h2>
+      <h2 class="page-title">Chaîne</h2>
     </div>
 
     <button
@@ -99,13 +103,13 @@ onBeforeUnmount(() => {
       class="btn mb-2 btn-primary"
       style="width: 22%"
     >
-      <span class="fe fe-plus fe-16 mr-2"></span>Ajouter un type
+      <span class="fe fe-plus fe-16 mr-2"></span>Ajouter une chaîne
     </button>
   </div>
 
-  <p>Voici les différents types disponibles.</p>
+  <p>Voici les différentes chaînes disponibles.</p>
 
-  <!-- Formulaire d'ajout de type -->
+  <!-- Formulaire d'ajout d`atelier -->
   <div
     class="modal fade"
     id="addModal"
@@ -117,7 +121,7 @@ onBeforeUnmount(() => {
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addModalLabel">Ajout de type</h5>
+          <h5 class="modal-title" id="addModalLabel">Ajout de chaîne</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -125,15 +129,37 @@ onBeforeUnmount(() => {
         <div class="modal-body">
           <form @submit.prevent="submitForm">
             <div class="form-group">
-              <label for="nom-marque" class="col-form-label">Nom du type:</label>
+              <label for="chaine" class="col-form-label">Nom de la chaine:</label>
               <input
                 type="text"
-                v-model="form.nom_type"
+                v-model="form.nom_chaine"
                 class="form-control"
-                id="nom-marque"
-                :class="{ 'is-invalid': v$.nom_type.$invalid && v$.nom_type.$dirty }"
+                id="chaine"
+                :class="{
+                  'is-invalid': v$.nom_chaine.$invalid && v$.nom_chaine.$dirty,
+                }"
               />
-              <span v-if="v$.nom_type.$error" class="error">Nom de type requis.</span>
+              <span v-if="v$.nom_chaine.$error" class="error">Nom de chaine requis.</span>
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="atelier">Atelier correspondant:</label>
+              <select
+                v-model="form.atelier"
+                class="custom-select"
+                id="atelier"
+                :class="{ 'is-invalid': v$.atelier.$invalid && v$.atelier.$dirty }"
+              >
+                <option selected disabled>Sélectionnez un atelier</option>
+                <option
+                  v-for="atelier in ateliers.items.value"
+                  :key="atelier.id"
+                  :value="atelier.id"
+                >
+                  {{ atelier.nom_atelier }}
+                </option>
+              </select>
+              <span v-if="v$.atelier.$error" class="error">Atelier requis.</span>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -147,7 +173,6 @@ onBeforeUnmount(() => {
     </div>
   </div>
 
-  <!-- Afficher les messages d`erreur-->
   <ErrorMessage
     v-if="errorMessage"
     :errorMessage="errorMessage"
@@ -159,20 +184,24 @@ onBeforeUnmount(() => {
   <div class="col-md-14 my-4">
     <div class="card shadow">
       <div class="card-body">
-        <h5 class="card-title">Liste des Types</h5>
+        <h5 class="card-title">Liste des chaines</h5>
         <table id="datatable-1" class="table table-striped table-hover">
           <thead>
             <tr>
               <th>ID</th>
-              <th>Nom du type</th>
+              <th>Nom de la chaine</th>
+              <th>Atelier correspondant</th>
               <th>Date de création</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in items" :key="item.id">
+            <tr v-for="item in chaines.items.value" :key="item.id">
               <td>{{ item.id }}</td>
-              <td>{{ item.nom_type }}</td>
+              <td>{{ item.nom_chaine }}</td>
+              <td>
+                {{ findAtelier(item.atelier, "nom_atelier") }}
+              </td>
               <td>{{ new Date(item.date_creation).toLocaleDateString() }}</td>
               <td>
                 <div class="dropdown">
@@ -195,7 +224,7 @@ onBeforeUnmount(() => {
                       data-target="#updateModal"
                       >Modifier</a
                     >
-                    <a class="dropdown-item" href="#" @click="deleteItem(item.id)"
+                    <a class="dropdown-item" href="#" @click="chaines.deleteItem(item.id)"
                       >Supprimer</a
                     >
                   </div>
@@ -220,7 +249,7 @@ onBeforeUnmount(() => {
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="updateModalLabel">Modifier le type</h5>
+          <h5 class="modal-title" id="updateModalLabel">Modifier l'atelier</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -228,15 +257,37 @@ onBeforeUnmount(() => {
         <div class="modal-body">
           <form @submit.prevent="submitUpdateForm">
             <div class="form-group">
-              <label for="nom-Type" class="col-form-label">Nom du type:</label>
+              <label for="chaine" class="col-form-label">Nom de la chaine:</label>
               <input
                 type="text"
-                v-model="form.nom_type"
+                v-model="form.nom_chaine"
                 class="form-control"
-                id="nom-Type"
-                :class="{ 'is-invalid': v$.nom_type.$invalid && v$.nom_type.$dirty }"
+                id="chaine"
+                :class="{
+                  'is-invalid': v$.nom_chaine.$invalid && v$.nom_chaine.$dirty,
+                }"
               />
-              <span v-if="v$.nom_type.$error" class="error">Nom de Type requis.</span>
+              <span v-if="v$.nom_chaine.$error" class="error">Nom de chaine requis.</span>
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="atelier">Atelier correspondant:</label>
+              <select
+                v-model="form.atelier"
+                class="custom-select"
+                id="atelier"
+                :class="{ 'is-invalid': v$.atelier.$invalid && v$.atelier.$dirty }"
+              >
+                <option selected disabled>Sélectionnez un atelier</option>
+                <option
+                  v-for="atelier in ateliers.items.value"
+                  :key="atelier.id"
+                  :value="atelier.id"
+                >
+                  {{ atelier.nom_atelier }}
+                </option>
+              </select>
+              <span v-if="v$.atelier.$error" class="error">Atelier requis.</span>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">

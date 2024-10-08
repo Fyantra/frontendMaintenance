@@ -18,6 +18,7 @@ const router = createRouter({
       component: LoginUser,
     },
     { path: '/inscription', component: () => import('@/views/utilisateur/SignUp.vue') },
+
     /////////ROUTER BACK-OFFICE MACHINE////////////////////////
     { path: '/modele', component: () => import('@/views/machine/ModeleView.vue'), meta: { requiresAuth: true }, },
     { path: '/type', component: () => import('@/views/machine/TypeView.vue'), meta: { requiresAuth: true }, },
@@ -26,6 +27,11 @@ const router = createRouter({
 
     /////////ROUTER BACK-OFFICE ATELIER////////////////////////
     { path: '/endroit', component: () => import('@/views/atelier/EndroitView.vue'), meta: { requiresAuth: true }, },
+    { path: '/atelier', component: () => import('@/views/atelier/AtelierView.vue'), meta: { requiresAuth: true }, },
+    { path: '/chaine', component: () => import('@/views/atelier/ChaineView.vue'), meta: { requiresAuth: true }, },
+
+    /////////ROUTER BACK-OFFICE FOURNISSEUR////////////////////////
+    { path: '/fournisseur', component: () => import('@/views/fournisseur/FournisseurView.vue'), meta: { requiresAuth: true }, },
   ]
 })
 

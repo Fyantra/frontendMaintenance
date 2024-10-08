@@ -11,7 +11,9 @@ import { RouterLink } from "vue-router";
             <div class="row align-items-center">
               <div class="col-3 text-center">
                 <span class="circle circle-md bg-primary justify-content-center">
-                  <span class="material-icons text-white">precision_manufacturing</span>
+                  <span class="material-icons notranslate text-white"
+                    >precision_manufacturing</span
+                  >
                 </span>
               </div>
               <div class="col">
@@ -28,7 +30,7 @@ import { RouterLink } from "vue-router";
           <div class="row align-items-center">
             <div class="col-3 text-center">
               <span class="circle circle-md bg-success justify-content-center">
-                <span class="material-icons text-white">handyman</span>
+                <span class="material-icons notranslate text-white">handyman</span>
               </span>
             </div>
             <div class="col">
@@ -44,7 +46,7 @@ import { RouterLink } from "vue-router";
           <div class="row align-items-center">
             <div class="col-3 text-center">
               <span class="circle circle-md bg-warning justify-content-center">
-                <span class="material-icons text-white">assignment</span>
+                <span class="material-icons notranslate text-white">assignment</span>
               </span>
             </div>
             <div class="col">
@@ -60,7 +62,7 @@ import { RouterLink } from "vue-router";
           <div class="row align-items-center">
             <div class="col-3 text-center">
               <span class="circle circle-md bg-secondary justify-content-center">
-                <span class="material-icons text-white">event</span>
+                <span class="material-icons notranslate text-white">event</span>
               </span>
             </div>
             <div class="col">

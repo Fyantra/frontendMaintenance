@@ -29,8 +29,6 @@ export function useCrud<T>(endpoint: string, v$: ReturnType<typeof useVuelidate>
         case 401:
           errorMessage.value = 'Votre session est expiré. Veuillez vous reconnecter.';
           error401Message.value = errorMessage.value
-          // localStorage.removeItem('accessToken');
-          // window.location.href = '/login'; // Redirect to login page
           break;
         case 403:
           errorMessage.value = 'Accès refusé. Vous n\'avez pas la permission de réaliser cette action.';
@@ -108,6 +106,7 @@ export function useCrud<T>(endpoint: string, v$: ReturnType<typeof useVuelidate>
     addItem,
     deleteItem,
     updateItem,
+    fetchItems,
     initializeDataTable,
     v$,
   };

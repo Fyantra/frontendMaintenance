@@ -56,7 +56,7 @@ import { ChartBarIcon } from "@heroicons/vue/20/solid";
               aria-expanded="false"
               class="dropdown-toggle nav-link"
             >
-              <i class="material-icons">precision_manufacturing</i>
+              <i class="material-icons notranslate">precision_manufacturing</i>
               <span class="ml-3 item-text">Machine</span>
             </a>
             <ul class="collapse list-unstyled pl-4 w-100" id="machines">
@@ -90,26 +90,38 @@ import { ChartBarIcon } from "@heroicons/vue/20/solid";
               aria-expanded="false"
               class="dropdown-toggle nav-link"
             >
-              <i class="material-icons">engineering</i>
+              <i class="material-icons notranslate">engineering</i>
               <span class="ml-3 item-text">Atelier</span>
             </a>
             <ul class="collapse list-unstyled pl-4 w-100" id="ateliers">
-              <li class="nav-item">
-                <RouterLink class="nav-link pl-3" to="/chaine"
-                  ><span class="ml-1 item-text">Chaine</span></RouterLink
-                >
-              </li>
               <li class="nav-item">
                 <RouterLink class="nav-link pl-3" to="/endroit"
                   ><span class="ml-1 item-text">Endroit</span></RouterLink
                 >
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <RouterLink class="nav-link pl-3" to="/responsable"
                   ><span class="ml-1 item-text">Responsable</span></RouterLink
                 >
+              </li> -->
+              <li class="nav-item">
+                <RouterLink class="nav-link pl-3" to="/atelier"
+                  ><span class="ml-1 item-text">Atelier</span></RouterLink
+                >
+              </li>
+              <li class="nav-item">
+                <RouterLink class="nav-link pl-3" to="/chaine"
+                  ><span class="ml-1 item-text">Chaine</span></RouterLink
+                >
               </li>
             </ul>
+          </li>
+
+          <li class="nav-item w-100">
+            <RouterLink class="nav-link" to="/fournisseur">
+              <i class="material-icons notranslate">business_center</i>
+              <span class="ml-3 item-text">Fournisseur</span>
+            </RouterLink>
           </li>
         </ul>
         <p class="text-muted nav-heading mt-4 mb-1">

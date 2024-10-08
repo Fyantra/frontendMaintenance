@@ -2,27 +2,28 @@
 import { ref, onMounted, reactive, onBeforeUnmount } from "vue";
 import { useCrud } from "@/composables/useCrud";
 import useVuelidate from "@vuelidate/core";
-import { required } from "@vuelidate/validators";
+import { email, required } from "@vuelidate/validators";
 import SectionNavigation from "../templates/SectionNavigation.vue";
 import ErrorMessage from "../templates/ErrorMessage.vue";
-import { Type } from "@/types/MachineType";
+import { Fournisseur } from "@/types/FournisseurType";
 
-const form = reactive<Type>({
-  //doit suivre les proprietes de Type
+const form = reactive<Fournisseur>({
+  //doit suivre les proprietes de marque
   id: 0,
-  nom_type: "",
-  date_creation: "",
+  nom_fournisseur: "",
+  email: "",
+  telephone: "",
+  date_creation: null,
 });
 
 // Définir les règles de validation
 const validation = {
-  nom_type: { required },
+  nom_fournisseur: { required },
+  email: { email },
 };
 
 // Utilisation de Vuelidate avec les règles de validation
 const v$ = useVuelidate(validation, form);
-
-const nom_type = ref<string>("");
 
 const {
   items,
@@ -32,9 +33,9 @@ const {
   addItem,
   deleteItem,
   updateItem,
-} = useCrud<Type>("machine/types/", v$);
+} = useCrud<Fournisseur>("fournisseur/fournisseurs/", v$);
 
-const selectedItem = ref<Type | null>(null); // Élément sélectionné pour la modification
+const selectedItem = ref<Fournisseur | null>(null); // Élément sélectionné pour la modification
 
 const clearError = () => {
   //reinitialiser le message d`erreur
@@ -43,10 +44,13 @@ const clearError = () => {
 
 //Ajouter un nouveau item
 const submitForm = async () => {
-  v$.value.$touch(); // Typer les champs comme touchés pour la validation
+  v$.value.$touch(); // Marquer les champs comme touchés pour la validation
   if (!v$.value.$invalid) {
-    await addItem({ nom_type: form.nom_type });
-    nom_type.value = ""; // Réinitialiser le formulaire
+    await addItem({
+      nom_fournisseur: form.nom_fournisseur,
+      email: form.email,
+      telephone: form.telephone,
+    });
     $("#addModal").modal("hide");
   } else {
     console.error("Formulaire invalide");
@@ -57,9 +61,12 @@ const submitForm = async () => {
 const submitUpdateForm = async () => {
   v$.value.$touch();
   if (!v$.value.$invalid && selectedItem.value) {
-    await updateItem(selectedItem.value.id, { nom_type: form.nom_type });
+    await updateItem(selectedItem.value.id, {
+      nom_fournisseur: form.nom_fournisseur,
+      email: form.email,
+      telephone: form.telephone,
+    });
     selectedItem.value = null; // Réinitialiser après la mise à jour
-    nom_type.value = "";
     $("#updateModal").modal("hide");
   } else {
     console.error("Formulaire de mise à jour invalide");
@@ -67,9 +74,11 @@ const submitUpdateForm = async () => {
 };
 
 // Ouvrir le modal de modification
-const openUpdateModal = (item: Type) => {
+const openUpdateModal = (item: Fournisseur) => {
   form.id = item.id;
-  form.nom_type = item.nom_type;
+  form.nom_fournisseur = item.nom_fournisseur;
+  form.email = item.email;
+  form.telephone = item.telephone;
   selectedItem.value = item; // Stocker l'élément à mettre à jour
 };
 
@@ -89,7 +98,7 @@ onBeforeUnmount(() => {
 
   <div class="row">
     <div class="col-md-8">
-      <h2 class="page-title">Types de machine</h2>
+      <h2 class="page-title">Fournisseur</h2>
     </div>
 
     <button
@@ -99,13 +108,13 @@ onBeforeUnmount(() => {
       class="btn mb-2 btn-primary"
       style="width: 22%"
     >
-      <span class="fe fe-plus fe-16 mr-2"></span>Ajouter un type
+      <span class="fe fe-plus fe-16 mr-2"></span>Ajouter un fournisseur
     </button>
   </div>
 
-  <p>Voici les différents types disponibles.</p>
+  <p>Voici les différents fournisseurs disponibles.</p>
 
-  <!-- Formulaire d'ajout de type -->
+  <!-- Formulaire d'ajout de fournisseur -->
   <div
     class="modal fade"
     id="addModal"
@@ -117,7 +126,7 @@ onBeforeUnmount(() => {
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addModalLabel">Ajout de type</h5>
+          <h5 class="modal-title" id="addModalLabel">Ajout de fournisseur</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -125,16 +134,42 @@ onBeforeUnmount(() => {
         <div class="modal-body">
           <form @submit.prevent="submitForm">
             <div class="form-group">
-              <label for="nom-marque" class="col-form-label">Nom du type:</label>
+              <label for="nom-marque" class="col-form-label">Nom du fournisseur:</label>
               <input
                 type="text"
-                v-model="form.nom_type"
+                v-model="form.nom_fournisseur"
                 class="form-control"
                 id="nom-marque"
-                :class="{ 'is-invalid': v$.nom_type.$invalid && v$.nom_type.$dirty }"
+                :class="{
+                  'is-invalid': v$.nom_fournisseur.$invalid && v$.nom_fournisseur.$dirty,
+                }"
               />
-              <span v-if="v$.nom_type.$error" class="error">Nom de type requis.</span>
+              <span v-if="v$.nom_fournisseur.$error" class="error"
+                >Nom de fournisseur requis.</span
+              >
             </div>
+            <div class="form-group">
+              <label for="email" class="col-form-label">Email:</label>
+              <input
+                type="email"
+                v-model="form.email"
+                class="form-control"
+                id="email"
+                :class="{ 'is-invalid': v$.email.$invalid && v$.email.$dirty }"
+              />
+              <span v-if="v$.email.$error" class="error">Email invalide.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="telephone" class="col-form-label">Telephone:</label>
+              <input
+                type="text"
+                v-model="form.telephone"
+                class="form-control"
+                id="telephone"
+              />
+            </div>
+
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">
                 Annuler
@@ -159,12 +194,14 @@ onBeforeUnmount(() => {
   <div class="col-md-14 my-4">
     <div class="card shadow">
       <div class="card-body">
-        <h5 class="card-title">Liste des Types</h5>
+        <h5 class="card-title">Liste des fournisseurs</h5>
         <table id="datatable-1" class="table table-striped table-hover">
           <thead>
             <tr>
               <th>ID</th>
-              <th>Nom du type</th>
+              <th>Nom du fournisseur</th>
+              <th>Email</th>
+              <th>Telephone</th>
               <th>Date de création</th>
               <th>Action</th>
             </tr>
@@ -172,7 +209,9 @@ onBeforeUnmount(() => {
           <tbody>
             <tr v-for="item in items" :key="item.id">
               <td>{{ item.id }}</td>
-              <td>{{ item.nom_type }}</td>
+              <td>{{ item.nom_fournisseur }}</td>
+              <td>{{ item.email }}</td>
+              <td>{{ item.telephone }}</td>
               <td>{{ new Date(item.date_creation).toLocaleDateString() }}</td>
               <td>
                 <div class="dropdown">
@@ -220,7 +259,7 @@ onBeforeUnmount(() => {
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="updateModalLabel">Modifier le type</h5>
+          <h5 class="modal-title" id="updateModalLabel">Modifier le fournisseur</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -228,16 +267,42 @@ onBeforeUnmount(() => {
         <div class="modal-body">
           <form @submit.prevent="submitUpdateForm">
             <div class="form-group">
-              <label for="nom-Type" class="col-form-label">Nom du type:</label>
+              <label for="nom-marque" class="col-form-label">Nom du fournisseur:</label>
               <input
                 type="text"
-                v-model="form.nom_type"
+                v-model="form.nom_fournisseur"
                 class="form-control"
-                id="nom-Type"
-                :class="{ 'is-invalid': v$.nom_type.$invalid && v$.nom_type.$dirty }"
+                id="nom-marque"
+                :class="{
+                  'is-invalid': v$.nom_fournisseur.$invalid && v$.nom_fournisseur.$dirty,
+                }"
               />
-              <span v-if="v$.nom_type.$error" class="error">Nom de Type requis.</span>
+              <span v-if="v$.nom_fournisseur.$error" class="error"
+                >Nom de fournisseur requis.</span
+              >
             </div>
+            <div class="form-group">
+              <label for="email" class="col-form-label">Email:</label>
+              <input
+                type="email"
+                v-model="form.email"
+                class="form-control"
+                id="email"
+                :class="{ 'is-invalid': v$.email.$invalid && v$.email.$dirty }"
+              />
+              <span v-if="v$.email.$error" class="error">Email invalide.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="telephone" class="col-form-label">Telephone:</label>
+              <input
+                type="text"
+                v-model="form.telephone"
+                class="form-control"
+                id="telephone"
+              />
+            </div>
+
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">
                 Annuler
