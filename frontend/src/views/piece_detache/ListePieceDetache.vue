@@ -442,10 +442,10 @@ onMounted(async () => {
                       aria-expanded="false"
                     ></button>
                     <div class="dropdown-menu m-2">
-                      <a class="dropdown-item" href="#"
+                      <a class="dropdown-item"
                         ><i class="fe fe-meh fe-12 mr-4"></i>Créer une tâche</a
                       >
-                      <a class="dropdown-item" href="#"
+                      <a class="dropdown-item"
                         ><i class="fe fe-message-circle fe-12 mr-4"></i
                         >Réapprovisionner</a
                       >
@@ -462,7 +462,6 @@ onMounted(async () => {
                       </a>
                       <a
                         class="dropdown-item"
-                        href="#"
                         @click="pieceDetacheCrud.deleteItem(piece.id)"
                         ><i class="fe fe-delete fe-12 mr-4"></i>Supprimer</a
                       >
@@ -504,6 +503,13 @@ td {
   max-width: 100%;
   max-height: 100%;
   border-radius: 5px;
+}
+
+.dropdown-item {
+  cursor: pointer;
+}
+.dropdown-item:hover {
+  color: black;
 }
 
 .nav-link {
