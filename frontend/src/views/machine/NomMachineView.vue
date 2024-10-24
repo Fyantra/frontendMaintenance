@@ -4,7 +4,7 @@ import { useCrud } from "@/composables/useCrud";
 import useVuelidate from "@vuelidate/core";
 import { required } from "@vuelidate/validators";
 import SectionNavigation from "../templates/SectionNavigation.vue";
-import ErrorMessage from "../templates/ErrorMessage.vue";
+import ErrorMessage from "../templates_composant/ErrorMessage.vue";
 import { NomMachine } from "@/types/MachineType";
 
 const form = reactive<NomMachine>({
@@ -46,6 +46,7 @@ const submitForm = async () => {
   v$.value.$touch(); // NomMachiner les champs comme touchés pour la validation
   if (!v$.value.$invalid) {
     await addItem({ nom_machine: form.nom_machine });
+    initializeDataTable();
     nom_machine.value = ""; // Réinitialiser le formulaire
     $("#addModal").modal("hide");
   } else {
@@ -58,6 +59,7 @@ const submitUpdateForm = async () => {
   v$.value.$touch();
   if (!v$.value.$invalid && selectedItem.value) {
     await updateItem(selectedItem.value.id, { nom_machine: form.nom_machine });
+    initializeDataTable();
     selectedItem.value = null; // Réinitialiser après la mise à jour
     nom_machine.value = "";
     $("#updateModal").modal("hide");

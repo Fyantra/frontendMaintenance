@@ -1,6 +1,6 @@
 import { Ref } from 'vue';
 
-export function useFindById<T extends { id: number }>(items: Ref<T[]>) {
+export function useFindById<T extends { id: number }>(items: Ref<T[]>) {    //Generic Constraints
   const findById = (id: number, key: keyof T) => {
     const item = items.value.find((item) => item.id === id);
     return item ? item[key] || "Non spécifié" : "Non spécifié";

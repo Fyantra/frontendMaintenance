@@ -35,5 +35,3 @@ onMounted(async () => {
     <LoginUser />
   </div>
 </template>
-
-<style scoped></style>

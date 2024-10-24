@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, onBeforeUnmount } from "vue";
 import { useCrud } from "@/composables/useCrud";
-import { useFindById } from "@/composables/useFindById";
 import useVuelidate from "@vuelidate/core";
 import { required } from "@vuelidate/validators";
 import SectionNavigation from "../templates/SectionNavigation.vue";
-import ErrorMessage from "../templates/ErrorMessage.vue";
+import ErrorMessage from "../templates_composant/ErrorMessage.vue";
+import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
 import { Endroit, Responsable, Atelier } from "@/types/AtelierType";
 
 const form = reactive<Atelier>({
@@ -14,13 +14,15 @@ const form = reactive<Atelier>({
   date_creation: null,
   endroit: null,
   responsable: null,
+  endroit_id: null,
+  responsable_id: null,
 });
 
 // Définir les règles de validation
 const validation = {
   nom_atelier: { required },
-  endroit: { required },
-  responsable: { required },
+  endroit_id: { required },
+  responsable_id: { required },
 };
 
 // Utilisation de Vuelidate avec les règles de validation
@@ -29,10 +31,6 @@ const v$ = useVuelidate(validation, form);
 const ateliers = useCrud<Atelier>("atelier/ateliers/", v$);
 const endroits = useCrud<Endroit>("atelier/endroits/", v$);
 const responsables = useCrud<Responsable>("atelier/responsables/", v$);
-
-//recuperer la valeur des foreign key par l`ID
-const { findById: findEndroit } = useFindById(endroits.items);
-const { findById: findResponsable } = useFindById(responsables.items);
 
 const errorMessage = ateliers.errorMessage;
 const error401Message = ateliers.error401Message;
@@ -50,9 +48,10 @@ const submitForm = async () => {
   if (!v$.value.$invalid) {
     await ateliers.addItem({
       nom_atelier: form.nom_atelier,
-      endroit: form.endroit,
-      responsable: form.responsable,
+      endroit_id: form.endroit_id,
+      responsable_id: form.responsable_id,
     });
+    ateliers.initializeDataTable();
     $("#addModal").modal("hide");
   } else {
     console.error("Formulaire invalide");
@@ -65,9 +64,10 @@ const submitUpdateForm = async () => {
   if (!v$.value.$invalid && selectedItem.value) {
     await ateliers.updateItem(selectedItem.value.id, {
       nom_atelier: form.nom_atelier,
-      endroit: form.endroit,
-      responsable: form.responsable,
+      endroit_id: form.endroit_id,
+      responsable_id: form.responsable_id,
     });
+    ateliers.initializeDataTable();
     selectedItem.value = null; // Réinitialiser après la mise à jour
     $("#updateModal").modal("hide");
   } else {
@@ -79,8 +79,8 @@ const submitUpdateForm = async () => {
 const openUpdateModal = (item: Atelier) => {
   form.id = item.id;
   form.nom_atelier = item.nom_atelier;
-  form.endroit = item.endroit;
-  form.responsable = item.responsable;
+  form.endroit_id = item.endroit_id;
+  form.responsable_id = item.responsable_id;
   selectedItem.value = item;
 };
 
@@ -158,10 +158,10 @@ onBeforeUnmount(() => {
             <div class="form-group mb-3">
               <label for="endroit">Endroit:</label>
               <select
-                v-model="form.endroit"
+                v-model="form.endroit_id"
                 class="custom-select"
                 id="endroit"
-                :class="{ 'is-invalid': v$.endroit.$invalid && v$.endroit.$dirty }"
+                :class="{ 'is-invalid': v$.endroit_id.$invalid && v$.endroit_id.$dirty }"
               >
                 <option selected disabled>Sélectionnez un endroit</option>
                 <option
@@ -172,17 +172,17 @@ onBeforeUnmount(() => {
                   {{ endroit.nom_endroit }}
                 </option>
               </select>
-              <span v-if="v$.endroit.$error" class="error">Endroit requis.</span>
+              <span v-if="v$.endroit_id.$error" class="error">Endroit requis.</span>
             </div>
 
             <div class="form-group mb-3">
               <label for="responsable">Responsable:</label>
               <select
-                v-model="form.responsable"
+                v-model="form.responsable_id"
                 class="custom-select"
                 id="responsable"
                 :class="{
-                  'is-invalid': v$.responsable.$invalid && v$.responsable.$dirty,
+                  'is-invalid': v$.responsable_id.$invalid && v$.responsable_id.$dirty,
                 }"
               >
                 <option selected disabled>Sélectionnez le responsable</option>
@@ -194,7 +194,9 @@ onBeforeUnmount(() => {
                   {{ responsable.nom_responsable }}
                 </option>
               </select>
-              <span v-if="v$.responsable.$error" class="error">Responsable requis.</span>
+              <span v-if="v$.responsable_id.$error" class="error"
+                >Responsable requis.</span
+              >
             </div>
 
             <div class="modal-footer">
@@ -237,11 +239,17 @@ onBeforeUnmount(() => {
               <td>{{ item.id }}</td>
               <td>{{ item.nom_atelier }}</td>
               <td>
-                {{ findEndroit(item.endroit, "nom_endroit") }}
-              </td>
-              <td>
-                {{ findResponsable(item.responsable, "nom_responsable") }}
-              </td>
+              <ForeignKeyDisplay
+                :description="item.endroit.nom_endroit"
+                :isDeleted="!!item.endroit.deleted_at"
+              />
+            </td>
+            <td>
+              <ForeignKeyDisplay
+                :description="item.responsable.nom_responsable"
+                :isDeleted="!!item.responsable.deleted_at"
+              />
+            </td>
               <td>{{ new Date(item.date_creation).toLocaleDateString() }}</td>
               <td>
                 <div class="dropdown">
@@ -317,10 +325,10 @@ onBeforeUnmount(() => {
             <div class="form-group mb-3">
               <label for="endroit">Endroit:</label>
               <select
-                v-model="form.endroit"
+                v-model="form.endroit_id"
                 class="custom-select"
                 id="endroit"
-                :class="{ 'is-invalid': v$.endroit.$invalid && v$.endroit.$dirty }"
+                :class="{ 'is-invalid': v$.endroit_id.$invalid && v$.endroit_id.$dirty }"
               >
                 <option value="sfksdnkjfs" selected disabled>
                   Sélectionnez un endroit
@@ -333,17 +341,17 @@ onBeforeUnmount(() => {
                   {{ endroit.nom_endroit }}
                 </option>
               </select>
-              <span v-if="v$.endroit.$error" class="error">Endroit requis.</span>
+              <span v-if="v$.endroit_id.$error" class="error">Endroit requis.</span>
             </div>
 
             <div class="form-group mb-3">
               <label for="responsable">Responsable:</label>
               <select
-                v-model="form.responsable"
+                v-model="form.responsable_id"
                 class="custom-select"
                 id="responsable"
                 :class="{
-                  'is-invalid': v$.responsable.$invalid && v$.responsable.$dirty,
+                  'is-invalid': v$.responsable_id.$invalid && v$.responsable_id.$dirty,
                 }"
               >
                 <option selected disabled>Sélectionnez le responsable</option>
@@ -355,7 +363,9 @@ onBeforeUnmount(() => {
                   {{ responsable.nom_responsable }}
                 </option>
               </select>
-              <span v-if="v$.responsable.$error" class="error">Responsable requis.</span>
+              <span v-if="v$.responsable_id.$error" class="error"
+                >Responsable requis.</span
+              >
             </div>
 
             <div class="modal-footer">

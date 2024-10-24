@@ -98,7 +98,9 @@ export default defineComponent({
           <span class="avatar avatar-sm mt-2">
             <i class="fe fe-user fe-16"></i>
           </span>
-          <b v-if="user">{{ user.role }} {{ user.first_name }}</b>
+          <b v-if="user"
+            >{{ new String(user.role).toUpperCase() }} {{ user.first_name }}</b
+          >
           <b v-else>Utilisateur inconnu</b>
         </a>
         <div

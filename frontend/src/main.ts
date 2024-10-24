@@ -16,7 +16,7 @@ import './assets/css/daterangepicker.css'
 import './assets/css/dataTables.bootstrap4.css'
 
 import "datatables.net-bs5";
-import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";
+// import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'

@@ -32,7 +32,35 @@ const router = createRouter({
 
     /////////ROUTER BACK-OFFICE FOURNISSEUR////////////////////////
     { path: '/fournisseur', component: () => import('@/views/fournisseur/FournisseurView.vue'), meta: { requiresAuth: true }, },
-  ]
+
+    /////////ROUTER PIECE DETACHE////////////////////////
+    { path: '/listePiecedetache', component: () => import('@/views/piece_detache/ListePieceDetache.vue'), meta: { requiresAuth: true }, },
+    { path: '/ajoutPiecedetache', component: () => import('@/views/piece_detache/FormPieceDetache.vue'), meta: { requiresAuth: true }, },
+    {
+      path: '/detailPieceDetache/:id',
+      name: 'detailPieceDetache',
+      component: () => import('@/views/piece_detache/DetailPieceDetache.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/modifierPieceDetache/:id',
+      name: 'modifierPieceDetache',
+      component: () => import('@/views/piece_detache/FormPieceDetache.vue'),
+      meta: { requiresAuth: true },
+    },
+
+    { path: '/test', component: () => import('@/views/piece_detache/ExempleListe.vue'), meta: { requiresAuth: true }, },
+  ],
+
+  scrollBehavior(to, from, savedPosition) {
+    // Si une position sauvegardée existe on la réutilise
+    if (savedPosition) {
+      return savedPosition;
+    } else {
+      // Sinon, on defile toujours vers le haut de la page
+      return { top: 0, behavior: 'smooth' };
+    }
+  }
 })
 
 router.beforeEach((to, from, next) => {

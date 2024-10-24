@@ -6,7 +6,7 @@ const getToken = () => {
   return localStorage.getItem('accessToken'); 
 };
 
-export function useCrud<T>(endpoint: string, v$: ReturnType<typeof useVuelidate>) {
+export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate>) {
   const apiUrl = `${import.meta.env.VITE_APP_API_BASE_URL}${endpoint}`;
   const items = ref<T[]>([]);
   const errorMessage = ref<string | null>(null);
@@ -24,7 +24,7 @@ export function useCrud<T>(endpoint: string, v$: ReturnType<typeof useVuelidate>
 
       switch (status) {
         case 400:
-          errorMessage.value = 'Requête incorrecte. Vérifiez les données soumises.';
+          errorMessage.value = 'Requête incorrecte. Vérifiez les données soumises: syntaxe invalide ou valeur déjà existante';
           break;
         case 401:
           errorMessage.value = 'Votre session est expiré. Veuillez vous reconnecter.';
@@ -57,6 +57,15 @@ export function useCrud<T>(endpoint: string, v$: ReturnType<typeof useVuelidate>
     }
   };
 
+  const fetchItemsById = async (id: number) => {
+    try {
+      const response = await axios.get<T>(`${apiUrl}${id}/`, authHeader);
+      items.value = [response.data];
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   const initializeDataTable = async () => {
     // Vérifiez si le DataTable existe déjà, puis détruisez-le avant de le recréer
     if ($.fn.DataTable.isDataTable("#datatable-1")) {
@@ -65,15 +74,40 @@ export function useCrud<T>(endpoint: string, v$: ReturnType<typeof useVuelidate>
   
     // Réinitialisez DataTable avec les nouvelles données
     await fetchItems();
-    $("#datatable-1").DataTable();
+    $("#datatable-1").DataTable({
+      "language": {
+            "decimal": ",",
+            "thousands": " ",
+            "processing": "Traitement en cours...",
+            "search": "Rechercher&nbsp;:",
+            "lengthMenu": "Afficher _MENU_ éléments",
+            "info": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+            "infoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+            "infoFiltered": "(filtré de _MAX_ éléments au total)",
+            "infoPostFix": "",
+            "loadingRecords": "Chargement en cours...",
+            "zeroRecords": "Aucun élément à afficher",
+            "emptyTable": "Aucune donnée disponible dans le tableau",
+            "paginate": {
+                "first": "Premier",
+                "previous": "Précédent",
+                "next": "Suivant",
+                "last": "Dernier"
+            },
+            "aria": {
+                "sortAscending": ": activer pour trier la colonne par ordre croissant",
+                "sortDescending": ": activer pour trier la colonne par ordre décroissant"
+            }
+        }
+    });
   };
   
 
   // Add item
-  const addItem = async (item: Partial<T>) => {
+  const addItem = async (item: Partial<T> | FormData) => {
     try {
       await axios.post(apiUrl, item, authHeader); 
-      initializeDataTable();
+      // initializeDataTable();
     } catch (error) {
       handleError(error);
     }
@@ -90,10 +124,10 @@ export function useCrud<T>(endpoint: string, v$: ReturnType<typeof useVuelidate>
   };
 
   // Update item
-  const updateItem = async (id: number, updatedItem: Partial<T>) => {
+  const updateItem = async (id: number, updatedItem: Partial<T> | FormData) => {
     try {
       await axios.put(`${apiUrl}${id}/`, updatedItem, authHeader);
-      initializeDataTable(); 
+      // initializeDataTable(); 
     } catch (error) {
       handleError(error);
     }
@@ -107,6 +141,7 @@ export function useCrud<T>(endpoint: string, v$: ReturnType<typeof useVuelidate>
     deleteItem,
     updateItem,
     fetchItems,
+    fetchItemsById,
     initializeDataTable,
     v$,
   };

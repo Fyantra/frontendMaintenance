@@ -4,7 +4,7 @@ import { useCrud } from "@/composables/useCrud";
 import useVuelidate from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import SectionNavigation from "../templates/SectionNavigation.vue";
-import ErrorMessage from "../templates/ErrorMessage.vue";
+import ErrorMessage from "../templates_composant/ErrorMessage.vue";
 import { Fournisseur } from "@/types/FournisseurType";
 
 const form = reactive<Fournisseur>({
@@ -51,6 +51,7 @@ const submitForm = async () => {
       email: form.email,
       telephone: form.telephone,
     });
+    initializeDataTable();
     $("#addModal").modal("hide");
   } else {
     console.error("Formulaire invalide");
@@ -66,6 +67,7 @@ const submitUpdateForm = async () => {
       email: form.email,
       telephone: form.telephone,
     });
+    initializeDataTable();
     selectedItem.value = null; // Réinitialiser après la mise à jour
     $("#updateModal").modal("hide");
   } else {

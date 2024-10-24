@@ -4,7 +4,7 @@ import { useCrud } from "@/composables/useCrud";
 import useVuelidate from "@vuelidate/core";
 import { required } from "@vuelidate/validators";
 import SectionNavigation from "../templates/SectionNavigation.vue";
-import ErrorMessage from "../templates/ErrorMessage.vue";
+import ErrorMessage from "../templates_composant/ErrorMessage.vue";
 import { Marque } from "@/types/MachineType";
 
 const form = reactive<Marque>({
@@ -44,6 +44,7 @@ const submitForm = async () => {
   v$.value.$touch(); // Marquer les champs comme touchés pour la validation
   if (!v$.value.$invalid) {
     await addItem({ nom_marque: form.nom_marque });
+    initializeDataTable();
     $("#addModal").modal("hide");
   } else {
     console.error("Formulaire invalide");
@@ -55,6 +56,7 @@ const submitUpdateForm = async () => {
   v$.value.$touch();
   if (!v$.value.$invalid && selectedItem.value) {
     await updateItem(selectedItem.value.id, { nom_marque: form.nom_marque });
+    initializeDataTable();
     selectedItem.value = null; // Réinitialiser après la mise à jour
     $("#updateModal").modal("hide");
   } else {

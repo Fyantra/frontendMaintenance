@@ -12046,3 +12046,12 @@ a.uppy-Dashboard-poweredBy {
     .logo-link {
       color: black;
     }
+
+    .thead-piece{
+      background-color: #9f9f9f;
+    }
+
+    .tbody-piece .tr-piece:hover {
+      background-color: white;
+    }
+    
