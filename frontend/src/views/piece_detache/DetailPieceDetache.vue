@@ -65,11 +65,9 @@ onMounted(() => {
           <div class="card shadow mb-4">
             <div class="card-header">
               <strong class="card-title text-uppercase"
-                >{{ piece.nom_piecedetache + " "
-                }}<ForeignKeyDisplay
-                  :description="piece.modele ? piece.modele.nom_modele : null"
-                  :isDeleted="piece.modele ? piece.modele.deleted_at !== null : false"
-              /></strong>
+                >{{ piece.nom_piecedetache }}
+                <ForeignKeyDisplay :description="piece.modele.nom_modele" />
+              </strong>
               <span class="float-right"
                 ><i class="material-icons badge-icon notranslate mr-2">handyman</i
                 ><span class="badge badge-pill badge-success text-white"
@@ -107,21 +105,14 @@ onMounted(() => {
                       </div>
                     </div>
 
-                    <div v-if="piece.emplacement" class="col-sm-6 mb-5">
+                    <div v-if="piece.emplacement.nom_atelier" class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
                         <i class="material-icons mr-4">storefront</i>
                         <div>
                           <div class="text-muted">Emplacement</div>
                           <div>
                             <ForeignKeyDisplay
-                              :description="
-                                piece.emplacement ? piece.emplacement.nom_atelier : null
-                              "
-                              :isDeleted="
-                                piece.emplacement
-                                  ? piece.emplacement.deleted_at !== null
-                                  : false
-                              "
+                              :description="piece.emplacement.nom_atelier"
                             />
                           </div>
                         </div>
@@ -178,23 +169,14 @@ onMounted(() => {
                       </div>
                     </div>
 
-                    <div v-if="piece.fournisseur" class="col-sm-6 mb-5">
+                    <div v-if="piece.fournisseur.nom_fournisseur" class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
                         <i class="material-icons mr-4">business_center</i>
                         <div>
                           <div class="text-muted">Fournisseur</div>
                           <div>
                             <ForeignKeyDisplay
-                              :description="
-                                piece.fournisseur
-                                  ? piece.fournisseur.nom_fournisseur
-                                  : null
-                              "
-                              :isDeleted="
-                                piece.fournisseur
-                                  ? piece.fournisseur.deleted_at !== null
-                                  : false
-                              "
+                              :description="piece.fournisseur.nom_fournisseur"
                             />
                           </div>
                         </div>

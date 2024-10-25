@@ -239,17 +239,11 @@ onBeforeUnmount(() => {
               <td>{{ item.id }}</td>
               <td>{{ item.nom_atelier }}</td>
               <td>
-              <ForeignKeyDisplay
-                :description="item.endroit.nom_endroit"
-                :isDeleted="!!item.endroit.deleted_at"
-              />
-            </td>
-            <td>
-              <ForeignKeyDisplay
-                :description="item.responsable.nom_responsable"
-                :isDeleted="!!item.responsable.deleted_at"
-              />
-            </td>
+                <ForeignKeyDisplay :description="item.endroit.nom_endroit" />
+              </td>
+              <td>
+                <ForeignKeyDisplay :description="item.responsable.nom_responsable" />
+              </td>
               <td>{{ new Date(item.date_creation).toLocaleDateString() }}</td>
               <td>
                 <div class="dropdown">

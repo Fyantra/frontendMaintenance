@@ -4,6 +4,5 @@ export interface Fournisseur {
     email: string;
     telephone: string;
     date_creation: Date | null;
-    deleted_at?: Date | null;
   }
   

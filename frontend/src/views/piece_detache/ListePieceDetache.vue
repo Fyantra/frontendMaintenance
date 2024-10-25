@@ -397,12 +397,9 @@ onMounted(async () => {
                     ><RouterLink
                       class="routerlink_piece"
                       :to="{ name: 'detailPieceDetache', params: { id: piece.id } }"
-                      >{{ piece.nom_piecedetache + " " }}
+                      >{{ piece.nom_piecedetache }}
                       <ForeignKeyDisplay
-                        :description="piece.modele ? piece.modele.nom_modele : null"
-                        :isDeleted="
-                          piece.modele ? piece.modele.deleted_at !== null : false
-                        "
+                        :description="piece.modele.nom_modele"
                       /> </RouterLink
                   ></strong>
                 </th>
@@ -422,14 +419,7 @@ onMounted(async () => {
                   </div>
                 </td>
                 <td>
-                  <ForeignKeyDisplay
-                    :description="
-                      piece.emplacement ? piece.emplacement.nom_atelier : null
-                    "
-                    :isDeleted="
-                      piece.emplacement ? piece.emplacement.deleted_at !== null : false
-                    "
-                  />
+                  <ForeignKeyDisplay :description="piece.emplacement.nom_atelier" />
                 </td>
                 <td>{{ new Date(piece.date_creation).toLocaleDateString() }}</td>
                 <td>

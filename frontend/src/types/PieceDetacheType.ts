@@ -12,16 +12,15 @@ export interface PieceDetachee{
     prix_unitaire: number;
     quantite : number;
     emplacement?: Atelier | null;  
-    emplacement_id?: number | null    
+    emplacement_id?: number | null;    
     fournisseur?: Fournisseur | null;      
-    fournisseur_id?: number | null
+    fournisseur_id?: number | null;
     reference_fabricant?: string | null;
     image?: string | null;
     stock_min: number;
     stock_max: number | null;
     lot_de_reapprovisionnement: number | null;
     date_creation: Date | null;
-    deleted_at?: Date | null;
 }
 
 //pour le filtre des pieces
