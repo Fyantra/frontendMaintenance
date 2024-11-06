@@ -102,11 +102,45 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
     });
   };
   
+  const initializeDataTableWithId = async (tableId: string) => {    //pour rendre dynamique le datatable
+    if ($.fn.DataTable.isDataTable(`#${tableId}`)) {
+      $(`#${tableId}`).DataTable().destroy();
+    }  
+  
+    await fetchItems();
+    $(`#${tableId}`).DataTable({
+      "language": {
+            "decimal": ",",
+            "thousands": " ",
+            "processing": "Traitement en cours...",
+            "search": "Rechercher&nbsp;:",
+            "lengthMenu": "Afficher _MENU_ éléments",
+            "info": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+            "infoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+            "infoFiltered": "(filtré de _MAX_ éléments au total)",
+            "infoPostFix": "",
+            "loadingRecords": "Chargement en cours...",
+            "zeroRecords": "Aucun élément à afficher",
+            "emptyTable": "Aucune donnée disponible dans le tableau",
+            "paginate": {
+                "first": "Premier",
+                "previous": "Précédent",
+                "next": "Suivant",
+                "last": "Dernier"
+            },
+            "aria": {
+                "sortAscending": ": activer pour trier la colonne par ordre croissant",
+                "sortDescending": ": activer pour trier la colonne par ordre décroissant"
+            }
+        }
+    });
+  };
 
   // Add item
   const addItem = async (item: Partial<T> | FormData) => {
     try {
-      await axios.post(apiUrl, item, authHeader); 
+      const response = await axios.post(apiUrl, item, authHeader); 
+      return response.data;
       // initializeDataTable();
     } catch (error) {
       handleError(error);
@@ -118,6 +152,14 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
     try {
       await axios.delete(`${apiUrl}${id}/`, authHeader);
       initializeDataTable(); 
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
+  const deleteItemWithoutInitialize = async (id: number) => {
+    try {
+      await axios.delete(`${apiUrl}${id}/`, authHeader);
     } catch (error) {
       handleError(error);
     }
@@ -139,10 +181,12 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
     error401Message,
     addItem,
     deleteItem,
+    deleteItemWithoutInitialize,
     updateItem,
     fetchItems,
     fetchItemsById,
     initializeDataTable,
+    initializeDataTableWithId,
     v$,
   };
 }

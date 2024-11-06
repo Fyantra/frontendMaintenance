@@ -1,45 +1,44 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrud } from "@/composables/useCrud";
-import { dotColor } from "@/composables/useFonction";
-import { formatDateTime } from "@/composables/useFonction";
-import { Machine } from "@/types/MachineType";
-import { PieceDetachee } from "@/types/PieceDetacheType";
-import TableauDetailPiecedetache from "./TableauDetailPiecedetache.vue";
+import TableauDetailMachine from "./TableauDetailMachine.vue";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
+import { Machine, MachineRelation } from "@/types/MachineType";
+import { PieceDetachee } from "@/types/PieceDetacheType";
 
 const route = useRoute();
 const router = useRouter();
-const pieceDetacheCrud = useCrud<PieceDetachee>("piece/piecedetachees/");
 const machineCrud = useCrud<Machine>("machine/machines/");
+const relationCrud = useCrud<MachineRelation>("machine/machine_relation/");
+const pieceCrud = useCrud<PieceDetachee>("piece/piecedetachees/");
 
-const errorMessage = pieceDetacheCrud.errorMessage;
-const error401Message = pieceDetacheCrud.error401Message;
+const errorMessage = machineCrud.errorMessage;
+const error401Message = machineCrud.error401Message;
 
 const clearError = () => {
   //reinitialiser le message d`erreur
   errorMessage.value = null;
 };
 
-const piece = ref<PieceDetachee | null>(null);
-const machines = ref<Machine[]>([]);
+const machine = ref<Machine | null>(null);
+const machineRelations = ref<MachineRelation[]>([]);
+const piecesDetachees = ref<PieceDetachee[]>([]);
 
-// Recuperer l'ID de la piece depuis l'URL
-const pieceId = route.params.id;
-
-const fetchPieceDetails = async () => {
+const fetchMachineDetails = async (machineId: number) => {
   try {
-    await pieceDetacheCrud.fetchItemsById(Number(pieceId));
-    piece.value = pieceDetacheCrud.items.value[0];
+    await machineCrud.fetchItemsById(Number(machineId));
+    machine.value = machineCrud.items.value[0];
 
-    await machineCrud.fetchItems();
-    machines.value = machineCrud.items.value.filter((machine) =>
-      machine.pieces_detachees?.some(
-        (piecedetachees) => piecedetachees.id === piece.value.id
-      )
+    await relationCrud.fetchItems();
+    machineRelations.value = relationCrud.items.value.filter(
+      (relation) => relation.machine_principale === machine.value.id
     );
+
+    if (machine.value.pieces_detachees_id) {
+      piecesDetachees.value = machine.value.pieces_detachees;
+    }
   } catch (err) {
     console.error("Erreur lors du recuperation des details");
   }
@@ -49,20 +48,32 @@ const fetchPieceDetails = async () => {
 
 const deleteItem = async (id: number) => {
   try {
-    await pieceDetacheCrud.deleteItemWithoutInitialize(id);
-    router.push("/listePiecedetache");
+    await machineCrud.deleteItemWithoutInitialize(id);
+    router.push("/listeMachine");
   } catch (error) {
     console.error("Erreur lors de la suppression:", error);
   }
 };
 
 const refreshData = async () => {
-  await machineCrud.initializeDataTableWithId("datatable-machines");
+  await relationCrud.initializeDataTableWithId("datatable-machines");
+  await pieceCrud.initializeDataTableWithId("datatable-pieces");
 };
 
-onMounted(() => {
-  fetchPieceDetails();
+// Recuperer l'ID de la machine depuis l'URL
+const machineId = ref<number>(Number(route.params.id));
+
+onMounted(async () => {
+  fetchMachineDetails(machineId.value);
 });
+
+watch(
+  () => route.params.id,
+  (newId) => {
+    machineId.value = Number(newId);
+    fetchMachineDetails(machineId.value);
+  }
+);
 </script>
 
 <template>
@@ -73,33 +84,31 @@ onMounted(() => {
     :clearError="clearError"
   />
 
-  <div v-if="piece" class="row justify-content-center">
+  <div v-if="machine" class="row justify-content-center">
     <div class="col-12">
       <div class="row align-items-center mb-4">
-        <div class="col md-7">
+        <div class="col">
           <h2 class="h5 page-title">
-            <small class="text-muted text-uppercase">Detail pièces détachée</small
-            ><br />#PD{{ piece.id }}
+            <small class="text-muted text-uppercase">Detail machine</small
+            ><br />#MACHINE{{ machine.id }}
           </h2>
         </div>
         <div class="col-auto">
-          <button type="button" class="btn btn-success text-white">
-            <span class="material-icons layers fe-16 mr-2 notranslate">layers</span
-            >Réapprovisionner
-          </button>
           <button
-            @click="
-              $router.push({ name: 'modifierPieceDetache', params: { id: piece.id } })
-            "
+            @click="$router.push({ name: 'modifierMachine', params: { id: machine.id } })"
             type="button"
             class="btn btn-primary ml-3"
           >
-            <span class="fe fe-edit-2 fe-16 mr-2"></span>Modifier la pièce détachée
+            <span class="fe fe-edit-2 fe-16 mr-2"></span>Modifier le machine
           </button>
           <button type="button" class="btn btn-primary ml-3">
             <span class="fe fe-plus fe-16 mr-2"></span>Creer une tache
           </button>
-          <button @click="deleteItem(piece.id)" type="button" class="btn btn-danger ml-3">
+          <button
+            @click="deleteItem(machine.id)"
+            type="button"
+            class="btn btn-danger ml-3"
+          >
             <span class="fe fe-delete fe-16 mr-2"></span>Supprimer
           </button>
         </div>
@@ -109,33 +118,28 @@ onMounted(() => {
           <div class="card shadow mb-4">
             <div class="card-header">
               <strong class="card-title text-uppercase"
-                >{{ piece.nom_piecedetache }}
-                <ForeignKeyDisplay :description="piece.modele?.nom_modele" />
+                >{{ machine.nom_machine }}
+                <ForeignKeyDisplay :description="machine.marque?.nom_marque" />
               </strong>
               <span class="float-right"
-                ><i class="material-icons badge-icon notranslate mr-2">handyman</i
-                ><span
-                  :class="[
-                    'badge badge-pill',
-                    'text-white',
-                    dotColor(piece.quantite, piece.stock_min, piece.stock_max),
-                  ]"
-                  >Pièce détachée
-                </span></span
-              >
+                ><i class="material-icons badge-icon notranslate mr-2"
+                  >precision_manufacturing</i
+                ><span class="badge badge-pill badge-success text-white">
+                  <ForeignKeyDisplay :description="machine.status?.nom_status" /> </span
+              ></span>
             </div>
             <div class="card-body">
               <div class="row">
                 <div class="col-md-4 text-center">
                   <img
-                    v-if="piece.image"
-                    :src="piece.image"
+                    v-if="machine.image"
+                    :src="machine.image"
                     alt="Image du produit"
                     class="img-fluid"
                     style="max-width: 192px; max-height: 256px"
                   />
                   <div v-else class="material-icons notranslate" style="font-size: 12rem">
-                    handyman
+                    precision_manufacturing
                   </div>
                 </div>
 
@@ -146,22 +150,36 @@ onMounted(() => {
                         <i class="material-icons mr-4">description</i>
                         <div>
                           <div class="text-muted">Description</div>
-                          <div v-if="piece.description">
-                            {{ piece.description }}
+                          <div v-if="machine.description">
+                            {{ machine.description }}
                           </div>
                           <div v-else>Aucun description</div>
                         </div>
                       </div>
                     </div>
 
-                    <div v-if="piece.emplacement.nom_atelier" class="col-sm-6 mb-5">
+                    <div v-if="machine.atelier?.nom_atelier" class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
                         <i class="material-icons mr-4">storefront</i>
                         <div>
-                          <div class="text-muted">Emplacement</div>
+                          <div class="text-muted">Atelier</div>
                           <div>
                             <ForeignKeyDisplay
-                              :description="piece.emplacement?.nom_atelier"
+                              :description="machine.atelier?.nom_atelier"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div v-if="machine.chaine?.nom_chaine" class="col-sm-6 mb-5">
+                      <div class="d-flex align-items-start">
+                        <i class="material-icons mr-4">storefront</i>
+                        <div>
+                          <div class="text-muted">Chaine</div>
+                          <div>
+                            <ForeignKeyDisplay
+                              :description="machine.chaine?.nom_chaine"
                             />
                           </div>
                         </div>
@@ -170,84 +188,95 @@ onMounted(() => {
 
                     <div class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
-                        <i class="material-icons mr-4">money</i>
+                        <i class="material-icons mr-4">confirmation_number</i>
                         <div>
-                          <div class="text-muted">Prix Unitaire</div>
-                          <div>{{ piece.prix_unitaire }} Ariary</div>
+                          <div class="text-muted">Numéro de série</div>
+                          <div>{{ machine.numero_de_serie }}</div>
                         </div>
                       </div>
                     </div>
 
-                    <div class="col-sm-6 mb-5">
+                    <div v-if="machine.numero_de_moteur" class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
-                        <i class="material-icons mr-4">layers</i>
+                        <i class="material-icons mr-4">confirmation_number</i>
                         <div>
-                          <div class="text-muted">Quantité</div>
-                          <div>{{ piece.quantite }}</div>
+                          <div class="text-muted">Numéro de moteur</div>
+                          <div>{{ machine.numero_de_moteur }}</div>
                         </div>
                       </div>
                     </div>
 
-                    <div v-if="piece.lot_de_reapprovisionnement" class="col-sm-6 mb-5">
+                    <div v-if="machine.type?.nom_type" class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
-                        <i class="material-icons mr-4">shopping_cart</i>
+                        <i class="material-icons mr-4">category</i>
                         <div>
-                          <div class="text-muted">Lot de réapprovisionnement</div>
-                          <div>{{ piece.lot_de_reapprovisionnement }}</div>
+                          <div class="text-muted">Type</div>
+                          <div>
+                            <ForeignKeyDisplay :description="machine.type?.nom_type" />
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <div class="col-sm-6 mb-5">
+                    <div v-if="machine.date_acquisition" class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
-                        <i class="material-icons mr-4">expand_less</i>
+                        <i class="material-icons mr-4">event</i>
                         <div>
-                          <div class="text-muted">Stock Minimum</div>
-                          <div>{{ piece.stock_min }}</div>
+                          <div class="text-muted">Date d'acquisition</div>
+                          <div>
+                            {{ new Date(machine.date_acquisition).toLocaleDateString() }}
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <div v-if="piece.stock_max" class="col-sm-6 mb-5">
+                    <div v-if="machine.date_mis_en_place" class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
-                        <i class="material-icons mr-4">expand_more</i>
+                        <i class="material-icons mr-4">event</i>
                         <div>
-                          <div class="text-muted">Stock Maximum</div>
-                          <div>{{ piece.stock_max }}</div>
+                          <div class="text-muted">Date de mis en place</div>
+                          <div>
+                            {{ new Date(machine.date_mis_en_place).toLocaleDateString() }}
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <div v-if="piece.fournisseur.nom_fournisseur" class="col-sm-6 mb-5">
+                    <div v-if="machine.date_hors_service" class="col-sm-6 mb-5">
+                      <div class="d-flex align-items-start">
+                        <i class="material-icons mr-4">event</i>
+                        <div>
+                          <div class="text-muted">Date de mis en place</div>
+                          <div>
+                            {{ new Date(machine.date_hors_service).toLocaleDateString() }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      v-if="machine.fournisseur?.nom_fournisseur"
+                      class="col-sm-6 mb-5"
+                    >
                       <div class="d-flex align-items-start">
                         <i class="material-icons mr-4">business_center</i>
                         <div>
                           <div class="text-muted">Fournisseur</div>
                           <div>
                             <ForeignKeyDisplay
-                              :description="piece.fournisseur?.nom_fournisseur"
+                              :description="machine.fournisseur?.nom_fournisseur"
                             />
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div v-if="piece.date_achat" class="col-sm-6 mb-5">
-                      <div class="d-flex align-items-start">
-                        <i class="material-icons mr-4">event</i>
-                        <div>
-                          <div class="text-muted">Date et heure d'achat</div>
-                          <div>{{ formatDateTime(String(piece.date_achat)) }}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div v-if="piece.reference_fabricant" class="col-sm-6 mb-5">
+                    <div v-if="machine.reference_fabricant" class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
                         <i class="material-icons mr-4">factory</i>
                         <div>
                           <div class="text-muted">Référence fabricant</div>
-                          <div>{{ piece.reference_fabricant }}</div>
+                          <div>{{ machine.reference_fabricant }}</div>
                         </div>
                       </div>
                     </div>
@@ -290,14 +319,17 @@ onMounted(() => {
   </div>
   <div v-else><p>Erreur lors du recuperation des details!</p></div>
 
-  <TableauDetailPiecedetache :machines="machines" />
+  <TableauDetailMachine
+    :machineRelations="machineRelations"
+    :piecesDetachees="piecesDetachees"
+  />
 </template>
 
 <style scoped>
-.layers {
+/* .material-icons {
   line-height: 0;
   vertical-align: middle;
-}
+} */
 
 .badge-icon {
   font-size: 15px;

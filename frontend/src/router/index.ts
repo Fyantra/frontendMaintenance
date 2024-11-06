@@ -24,6 +24,26 @@ const router = createRouter({
     { path: '/type', component: () => import('@/views/machine/TypeView.vue'), meta: { requiresAuth: true }, },
     { path: '/nom_machine', component: () => import('@/views/machine/NomMachineView.vue'), meta: { requiresAuth: true }, },
     { path: '/marque', component: () => import('@/views/machine/MarqueView.vue'), meta: { requiresAuth: true }, },
+    { path: '/status', component: () => import('@/views/machine/StatusView.vue'), meta: { requiresAuth: true }, },
+
+    { path: '/listeMachine', component: () => import('@/views/machine/ListeMachine.vue'), meta: { requiresAuth: true }, },
+    { path: '/ajoutMachine', component: () => import('@/views/machine/FormMachine.vue'), meta: { requiresAuth: true }, },
+    {
+      path: '/detailMachine/:id',
+      name: 'detailMachine',
+      component: () => import('@/views/machine/DetailMachine.vue'),
+      meta: { requiresAuth: true },
+    },
+
+    {
+      path: '/modifierMachine/:id',
+      name: 'modifierMachine',
+      component: () => import('@/views/piece_detache/FormExemple.vue'),
+      meta: { requiresAuth: true },
+    },
+
+    /////////ROUTER INVENTAIRE MACHINE////////////////////////
+    { path: '/inventaireMachine', component: () => import('@/views/machine/InventaireMachine.vue'), meta: { requiresAuth: true }, },
 
     /////////ROUTER BACK-OFFICE ATELIER////////////////////////
     { path: '/endroit', component: () => import('@/views/atelier/EndroitView.vue'), meta: { requiresAuth: true }, },

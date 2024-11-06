@@ -5,7 +5,7 @@ import { RouterLink } from "vue-router";
 <template>
   <div class="row mt-4">
     <div class="col-md-3">
-      <RouterLink to="/modele">
+      <RouterLink to="/listeMachine">
         <div class="card shadow mb-4">
           <div class="card-body">
             <div class="row align-items-center">

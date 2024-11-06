@@ -63,7 +63,7 @@ watch(
 </script>
 
 <template>
-  <div class="col-12 mb-4" ref="errorRef">
+  <div class="col-14 mb-4" ref="errorRef">
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
       <span class="fe fe-alert-triangle fe-16 mr-2"></span>
       Une erreur est survenue: "{{ errorMessage }}"

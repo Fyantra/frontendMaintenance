@@ -46,7 +46,7 @@ import { ChartBarIcon } from "@heroicons/vue/20/solid";
           </li>
         </ul>
         <p class="text-muted nav-heading mt-4 mb-1">
-          <span>BACK-OFFICE</span>
+          <span>ADMINISTRATION</span>
         </p>
         <ul class="navbar-nav flex-fill w-100 mb-2">
           <li class="nav-item dropdown">
@@ -71,13 +71,13 @@ import { ChartBarIcon } from "@heroicons/vue/20/solid";
                 >
               </li>
               <li class="nav-item">
-                <RouterLink class="nav-link pl-3" to="/nom_machine"
-                  ><span class="ml-1 item-text">Nom machine</span></RouterLink
+                <RouterLink class="nav-link pl-3" to="/marque"
+                  ><span class="ml-1 item-text">Marque</span></RouterLink
                 >
               </li>
               <li class="nav-item">
-                <RouterLink class="nav-link pl-3" to="/marque"
-                  ><span class="ml-1 item-text">Marque</span></RouterLink
+                <RouterLink class="nav-link pl-3" to="/status"
+                  ><span class="ml-1 item-text">Statut</span></RouterLink
                 >
               </li>
             </ul>
@@ -125,62 +125,28 @@ import { ChartBarIcon } from "@heroicons/vue/20/solid";
           </li>
         </ul>
         <p class="text-muted nav-heading mt-4 mb-1">
-          <span>Apps</span>
+          <span>CHEF ET RESPONSABLE</span>
         </p>
         <ul class="navbar-nav flex-fill w-100 mb-2">
           <li class="nav-item w-100">
-            <a class="nav-link" href="calendar.html">
-              <i class="fe fe-calendar fe-16"></i>
-              <span class="ml-3 item-text">Calendar</span>
-            </a>
+            <RouterLink class="nav-link" to="/listeMachine">
+              <i class="material-icons notranslate">precision_manufacturing</i>
+              <span class="ml-3 item-text">Machines</span>
+            </RouterLink>
           </li>
-        </ul>
-        <p class="text-muted nav-heading mt-4 mb-1">
-          <span>Extra</span>
-        </p>
-        <ul class="navbar-nav flex-fill w-100 mb-2">
-          <li class="nav-item dropdown">
-            <a
-              href="#pages"
-              data-toggle="collapse"
-              aria-expanded="false"
-              class="dropdown-toggle nav-link"
-            >
-              <i class="fe fe-file fe-16"></i>
-              <span class="ml-3 item-text">Pages</span>
-            </a>
-            <ul class="collapse list-unstyled pl-4 w-100 w-100" id="pages">
-              <li class="nav-item">
-                <a class="nav-link pl-3" href="./page-orders.html">
-                  <span class="ml-1 item-text">Orders</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link pl-3" href="./page-timeline.html">
-                  <span class="ml-1 item-text">Timeline</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link pl-3" href="./page-invoice.html">
-                  <span class="ml-1 item-text">Invoice</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link pl-3" href="./page-404.html">
-                  <span class="ml-1 item-text">Page 404</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link pl-3" href="./page-500.html">
-                  <span class="ml-1 item-text">Page 500</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link pl-3" href="./page-blank.html">
-                  <span class="ml-1 item-text">Blank</span>
-                </a>
-              </li>
-            </ul>
+
+          <li class="nav-item w-100">
+            <RouterLink class="nav-link" to="/listePiecedetache">
+              <i class="material-icons notranslate">handyman</i>
+              <span class="ml-3 item-text">Pièce détachée</span>
+            </RouterLink>
+          </li>
+
+          <li class="nav-item w-100">
+            <RouterLink class="nav-link" to="/inventaireMachine">
+              <i class="material-icons notranslate">inventory</i>
+              <span class="ml-3 item-text">Inventaire machine</span>
+            </RouterLink>
           </li>
         </ul>
       </nav>

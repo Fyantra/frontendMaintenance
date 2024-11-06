@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useCrud } from "@/composables/useCrud";
+import { dotColor } from "@/composables/useFonction";
 import { PieceDetachee, ActiveFilters } from "@/types/PieceDetacheType";
 import SectionNavigation from "../templates/SectionNavigation.vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
@@ -69,13 +70,6 @@ const filteredPieces = computed(() => {
   }
   return filtered;
 });
-
-// Couleurs des dots selon la quantité
-const dotColor = (quantite: number, stock_min: number, stock_max: number | null) => {
-  if (quantite < stock_min) return "bg-danger";
-  if (stock_max !== null && quantite > stock_max) return "bg-warning";
-  return "bg-success";
-};
 
 // Compter les pièces total
 const total = computed(() => pieceDetacheCrud.items.value.length);
@@ -399,7 +393,7 @@ onMounted(async () => {
                       :to="{ name: 'detailPieceDetache', params: { id: piece.id } }"
                       >{{ piece.nom_piecedetache }}
                       <ForeignKeyDisplay
-                        :description="piece.modele.nom_modele"
+                        :description="piece.modele?.nom_modele"
                       /> </RouterLink
                   ></strong>
                 </th>
@@ -419,7 +413,7 @@ onMounted(async () => {
                   </div>
                 </td>
                 <td>
-                  <ForeignKeyDisplay :description="piece.emplacement.nom_atelier" />
+                  <ForeignKeyDisplay :description="piece.emplacement?.nom_atelier" />
                 </td>
                 <td>{{ new Date(piece.date_creation).toLocaleDateString() }}</td>
                 <td>
@@ -450,11 +444,6 @@ onMounted(async () => {
                       >
                         <i class="fe fe-edit fe-12 mr-4"></i> Modifier
                       </a>
-                      <a
-                        class="dropdown-item"
-                        @click="pieceDetacheCrud.deleteItem(piece.id)"
-                        ><i class="fe fe-delete fe-12 mr-4"></i>Supprimer</a
-                      >
                     </div>
                   </div>
                 </td>

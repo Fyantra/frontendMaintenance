@@ -13,3 +13,9 @@ export const formatDateTimeLocal = (date: Date) => {   //pour le formulaire type
 const pad = (n: number) => (n < 10 ? '0' + n : n);
 return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
+
+export const dotColor = (quantite: number, stock_min: number, stock_max: number | null) => {
+  if (quantite < stock_min) return "bg-danger";
+  if (stock_max !== null && quantite > stock_max) return "bg-warning";
+  return "bg-success";
+};

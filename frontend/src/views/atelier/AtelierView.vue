@@ -239,10 +239,10 @@ onBeforeUnmount(() => {
               <td>{{ item.id }}</td>
               <td>{{ item.nom_atelier }}</td>
               <td>
-                <ForeignKeyDisplay :description="item.endroit.nom_endroit" />
+                <ForeignKeyDisplay :description="item.endroit?.nom_endroit" />
               </td>
               <td>
-                <ForeignKeyDisplay :description="item.responsable.nom_responsable" />
+                <ForeignKeyDisplay :description="item.responsable?.nom_responsable" />
               </td>
               <td>{{ new Date(item.date_creation).toLocaleDateString() }}</td>
               <td>

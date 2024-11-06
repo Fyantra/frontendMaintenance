@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
 import { useCrud } from "@/composables/useCrud";
-import { formatDateTimeLocal } from "@/composables/useDateConfig";
+import { formatDateTimeLocal } from "@/composables/useFonction";
 import useVuelidate from "@vuelidate/core";
 import SectionNavigation from "../templates/SectionNavigation.vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";

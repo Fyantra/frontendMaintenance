@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { Machine } from "@/types/MachineType";
+import { MachineRelation } from "@/types/MachineType";
+import { PieceDetachee } from "@/types/PieceDetacheType";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
 import { dotColor } from "@/composables/useFonction";
 
 const props = defineProps<{
-  machines: Machine[];
+  machineRelations: MachineRelation[];
+  piecesDetachees: PieceDetachee[];
 }>();
 
 const activeTab = ref("machines");
@@ -33,13 +35,14 @@ const activeTab = ref("machines");
             <li class="nav-item">
               <a
                 class="nav-link"
-                id="tache-tab"
+                id="piece-tab"
                 data-toggle="tab"
-                href="#tache"
+                href="#pieces-detachees"
                 role="tab"
-                aria-controls="tache"
-                aria-selected="true"
-                >Taches
+                aria-controls="pieces-detachees"
+                aria-selected="false"
+                @click.prevent="activeTab = 'pieces'"
+                >Pièces détachées liées
               </a>
             </li>
             <li class="nav-item">
@@ -83,16 +86,16 @@ const activeTab = ref("machines");
                 <th></th>
                 <th class="w-50">Nom</th>
                 <th>Type</th>
-                <th>Atelier</th>
+                <th>Quantité</th>
                 <th>Date d`acquisition</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="machine in machines" :key="machine.id">
+              <tr v-for="relation in machineRelations" :key="relation.id">
                 <td class="text-center">
                   <img
-                    v-if="machine.image"
-                    :src="machine.image"
+                    v-if="relation.machine_liee?.image"
+                    :src="relation.machine_liee.image"
                     class="avatar-img"
                     alt="Ceci est un image"
                   />
@@ -103,20 +106,78 @@ const activeTab = ref("machines");
                     class="routerlink_machine"
                     :to="{
                       name: 'detailMachine',
-                      params: { id: machine.id },
+                      params: { id: relation.machine_liee?.id },
                     }"
                   >
-                    {{ machine.nom_machine }}<br />
+                    {{ relation.machine_liee?.nom_machine }}<br />
                   </RouterLink>
                   <span class="badge badge-light text-muted">
-                    {{ machine.numero_de_serie }}</span
+                    {{ relation.machine_liee?.numero_de_serie }}</span
                   >
                 </th>
                 <td>
-                  <ForeignKeyDisplay :description="machine.type?.nom_type" />
+                  <ForeignKeyDisplay
+                    :description="relation.machine_liee?.type?.nom_type"
+                  />
                 </td>
-                <td><ForeignKeyDisplay :description="machine.atelier?.nom_atelier" /></td>
-                <td>{{ machine.date_acquisition }}</td>
+                <td>{{ relation.quantite }}</td>
+                <td>{{ relation.machine_liee?.date_acquisition }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!--Pieces detachess Liees-->
+        <div
+          class="tab-pane fade"
+          id="pieces-detachees"
+          role="tabpanel"
+          aria-labelledby="piece-tab"
+        >
+          <table id="datatable-pieces" class="table table-borderless table-striped">
+            <thead>
+              <tr>
+                <th></th>
+                <th class="w-50">Nom</th>
+                <th>Emplacement</th>
+                <th>Prix unitaire</th>
+                <th>Quantité</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="piece in piecesDetachees" :key="piece.id">
+                <td class="text-center">
+                  <img
+                    v-if="piece.image"
+                    :src="piece.image"
+                    class="avatar-img"
+                    alt="Ceci est un image"
+                  />
+                  <span
+                    :class="[
+                      'dot dot-md',
+                      'mr-1',
+                      dotColor(piece.quantite, piece.stock_min, piece.stock_max),
+                    ]"
+                  ></span>
+                </td>
+                <th scope="row">
+                  <RouterLink
+                    class="routerlink_machine"
+                    :to="{
+                      name: 'detailPieceDetache',
+                      params: { id: piece.id },
+                    }"
+                  >
+                    {{ piece.nom_piecedetache }}<br />
+                  </RouterLink>
+                  <span class="badge badge-light text-muted">ID: {{ piece.id }}</span>
+                </th>
+                <td>
+                  <ForeignKeyDisplay :description="piece.emplacement?.nom_atelier" />
+                </td>
+                <td>{{ piece.prix_unitaire }}</td>
+                <td>{{ piece.quantite }}</td>
               </tr>
             </tbody>
           </table>
