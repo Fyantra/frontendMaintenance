@@ -359,7 +359,12 @@ watch(selectedAtelier, (newAtelier) => {
               <ForeignKeyDisplay :description="machine.type?.nom_type" />
             </td>
             <td>
-              <ForeignKeyDisplay :description="machine.status?.nom_status" />
+              <span
+                class="badge badge-pill text-white"
+                :style="{ backgroundColor: machine.status?.couleur }"
+              >
+                <ForeignKeyDisplay :description="machine.status?.nom_status"
+              /></span>
             </td>
             <td>
               {{

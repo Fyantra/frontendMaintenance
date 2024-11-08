@@ -124,7 +124,7 @@ watch(
               <span class="float-right"
                 ><i class="material-icons badge-icon notranslate mr-2"
                   >precision_manufacturing</i
-                ><span class="badge badge-pill badge-success text-white">
+                ><span class="badge badge-pill text-white" :style="{ backgroundColor: machine.status?.couleur }">
                   <ForeignKeyDisplay :description="machine.status?.nom_status" /> </span
               ></span>
             </div>

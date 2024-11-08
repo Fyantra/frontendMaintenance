@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useCrud } from "@/composables/useCrud";
 import SectionNavigation from "../templates/SectionNavigation.vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
-import { Machine } from "@/types/MachineType";
+import { Machine, Status } from "@/types/MachineType";
 
 // Récupérer les données des nachines
 const machinesCrud = useCrud<Machine>("machine/machines/");
+const status = useCrud<Status>("machine/status/");
 
 const errorMessage = machinesCrud.errorMessage;
 const error401Message = machinesCrud.error401Message;
@@ -20,12 +21,50 @@ const clearError = () => {
 // Compter les pièces total
 const total = computed(() => machinesCrud.items.value.length);
 
+const showStatusFilters = ref(false);
+const selectedStatus = ref<number | null>(null);
+
+const filteredMachines = computed(() => {
+  if (selectedStatus.value) {
+    return machinesCrud.items.value.filter(
+      (machine) => machine.status_id === selectedStatus.value
+    );
+  }
+  return machinesCrud.items.value;
+});
+
+const statusCounts = computed(() => {
+  const counts = {};
+  machinesCrud.items.value.forEach((machine) => {
+    const statusId = machine.status_id;
+    if (!counts[statusId]) {
+      counts[statusId] = 0;
+    }
+    counts[statusId]++;
+  });
+  return counts;
+});
+
+const toggleStatusFilters = () => {
+  showStatusFilters.value = !showStatusFilters.value;
+};
+
+const selectStatus = (statusId: number) => {
+  if (selectedStatus.value === statusId) {
+    selectedStatus.value = null;
+  } else {
+    selectedStatus.value = statusId; // Sélectionner le nouveau statut
+  }
+  refreshData();
+};
+
 // Rafraîchir les données
 const refreshData = async () => {
   await machinesCrud.initializeDataTable();
 };
 
 onMounted(async () => {
+  await status.fetchItems();
   refreshData();
 });
 </script>
@@ -61,66 +100,35 @@ onMounted(async () => {
   <div class="row justify-content-center">
     <div class="col-12">
       <div class="row items-align-center my-4 d-none d-lg-flex">
-        <!--Modal de filtre-->
-        <div
-          class="modal fade"
-          id="filtreModal"
-          tabindex="-1"
-          role="dialog"
-          aria-labelledby="filtreModalLabel"
-          aria-hidden="true"
-        >
-          <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="filtreModalLabel">
-                  Ajouter des filtres de pièce détachée
-                </h5>
-                <button
-                  type="button"
-                  class="close"
-                  data-dismiss="modal"
-                  aria-label="Close"
-                >
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <form>
-                  <div class="form-group">
-                    <label for="quantite_min" class="col-form-label"
-                      >Quantité minimum</label
-                    >
-                    <input type="number" id="quantite_min" class="form-control" />
-                  </div>
-                  <div class="form-group">
-                    <label for="quantite_max" class="col-form-label"
-                      >Quantité maximum</label
-                    >
-                    <input type="number" id="quantite_max" class="form-control" />
-                  </div>
-                  <div class="form-group">
-                    <label for="prix_min" class="col-form-label"
-                      >Prix unitaire minimum</label
-                    >
-                    <input type="number" id="prix_min" class="form-control" />
-                  </div>
-                  <div class="form-group">
-                    <label for="prix_max" class="col-form-label"
-                      >Prix unitaire maximum</label
-                    >
-                    <input type="number" id="prix_max" class="form-control" />
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                      Annuler
-                    </button>
-                    <button type="submit" class="btn btn-primary">Appliquer</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
+        <div class="col-md">
+          <button
+            @click="toggleStatusFilters"
+            type="button"
+            class="btn mb-2 btn-outline-warning"
+          >
+            <span class="fe fe-arrow-down fe-16 mr-2"></span>Filtre sur les status
+          </button>
+          <ul v-if="showStatusFilters" class="nav nav-pills justify-content-start mt-2">
+            <li
+              v-for="status in status.items.value"
+              :key="status.id"
+              class="nav-item ml-2"
+            >
+              <a
+                class="nav-link status-link"
+                :style="{
+                  backgroundColor:
+                    selectedStatus === status.id ? status.couleur : 'transparent',
+                }"
+                @click.prevent="selectStatus(status.id)"
+              >
+                {{ status.nom_status
+                }}<span class="badge badge-pill bg-primary text-white ml-2">
+                  {{ statusCounts[status.id] || 0 }}
+                </span>
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
 
@@ -180,11 +188,7 @@ onMounted(async () => {
               </tr>
             </thead>
             <tbody class="tbody-piece">
-              <tr
-                v-for="machine in machinesCrud.items.value"
-                :key="machine.id"
-                class="tr-piece"
-              >
+              <tr v-for="machine in filteredMachines" :key="machine.id" class="tr-piece">
                 <td>
                   <span>{{ machine.id }}</span>
                 </td>
@@ -218,7 +222,12 @@ onMounted(async () => {
                   <ForeignKeyDisplay :description="machine.type?.nom_type" />
                 </td>
                 <td>
-                  <ForeignKeyDisplay :description="machine.status?.nom_status" />
+                  <span
+                    class="badge badge-pill text-white"
+                    :style="{ backgroundColor: machine.status?.couleur }"
+                  >
+                    <ForeignKeyDisplay :description="machine.status?.nom_status"
+                  /></span>
                 </td>
                 <td>
                   {{
@@ -255,11 +264,6 @@ onMounted(async () => {
                       >
                         <i class="fe fe-edit fe-12 mr-4"></i> Modifier
                       </a>
-                      <a
-                        class="dropdown-item"
-                        @click="machinesCrud.deleteItem(machine.id)"
-                        ><i class="fe fe-delete fe-12 mr-4"></i>Supprimer</a
-                      >
                     </div>
                   </div>
                 </td>
@@ -313,7 +317,11 @@ td {
   cursor: pointer;
 }
 
-.all {
-  border-top: dashed;
+.status-link {
+  transition: background-color 0.3s ease;
+}
+
+.status-link:hover {
+  opacity: 0.8;
 }
 </style>

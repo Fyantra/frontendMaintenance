@@ -29,6 +29,7 @@ export interface Type {
 export interface Status {
   id: number;
   nom_status: string;
+  couleur?: string;
   date_creation?: Date | string;
 }
 

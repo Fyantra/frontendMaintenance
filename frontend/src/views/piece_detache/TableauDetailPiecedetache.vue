@@ -2,7 +2,6 @@
 import { ref } from "vue";
 import { Machine } from "@/types/MachineType";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
-import { dotColor } from "@/composables/useFonction";
 
 const props = defineProps<{
   machines: Machine[];
@@ -96,7 +95,10 @@ const activeTab = ref("machines");
                     class="avatar-img"
                     alt="Ceci est un image"
                   />
-                  <span class="dot dot-md bg-success mr-1"></span>
+                  <span
+                    class="dot dot-md mr-1"
+                    :style="{ backgroundColor: machine.status?.couleur }"
+                  ></span>
                 </td>
                 <th scope="row">
                   <RouterLink

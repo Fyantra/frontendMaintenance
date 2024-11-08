@@ -38,12 +38,13 @@ const router = createRouter({
     {
       path: '/modifierMachine/:id',
       name: 'modifierMachine',
-      component: () => import('@/views/piece_detache/FormExemple.vue'),
+      component: () => import('@/views/machine/FormMachine.vue'),
       meta: { requiresAuth: true },
     },
 
     /////////ROUTER INVENTAIRE MACHINE////////////////////////
     { path: '/inventaireMachine', component: () => import('@/views/machine/InventaireMachine.vue'), meta: { requiresAuth: true }, },
+    // { path: '/inventaireMachine', component: () => import('@/views/piece_detache/FormExemple.vue'), meta: { requiresAuth: true }, },
 
     /////////ROUTER BACK-OFFICE ATELIER////////////////////////
     { path: '/endroit', component: () => import('@/views/atelier/EndroitView.vue'), meta: { requiresAuth: true }, },

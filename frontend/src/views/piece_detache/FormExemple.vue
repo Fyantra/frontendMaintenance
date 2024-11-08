@@ -1,207 +1,129 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
-import { useCrud } from "@/composables/useCrud";
-import useVuelidate from "@vuelidate/core";
-import SectionNavigation from "../templates/SectionNavigation.vue";
+import { ref, onMounted, watch } from "vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
-import { required } from "@vuelidate/validators";
-import { PieceDetachee } from "@/types/PieceDetacheType";
-import { Machine, MachineRelation, Marque, Status, Type } from "@/types/MachineType";
+import { useCrud } from "@/composables/useCrud";
+import { Machine, Marque, Type } from "@/types/MachineType";
+import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
 import { Atelier, Chaine } from "@/types/AtelierType";
-import { Fournisseur } from "@/types/FournisseurType";
-import { useRoute, useRouter } from "vue-router";
 import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.css";
 
-const selectedPieces = ref<PieceDetachee[]>([]);
-const machinesLiees = ref<MachineRelation[]>([]);
+const machinesCrud = useCrud<Machine>("machine/machines/");
 
-const piecesOptions = ref<PieceDetachee[]>([]); 
-const machinesOptions = ref<Machine[]>([]); 
-
-const router = useRouter();
-const route = useRoute();
-const machineId = route.params.id; //en cas de modification
-
-// Fonction pour ajouter une nouvelle formulaire machine liée
-const addMachineLiaison = () => {
-  machinesLiees.value.push({ machine_liee: null, quantite: null });
-};
-
-const form = reactive<Machine>({
-  id: 0,
-  nom_machine: "",
-  numero_de_serie: "",
-  type_id: null,
-  chaine_id: null,
-  status_id: null,
-  date_creation: null,
-});
-
-const validation = {
-  nom_machine: { required },
-  numero_de_serie:{ required },
-  type_id : { required },
-  chaine_id:{ required },
-  status_id: { required },
-};
-
-const v$ = useVuelidate(validation, form);
-
-const types = useCrud<Type>("machine/types/");
-const marques = useCrud<Marque>("machine/marques/");
-const ateliers = useCrud<Atelier>("atelier/ateliers/");
-const chaines = useCrud<Chaine>("atelier/chaines/");
-const status = useCrud<Status>("machine/status/");
-const fournisseurs = useCrud<Fournisseur>("fournisseur/fournisseurs/");
-const piecedetachees = useCrud<PieceDetachee>("piece/piecedetachees/", v$);
-const machines = useCrud<Machine>("machine/machines/", v$);
-const machineRelation = useCrud<MachineRelation>("machine/machine_relation/", v$);
-
-const errorMessage = machines.errorMessage;
-const error401Message = machines.error401Message;
+const errorMessage = machinesCrud.errorMessage;
+const error401Message = machinesCrud.error401Message;
 
 const clearError = () => {
   //reinitialiser le message d`erreur
   errorMessage.value = null;
 };
 
-//Pour l`ulpoad d`image
-const image = ref<string | null>(null);
-const fileInput = ref<HTMLInputElement | null>(null);
+const selectedAtelier = ref<Atelier | null>(null);
+const selectedMachine = ref<Machine | null>(null);
+const selectedType = ref<Type | null>(null);
+const selectedMarque = ref<Marque | null>(null);
+const activeChaines = ref<Chaine[]>([]);
 
-//Ajouter un nouveau piece detache
-const submitForm = async () => {
-  v$.value.$touch();
-  if (!v$.value.$invalid) {
-    const formData = new FormData();
-    formData.append("nom_machine", form.nom_machine);
-    formData.append("numero_de_serie", form.numero_de_serie);
-    formData.append("numero_de_moteur", String(form.numero_de_moteur || ""));
-    formData.append("description", form.description || "");
-    formData.append("type_id", String(form.type_id || ""));
-    formData.append("marque_id", String(form.marque_id || ""));
-    formData.append("atelier_id", String(form.atelier_id || ""));
-    formData.append("chaine_id", String(form.chaine_id || ""));
-    formData.append("date_mis_en_place", String(form.date_mis_en_place || "")) ;
-    formData.append("date_acquisition", String(form.date_acquisition || ""));
-    formData.append("status_id", String(form.status_id || ""));
-    formData.append("date_hors_service", String(form.date_hors_service || ""));
-    formData.append("reference_fabricant", String(form.reference_fabricant || ""));
-    formData.append("fournisseur_id", String(form.fournisseur_id || ""));
-    selectedPieces.value.forEach(piece => {
-      formData.append('pieces_detachees_id', String(piece.id) || "");
-    });
+const atelierOptions = ref<Atelier[]>([]);
+const machinesOptions = ref<Machine[]>([]);
+const typeOptions = ref<Type[]>([]);
+const marqueOptions = ref<Marque[]>([]);
+const chainesOptions = ref<Chaine[]>([]);
 
-    if (fileInput.value?.files?.[0]) {
-      // Si il y a une nouvelle image
-      formData.append("image", fileInput.value.files[0] || "");
-    }
-    if (image.value === null) {
-      formData.append("image", "");
-    }
+const ateliersCrud = useCrud<Atelier>("atelier/ateliers/");
+const typesCrud = useCrud<Type>("machine/types/");
+const marquesCrud = useCrud<Marque>("machine/marques/");
 
-    const validMachinesLiees = machinesLiees.value.filter(machine => 
-      machine.machine_liee?.id
+const chainesCrud = useCrud<Chaine>("atelier/chaines/");
+
+const totalMachines = ref<number>(0);
+
+const applyFilters = () => {
+  let filteredMachines = machinesCrud.items.value;
+
+  if (selectedAtelier.value) {
+    filteredMachines = filteredMachines.filter(
+      (machine) => machine.atelier_id === selectedAtelier.value.id
     );
+  }
 
-    if (machineId) {
-      // Si c'est une modification
-      await machines.updateItem(Number(machineId), formData);
-      for (const machine of validMachinesLiees) {
-        await machineRelation.addItem({
-          machine_principale: Number(machineId),
-          machine_liee_id: machine?.machine_liee?.id,
-          quantite: machine?.quantite,
-        });
-      }
-      if (!errorMessage.value) {
-        router.push("/detailMachine/" + machineId);
-      }
-    } else {
-      // Si c'est un ajout
-      const createdMachine = await machines.addItem(formData);
-      const newMachineId = createdMachine?.id;
-      for (const machine of validMachinesLiees) {
-        await machineRelation.addItem({
-          machine_principale: newMachineId,
-          machine_liee_id: machine?.machine_liee?.id,
-          quantite: machine?.quantite,
-        });
-      }
-      if (!errorMessage.value) {
-        router.push("/listeMachine");
-      }
-    }
+  if (selectedMachine.value) {
+    filteredMachines = filteredMachines.filter(
+      (machine) => machine.id === selectedMachine.value.id
+    );
+  }
+
+  if (selectedType.value) {
+    filteredMachines = filteredMachines.filter(
+      (machine) => machine.type_id === selectedType.value.id
+    );
+  }
+
+  if (selectedMarque.value) {
+    filteredMachines = filteredMachines.filter(
+      (machine) => machine.marque_id === selectedMarque.value.id
+    );
+  }
+
+  if (activeChaines.value.length > 0) {
+    filteredMachines = filteredMachines.filter((machine) =>
+      activeChaines.value.some((chaine) => chaine.id === machine.chaine_id)
+    );
+  }
+
+  // Mettre à jour la liste des machines affichées et le total
+  machinesOptions.value = filteredMachines;
+  totalMachines.value = filteredMachines.length;
+  refreshData();
+};
+
+// Gérer le clic sur les boutons des chaînes
+const toggleChaine = (chaine: Chaine) => {
+  const index = activeChaines.value.indexOf(chaine);
+  if (index === -1) {
+    activeChaines.value.push(chaine);
   } else {
-    console.error("Formulaire invalide");
+    activeChaines.value.splice(index, 1);
   }
+  applyFilters();
 };
 
-// Fonction pour déclencher le clic sur le input file
-const triggerFileInput = () => {
-  fileInput.value?.click();
+const refreshData = async () => {
+  await machinesCrud.initializeDataTable();
 };
-
-const handleFileUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement; //acceder a la liste des fichiers
-  const file = target.files?.[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      //lue en base64
-      image.value = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-  }
-};
-
-const removeImage = () => {
-  image.value = null;
-  if (fileInput.value) {
-    fileInput.value.files = null;
-  }
-};
-
-const machine = ref<Machine | null>(null);
 
 onMounted(async () => {
-  // Si en mode modification
-  if (machineId) {
-    await machines.fetchItemsById(Number(machineId));
-    machine.value = machines.items.value[0];
-    Object.assign(form, machine.value); // preremplir les formulaires
-    image.value = machine.value.image;
-
-    selectedPieces.value = machine?.value.pieces_detachees ?? [];
-
-  }
   await Promise.all([
-    await piecedetachees.fetchItems(),
-    piecesOptions.value = piecedetachees.items.value,
-    await machines.fetchItems(),
-    machinesOptions.value = machines.items.value,
-    types.fetchItems(),marques.fetchItems(),ateliers.fetchItems(),chaines.fetchItems(),status.fetchItems(),fournisseurs.fetchItems(),
+    await ateliersCrud.fetchItems(),
+    (atelierOptions.value = ateliersCrud.items.value),
+    await machinesCrud.fetchItems(),
+    (machinesOptions.value = machinesCrud.items.value),
+    await typesCrud.fetchItems(),
+    (typeOptions.value = typesCrud.items.value),
+    await marquesCrud.fetchItems(),
+    (marqueOptions.value = marquesCrud.items.value),
+    await chainesCrud.fetchItems(),
+    (chainesOptions.value = chainesCrud.items.value),
   ]);
+
+  totalMachines.value = machinesOptions.value.length;
+
+  refreshData();
+});
+
+watch(selectedAtelier, (newAtelier) => {
+  if (newAtelier) {
+    // Filtrer les chaînes correspondant à l'atelier sélectionné
+    chainesOptions.value = chainesCrud.items.value.filter(
+      (chaine) => chaine.atelier_id === newAtelier.id
+    );
+  } else {
+    chainesOptions.value = [];
+  }
 });
 </script>
 
 <template>
-  <SectionNavigation />
-
-  <div class="row">
-    <div class="col-md-8">
-      <h2 class="page-title">
-        {{ machineId ? "Modification de machine" : "Créer un nouveau machine" }}
-      </h2>
-    </div>
-  </div>
-
-  <p>
-    Utilisé dans l'industrie du textile pour la fabrication, le traitement ou l'assemblage
-    de tissus et de vêtements.
-  </p>
-
   <ErrorMessage
     v-if="errorMessage"
     :errorMessage="errorMessage"
@@ -210,317 +132,363 @@ onMounted(async () => {
   />
 
   <div class="row">
-    <div class="col-md-12">
-      <div class="card shadow mb-4">
-        <div class="card-header">
-          <strong class="card-title"></strong
-          >{{ machineId ? "Modifier le machine" : "Ajouter un machine " }}
-          (* champ obligatoire)
+    <div class="col">
+      <h2 class="page-title text-center">Inventaire des machines actuellement</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12 my-3">
+      <div class="card shadow bg-primary text-center mb-4">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-center align-items-center mb-3">
+            <span
+              class="circle circle-md bg-primary-light d-flex justify-content-center align-items-center"
+            >
+              <i class="material-icons fe-24 text-white notranslate">inventory</i>
+            </span>
+          </div>
+          <h3 class="h4 mt-4 mb-1 text-white">Inventaire de machine</h3>
+          <p class="text-white mb-4">Sélectionnez les filtres que vous voulez</p>
         </div>
-        <div class="card-body">
-          <form @submit.prevent="submitForm">
-            <div class="d-flex justify-content-center">
-              <div class="card shadow mb-4">
-                <div class="card-header"><strong>Image du machine</strong></div>
-                <div class="card-body">
-                  <span
-                    v-if="image"
-                    class="circle circle-sm bg-danger justify-content-center"
-                    @click="removeImage"
-                    style="float: right"
-                  >
-                    <i class="material-icons notranslate text-white">delete</i>
-                  </span>
-                  <div
-                    id="drag-drop-area"
-                    class="upload-frame"
-                    @dragover.prevent
-                    @click="triggerFileInput"
-                  >
-                    <div v-if="!image" class="default-message text-center">
-                      <i class="material-icons notranslate">handyman</i>
-                      <p>Glisser ou deposer votre image ici</p>
-                    </div>
-                    <div v-else class="uploaded-image">
-                      <img :src="image" alt="Pièce détachée" class="img-fluid" />
-                    </div>
+
+        <div class="card-footer bg-light py-4">
+          <div class="form-row">
+            <div class="form-group col-md-3">
+              <label for="atelier" class="text-white font-weight-bold">Atelier:</label>
+              <multiselect
+                v-model="selectedAtelier"
+                :options="atelierOptions"
+                :close-on-select="true"
+                :clear-on-select="false"
+                :preserve-search="true"
+                placeholder="Sélectionnez un atelier"
+                label="nom_atelier"
+                track-by="id"
+                id="atelier"
+              >
+                <template #option="{ option }">
+                  <div class="option-item">
+                    <span>{{ option.nom_atelier }}</span>
                   </div>
-                  <input
-                    type="file"
-                    ref="fileInput"
-                    accept="image/*"
-                    @change="handleFileUpload"
-                    class="d-none"
-                  />
-                </div>
-              </div>
+                </template>
+              </multiselect>
             </div>
 
-            <div class="form-row">
-              <div class="form-group col-md-8">
-                <label for="nom_machine">Nom du machine*</label>
-                <div class="input-group">
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="nom_machine"
-                    placeholder="Nom du machine"
-                    v-model="form.nom_machine"
-                    :class="{
-                      'is-invalid':
-                        v$.nom_machine.$invalid && v$.nom_machine.$dirty,
-                    }"
-                  />
-                </div>
-                <span v-if="v$.nom_machine.$error" class="error"
-                  >Nom de machine requis.</span
-                >
-              </div>
-              <div class="form-group col-md-4">
-                <label for="marque">Marque:</label>
-                <select id="marque" class="form-control custom-select" v-model="form.marque_id">
-                  <option selected disabled>Selectionner une marque</option>
-                  <option
-                    v-for="marque in marques.items.value"
-                    :key="marque.id"
-                    :value="marque.id"
-                  >
-                    {{ marque.nom_marque }}
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group col-md-6">
-                <label for="num_serie">Numero de serie*</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="num_serie"
-                  placeholder="8 DOMA 04475"
-                  v-model="form.numero_de_serie"
-                  :class="{
-                    'is-invalid':
-                      v$.numero_de_serie.$invalid && v$.numero_de_serie.$dirty,
-                  }"
-                />
-                <span v-if="v$.numero_de_serie.$error" class="error"
-                  >Numero de serie requis.</span
-                >
-              </div>
-              <div class="form-group col-md-6">
-                <label for="num_moteur">Numero de moteur</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="num_moteur"
-                  placeholder=""
-                  v-model="form.numero_de_moteur"
-                />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="type">Type*:</label>
-              <select id="type" class="form-control custom-select" v-model="form.type_id" :class="{ 'is-invalid': v$.type_id.$invalid && v$.type_id.$dirty }">
-                <option selected disabled>Selectionner un type</option>
-                <option
-                  v-for="type in types.items.value"
-                  :key="type.id"
-                  :value="type.id"
-                >
-                  {{ type.nom_type }}
-                </option>
-              </select>
-              <span v-if="v$.type_id.$error" class="error">Type requis.</span>
-            </div>
-
-            <div class="form-group">
-              <label for="description">Description</label>
-              <textarea
-                class="form-control"
-                id="description"
-                v-model="form.description"
-                rows="4"
-              ></textarea>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group col-md-6">
-                <label for="atelier">Atelier:</label>
-                <select 
-                  id="atelier"
-                  class="form-control custom-select"
-                  v-model="form.atelier_id"
-                >
-                  <option selected disabled>Selectionner un atelier</option>
-                  <option
-                    v-for="atelier in ateliers.items.value"
-                    :key="atelier.id"
-                    :value="atelier.id"
-                  >
-                    {{ atelier.nom_atelier }}
-                  </option>
-                </select>
-              </div>
-              <div class="form-group col-md-6">
-                <label for="chaine">Chaine*:</label>
-                <select id="chaine" class="form-control custom-select" v-model="form.chaine_id" :class="{ 'is-invalid': v$.chaine_id.$invalid && v$.chaine_id.$dirty }">
-                  <option selected disabled>Selectionner le chaine correspondant</option>
-                  <option
-                    v-for="chaine in chaines.items.value"
-                    :key="chaine.id"
-                    :value="chaine.id"
-                  >
-                    {{ chaine.nom_chaine }}
-                  </option>
-                </select>
-                <span v-if="v$.chaine_id.$error" class="error">Chaine requis.</span>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group col-md-6">
-                <label for="date_acquisition">Date d'acquisition</label>
-                <input
-                  class="form-control"
-                  id="date_acquisition"
-                  type="date"
-                  v-model="form.date_acquisition"
-                />
-              </div>
-              <div class="form-group col-md-6">
-                <label for="date_mis_en_place">Date de mis en place</label>
-                <input
-                  class="form-control"
-                  id="date_mis_en_place"
-                  type="date"
-                  v-model="form.date_mis_en_place"
-                />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group col-md-6">
-                <label for="status">Statut*</label>
-                <select id="status" class="form-control custom-select" v-model="form.status_id" :class="{ 'is-invalid': v$.status_id.$invalid && v$.status_id.$dirty }">
-                  <option selected disabled>Selectionner le statut</option>
-                  <option
-                    v-for="status in status.items.value"
-                    :key="status.id"
-                    :value="status.id"
-                  >
-                    {{ status.nom_status }}
-                  </option>
-                </select>
-                <span v-if="v$.status_id.$error" class="error"
-                  >Statut requis.</span
-                >
-              </div>
-              <div class="form-group col-md-6">
-                <label for="date_hors_service">Date de hors service</label>
-                <input
-                  class="form-control"
-                  id="date_hors_service"
-                  type="date"
-                  v-model="form.date_hors_service"
-                />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group col-md-6">
-                <label for="reference">Référence fabricant</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="reference"
-                  v-model="form.reference_fabricant"
-                />
-              </div>
-              <div class="form-group col-md-6">
-                <label for="fournisseur">Fournisseur:</label>
-                <select
-                  id="fournisseur5"
-                  class="form-control"
-                  v-model="form.fournisseur_id"
-                >
-                  <option selected disabled>Selectionner un fournisseur</option>
-                  <option
-                    v-for="fournisseur in fournisseurs.items.value"
-                    :key="fournisseur.id"
-                    :value="fournisseur.id"
-                  >
-                    {{ fournisseur.nom_fournisseur }}
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="piecedetache">Pièce détachée liée(s):</label>
-              <multiselect v-model="selectedPieces" :options="piecesOptions" :multiple="true" :close-on-select="false" :clear-on-select="false"
-                :preserve-search="true" placeholder="Sélectionnez les pièces détaché" label="nom_piecedetache" track-by="id" id="piecedetache"
+            <div class="form-group col-md-3">
+              <label for="machine" class="text-white font-weight-bold">Machine:</label>
+              <multiselect
+                v-model="selectedMachine"
+                :options="machinesOptions"
+                :close-on-select="true"
+                :clear-on-select="false"
+                :preserve-search="true"
+                placeholder="Sélectionnez un machine"
+                label="nom_machine"
+                track-by="id"
+                id="machine"
               >
                 <template #option="{ option }">
                   <div class="option-item">
                     <img :src="option.image" alt="image" class="option-icon" />
-                    <span>{{ option.nom_piecedetache }}</span>
+                    <span>{{ option.nom_machine }}</span>
                   </div>
                 </template>
               </multiselect>
-            </div> 
+            </div>
 
-            <p style="font-style: italic">
-              Ajouter un machine liée
-              <span
-                class="circle circle-sm bg-danger justify-content-center text-white ml-2" @click="addMachineLiaison"
+            <div class="form-group col-md-3">
+              <label for="type" class="text-white font-weight-bold">Type:</label>
+              <multiselect
+                v-model="selectedType"
+                :options="typeOptions"
+                :close-on-select="true"
+                :clear-on-select="false"
+                :preserve-search="true"
+                placeholder="Sélectionnez un type"
+                label="nom_type"
+                track-by="id"
+                id="type"
               >
-                <i class="fe fe-plus-circle fe-16"></i>
-              </span>
-            </p> 
-
-            <div class="form-row mb-2" v-for="(machine, index) in machinesLiees" :key="index">
-              <div class="form-group col-md-8">
-                <label for="machine_liee">Machine liée</label>
-                <multiselect v-model="machine.machine_liee" :options="machinesOptions" :close-on-select="false" :clear-on-select="false" :preserve-search="true"
-                  placeholder="Sélectionnez les options" label="nom_machine" track-by="id" id="machine_liee"
+                <template #option="{ option }">
+                  <div class="option-item">
+                    <span>{{ option.nom_type }}</span>
+                  </div>
+                </template>
+              </multiselect>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="marque" class="text-white font-weight-bold">Marque:</label>
+              <multiselect
+                v-model="selectedMarque"
+                :options="marqueOptions"
+                :close-on-select="true"
+                :clear-on-select="false"
+                :preserve-search="true"
+                placeholder="Sélectionnez une marque"
+                label="nom_marque"
+                track-by="id"
+                id="marque"
+              >
+                <template #option="{ option }">
+                  <div class="option-item">
+                    <span>{{ option.nom_marque }}</span>
+                  </div>
+                </template>
+              </multiselect>
+            </div>
+            <transition-group name="fade">
+              <div v-if="chainesOptions.length > 0" class="button-group mt-3">
+                <button
+                  v-for="chaine in chainesOptions"
+                  :key="chaine.id"
+                  class="btn btn-outline-primary mx-1 btn-chaine"
+                  :class="{ active: activeChaines.includes(chaine) }"
+                  @click="toggleChaine(chaine)"
                 >
-                  <template #option="{ option }">
-                    <div class="option-item">
-                      <img :src="option.image" alt="image" class="option-icon" />
-                      <span>{{ option.nom_machine }}</span>
-                    </div>
-                  </template>
-                </multiselect>
+                  {{ chaine.nom_chaine }}
+                </button>
               </div>
-              <div class="form-group col-md-4">
-                <label for="quantite">Quantite</label>
-                  <input style="height: 43px" type="number" v-model="machine.quantite" class="form-control" id="quantite" placeholder="1"
-                  
-                  />
-               </div>
-            </div> 
-
-            <button v-if="machineId" type="submit" class="btn mb-2 mt-4 btn-primary">
-              <span class="fe fe-edit-2 fe-16 mr-2"></span>Modifier le machine
+            </transition-group>
+          </div>
+          <div class="text-center mt-4">
+            <button @click="applyFilters" class="btn btn-primary btn-validate">
+              Valider les filtres
             </button>
-            <button v-else type="submit" class="btn mb-2 mt-4 btn-primary">
-              <span class="fe fe-plus fe-16 mr-2"></span>Créer un machine
-            </button>
-          </form>
+          </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-6 col-xl-3 mb-4">
+      <div class="card shadow">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-3 text-center">
+              <span class="circle circle-sm bg-primary justify-content-center">
+                <i class="material-icons fe-16 text-white mb-0 notranslate">analytics</i>
+              </span>
+            </div>
+            <div class="col">
+              <p class="small text-muted mb-0">TOTAL</p>
+              <span v-if="totalMachines > 1" class="h3 mb-0"
+                >{{ totalMachines }} Machines</span
+              >
+              <span v-else class="h3 mb-0">{{ totalMachines }} Machine</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8 ml-4 mb-4">
+      <div class="card shadow">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-2">
+              <span class="circle circle-md bg-primary justify-content-center">
+                <i class="material-icons fe-18 text-white mb-0 notranslate">analytics</i>
+              </span>
+            </div>
+            <div class="col-5">
+              <strong class="mb-2">Deplacer un ou plusieurs machines ici</strong>
+              <p class="small mt-1 mb-1">Atelier:</p>
+              <p class="small mb-1">Chaine:</p>
+            </div>
+            <button
+              data-toggle="modal"
+              data-target="#deplacementModal"
+              type="button"
+              class="btn mb-2 btn-outline-warning"
+            >
+              <span class="fe fe-arrow-right fe-16 mr-2"></span>Deplacer
+            </button>
+            <button type="button" class="btn mb-2 btn-outline-info ml-2">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal fade" id="deplacementModal" tabindex="-1" role="dialog" aria-labelledby="deplacementModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deplacementModalLabel">
+            Selectionner l`atelier de deplacement
+          </h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="atelier" class="text-white font-weight-bold">Atelier:</label>
+            <multiselect v-model="selectedAtelier" :options="atelierOptions" :close-on-select="true" :clear-on-select="false" 
+              :preserve-search="true" placeholder="Sélectionnez un atelier" label="nom_atelier" track-by="id" id="atelier">
+              <template #option="{ option }">
+                <div class="option-item">
+                  <span>{{ option.nom_atelier }}</span>
+                </div>
+              </template>
+            </multiselect>
+            <transition-group name="fade">
+              <div v-if="chainesOptions.length > 0" class="button-group mt-3">
+                <button
+                  v-for="chaine in chainesOptions"
+                  :key="chaine.id"
+                  class="btn btn-outline-primary mx-1 btn-chaine"
+                  :class="{ active: activeChaines.includes(chaine) }"
+                  @click="toggleChaine(chaine)"
+                >
+                  {{ chaine.nom_chaine }}
+                </button>
+              </div>
+            </transition-group>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+              Annuler
+            </button>
+            <button type="submit" class="btn btn-primary">Deplacer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <table id="datatable-1" class="table table-borderless">
+        <thead class="thead-piece">
+          <tr>
+            <th>
+              <strong><i class="material-icons fe-12 mr-1 notranslate">tag</i> ID</strong>
+            </th>
+            <th>
+              <strong><i class="fe fe-image fe-12 mr-2"></i>Image</strong>
+            </th>
+            <th>
+              <strong
+                ><i class="material-icons fe-12 mr-2 notranslate"
+                  >precision_manufacturing</i
+                >Nom</strong
+              >
+            </th>
+            <th>
+              <strong
+                ><i class="material-icons fe-12 mr-2 notranslate">confirmation_number</i
+                >Numero de serie
+              </strong>
+            </th>
+            <th>
+              <strong
+                ><i class="material-icons fe-12 mr-2 notranslate">category</i>Type</strong
+              >
+            </th>
+            <th>
+              <strong
+                ><i class="material-icons fe-12 mr-2 notranslate">info</i>Statut</strong
+              >
+            </th>
+            <th>
+              <strong
+                ><i class="material-icons fe-12 mr-2 notranslate">calendar_today</i>Date
+                d'acquisition</strong
+              >
+            </th>
+
+            <th>
+              <strong
+                ><i class="material-icons fe-12 mr-2 notranslate">gesture</i
+                >Action</strong
+              >
+            </th>
+          </tr>
+        </thead>
+        <tbody class="tbody-piece">
+          <tr v-for="machine in machinesOptions" :key="machine.id" class="tr-piece">
+            <td>
+              <div class="custom-control custom-checkbox">
+                <input
+                  type="checkbox"
+                  class="custom-control-input"
+                  :id="String(machine.id)"
+                />
+                <label class="custom-control-label" :for="String(machine.id)"></label>
+              </div>
+              <span>{{ machine.id }}</span>
+            </td>
+            <td>
+              <div v-if="machine.image" class="avatar avatar-md">
+                <img :src="machine.image" alt="Ceci est un image" class="avatar-img" />
+              </div>
+              <div v-else class="material-icons notranslate" style="font-size: 6rem">
+                precision_manufacturing
+              </div>
+            </td>
+            <!--Nom et modele-->
+            <th scope="col">
+              <strong
+                ><RouterLink
+                  class="routerlink_piece"
+                  :to="{ name: 'detailMachine', params: { id: machine.id } }"
+                  >{{ machine.nom_machine }}
+                  <ForeignKeyDisplay
+                    :description="machine.marque?.nom_marque"
+                  /> </RouterLink
+              ></strong>
+            </th>
+
+            <td>{{ machine.numero_de_serie }}</td>
+            <td>
+              <ForeignKeyDisplay :description="machine.type?.nom_type" />
+            </td>
+            <td>
+              <span
+                class="badge badge-pill text-white"
+                :style="{ backgroundColor: machine.status?.couleur }"
+              >
+                <ForeignKeyDisplay :description="machine.status?.nom_status"
+              /></span>
+            </td>
+            <td>
+              {{
+                machine.date_acquisition
+                  ? new Date(machine.date_acquisition).toLocaleDateString()
+                  : null
+              }}
+            </td>
+            <td>
+              <div class="col-auto">
+                <button
+                  class="btn btn-sm dropdown-toggle more-horizontal"
+                  type="button"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                ></button>
+                <div class="dropdown-menu m-2">
+                  <a class="dropdown-item"
+                    ><i class="fe fe-meh fe-12 mr-4"></i>Créer une tâche</a
+                  >
+                  <a class="dropdown-item"
+                    ><i class="fe fe-message-circle fe-12 mr-4"></i>Réapprovisionner</a
+                  >
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </template>
 
 <style scoped>
-.multiselect__tags {
-  font-size: 17px;
-}
-
 .option-item {
   display: flex;
   align-items: center;
@@ -532,49 +500,64 @@ onMounted(async () => {
   border-radius: 18px;
 }
 
-#drag-drop-area {
-  border: 2px dashed #6c757d;
-  border-radius: 10px;
-  padding: 20px;
-  width: 100%;
-  min-height: 100px;
+.btn-chaine {
+  transition: all 0.3s ease;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.btn-chaine:hover {
+  background-color: #007bff;
+  color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.btn-outline-primary:not(:disabled):not(.disabled).active {
+  background-color: #46a941;
+  border: solid;
+}
+
+.btn-validate {
+  padding: 0.6rem 1.5rem;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-validate:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 86, 179, 0.3);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.routerlink_piece {
+  color: #5ec0d8;
+}
+
+.avatar-img {
+  width: 110px;
+  height: 100px;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 5px;
+}
+
+.dropdown-item {
   cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: border-color 0.3s ease-in-out;
 }
-
-#drag-drop-area:hover {
-  border-color: #007bff;
-}
-
-.circle {
-  cursor: pointer;
-}
-
-.default-message {
-  color: #6c757d;
-}
-
-.default-message i {
-  font-size: 48px;
-}
-
-.uploaded-image img {
-  width: 13rem;
-  height: 13rem;
-  border-radius: 10px;
-}
-
-.is-invalid {
-  border: 1px solid red;
-}
-.error {
-  color: red;
-  font-size: 12px;
-}
-#reconnect {
-  margin-left: 3%;
+.dropdown-item:hover {
+  color: black;
 }
 </style>

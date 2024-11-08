@@ -99,7 +99,10 @@ const activeTab = ref("machines");
                     class="avatar-img"
                     alt="Ceci est un image"
                   />
-                  <span class="dot dot-md bg-success mr-1"></span>
+                  <span
+                    class="dot dot-md mr-1"
+                    :style="{ backgroundColor: relation.machine_liee?.status?.couleur }"
+                  ></span>
                 </td>
                 <th scope="row">
                   <RouterLink

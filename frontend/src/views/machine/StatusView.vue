@@ -11,6 +11,7 @@ const form = reactive<Status>({
   //doit suivre les proprietes de Modele
   id: 0,
   nom_status: "",
+  couleur: "#28a745",
   date_creation: "",
 });
 
@@ -45,7 +46,7 @@ const clearError = () => {
 const submitForm = async () => {
   v$.value.$touch(); // Marquer les champs comme touchés pour la validation
   if (!v$.value.$invalid) {
-    await addItem({ nom_status: form.nom_status });
+    await addItem({ nom_status: form.nom_status, couleur: form.couleur });
     initializeDataTable();
     nom_status.value = ""; // Réinitialiser le formulaire
     $("#addModal").modal("hide");
@@ -58,7 +59,10 @@ const submitForm = async () => {
 const submitUpdateForm = async () => {
   v$.value.$touch();
   if (!v$.value.$invalid && selectedItem.value) {
-    await updateItem(selectedItem.value.id, { nom_status: form.nom_status });
+    await updateItem(selectedItem.value.id, {
+      nom_status: form.nom_status,
+      couleur: form.couleur,
+    });
     initializeDataTable();
     selectedItem.value = null; // Réinitialiser après la mise à jour
     nom_status.value = "";
@@ -72,6 +76,7 @@ const submitUpdateForm = async () => {
 const openUpdateModal = (item: Status) => {
   form.id = item.id;
   form.nom_status = item.nom_status;
+  form.couleur = item.couleur;
   selectedItem.value = item; // Stocker l'élément à mettre à jour
 };
 
@@ -137,6 +142,15 @@ onBeforeUnmount(() => {
               />
               <span v-if="v$.nom_status.$error" class="error">Nom de statut requis.</span>
             </div>
+            <div class="form-group">
+              <label for="couleur">Couleur du statut</label>
+              <input
+                class="form-control"
+                v-model="form.couleur"
+                id="couleur"
+                type="color"
+              />
+            </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">
                 Annuler
@@ -166,6 +180,7 @@ onBeforeUnmount(() => {
             <tr>
               <th>ID</th>
               <th>Nom du statut</th>
+              <th>Code couleur</th>
               <th>Date de création</th>
               <th>Action</th>
             </tr>
@@ -174,6 +189,12 @@ onBeforeUnmount(() => {
             <tr v-for="item in items" :key="item.id">
               <td>{{ item.id }}</td>
               <td>{{ item.nom_status }}</td>
+              <td>
+                <span
+                  class="dot dot-lg"
+                  :style="{ backgroundColor: item.couleur }"
+                ></span>
+              </td>
               <td>{{ new Date(item.date_creation).toLocaleDateString() }}</td>
               <td>
                 <div class="dropdown">
@@ -240,6 +261,15 @@ onBeforeUnmount(() => {
               <span v-if="v$.nom_status.$error" class="error"
                 >Le nom du statut est requis.</span
               >
+            </div>
+            <div class="form-group">
+              <label for="couleur">Couleur du statut</label>
+              <input
+                class="form-control"
+                v-model="form.couleur"
+                id="couleur"
+                type="color"
+              />
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">
