@@ -2,33 +2,27 @@
 import { ref, onMounted, reactive, onBeforeUnmount } from "vue";
 import { useCrud } from "@/composables/useCrud";
 import useVuelidate from "@vuelidate/core";
-import { required, helpers, integer } from "@vuelidate/validators";
+import { required } from "@vuelidate/validators";
 import SectionNavigation from "../templates/SectionNavigation.vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
-import { Status } from "@/types/MachineType";
+import { MotifTache } from "@/types/TacheType";
 
-const form = reactive<Status>({
-  //doit suivre les proprietes de Modele
+const form = reactive<MotifTache>({
+  //doit suivre les proprietes de motif_tache
   id: 0,
-  nom_status: "",
-  couleur: "#28a745",
-  identifiant: null,
+  nom_motif_tache: "",
   date_creation: "",
 });
 
 // Définir les règles de validation
 const validation = {
-  nom_status: { required },
-  identifiant: {
-    required: helpers.withMessage("Identifiant requis", required),
-    integer: helpers.withMessage("Veuillez entrer un entier.", integer),
-  },
+  nom_motif_tache: { required },
 };
 
 // Utilisation de Vuelidate avec les règles de validation
 const v$ = useVuelidate(validation, form);
 
-const nom_status = ref<string>("");
+const nom_motif_tache = ref<string>("");
 
 const {
   items,
@@ -38,9 +32,9 @@ const {
   addItem,
   deleteItem,
   updateItem,
-} = useCrud<Status>("machine/status/", v$);
+} = useCrud<MotifTache>("tache/motif_taches/", v$);
 
-const selectedItem = ref<Status | null>(null); // Élément sélectionné pour la modification
+const selectedItem = ref<MotifTache | null>(null); // Élément sélectionné pour la modification
 
 const clearError = () => {
   //reinitialiser le message d`erreur
@@ -51,13 +45,9 @@ const clearError = () => {
 const submitForm = async () => {
   v$.value.$touch(); // Marquer les champs comme touchés pour la validation
   if (!v$.value.$invalid) {
-    await addItem({
-      nom_status: form.nom_status,
-      couleur: form.couleur,
-      identifiant: form.identifiant,
-    });
+    await addItem({ nom_motif_tache: form.nom_motif_tache });
     initializeDataTable();
-    nom_status.value = ""; // Réinitialiser le formulaire
+    nom_motif_tache.value = ""; // Réinitialiser le formulaire
     $("#addModal").modal("hide");
   } else {
     console.error("Formulaire invalide");
@@ -68,14 +58,10 @@ const submitForm = async () => {
 const submitUpdateForm = async () => {
   v$.value.$touch();
   if (!v$.value.$invalid && selectedItem.value) {
-    await updateItem(selectedItem.value.id, {
-      nom_status: form.nom_status,
-      couleur: form.couleur,
-      identifiant: form.identifiant,
-    });
+    await updateItem(selectedItem.value.id, { nom_motif_tache: form.nom_motif_tache });
     initializeDataTable();
     selectedItem.value = null; // Réinitialiser après la mise à jour
-    nom_status.value = "";
+    nom_motif_tache.value = "";
     $("#updateModal").modal("hide");
   } else {
     console.error("Formulaire de mise à jour invalide");
@@ -83,11 +69,9 @@ const submitUpdateForm = async () => {
 };
 
 // Ouvrir le modal de modification
-const openUpdateModal = (item: Status) => {
+const openUpdateModal = (item: MotifTache) => {
   form.id = item.id;
-  form.nom_status = item.nom_status;
-  form.couleur = item.couleur;
-  form.identifiant = item.identifiant;
+  form.nom_motif_tache = item.nom_motif_tache;
   selectedItem.value = item; // Stocker l'élément à mettre à jour
 };
 
@@ -107,7 +91,7 @@ onBeforeUnmount(() => {
 
   <div class="row">
     <div class="col-md-8">
-      <h2 class="page-title">Statut de machine</h2>
+      <h2 class="page-title">Motif de tâche</h2>
     </div>
 
     <button
@@ -117,11 +101,11 @@ onBeforeUnmount(() => {
       class="btn mb-2 btn-primary"
       style="width: 22%"
     >
-      <span class="fe fe-plus fe-16 mr-2"></span>Ajouter un statut
+      <span class="fe fe-plus fe-16 mr-2"></span>Ajouter un motif de tâche
     </button>
   </div>
 
-  <p>Voici les différents statuts disponibles.</p>
+  <p>Voici les différents motifs de tâche disponibles.</p>
 
   <!-- Formulaire d'ajout de modèle -->
   <div
@@ -135,7 +119,7 @@ onBeforeUnmount(() => {
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addModalLabel">Ajout de statut</h5>
+          <h5 class="modal-title" id="addModalLabel">Ajout de motif</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -143,41 +127,18 @@ onBeforeUnmount(() => {
         <div class="modal-body">
           <form @submit.prevent="submitForm">
             <div class="form-group">
-              <label for="nom_status" class="col-form-label">Nom du statut:</label>
+              <label for="nom-motif" class="col-form-label">Nom du motif:</label>
               <input
                 type="text"
-                v-model="form.nom_status"
+                v-model="form.nom_motif_tache"
                 class="form-control"
-                id="nom_status"
-                :class="{ 'is-invalid': v$.nom_status.$invalid && v$.nom_status.$dirty }"
-              />
-              <span v-if="v$.nom_status.$error" class="error">Nom de statut requis.</span>
-            </div>
-            <div class="form-group">
-              <label for="couleur">Couleur du statut</label>
-              <input
-                class="form-control"
-                v-model="form.couleur"
-                id="couleur"
-                type="color"
-              />
-            </div>
-            <div class="form-group">
-              <label for="identifiant">Identifiant</label>
-              <input
-                class="form-control"
-                v-model="form.identifiant"
-                id="identifiant"
-                type="number"
+                id="nom-motif"
                 :class="{
-                  'is-invalid': v$.identifiant.$invalid && v$.identifiant.$dirty,
+                  'is-invalid': v$.nom_motif_tache.$invalid && v$.nom_motif_tache.$dirty,
                 }"
               />
-              <span
-                v-for="error of v$.identifiant.$errors"
-                :key="error.$uid"
-                class="error"
-                >{{ error.$message }}</span
+              <span v-if="v$.nom_motif_tache.$error" class="error"
+                >Nom de motif requis.</span
               >
             </div>
             <div class="modal-footer">
@@ -203,14 +164,12 @@ onBeforeUnmount(() => {
   <div class="col-md-14 my-4">
     <div class="card shadow">
       <div class="card-body">
-        <h5 class="card-title">Liste des statuts</h5>
+        <h5 class="card-title">Liste des motifs de tâche</h5>
         <table id="datatable-1" class="table table-striped table-hover">
           <thead>
             <tr>
               <th>ID</th>
-              <th>Nom du statut</th>
-              <th>Code couleur</th>
-              <th>Identifiant</th>
+              <th>Nom du motif</th>
               <th>Date de création</th>
               <th>Action</th>
             </tr>
@@ -218,14 +177,7 @@ onBeforeUnmount(() => {
           <tbody>
             <tr v-for="item in items" :key="item.id">
               <td>{{ item.id }}</td>
-              <td>{{ item.nom_status }}</td>
-              <td>
-                <span
-                  class="dot dot-lg"
-                  :style="{ backgroundColor: item.couleur }"
-                ></span>
-              </td>
-              <td>{{ item.identifiant }}</td>
+              <td>{{ item.nom_motif_tache }}</td>
               <td>{{ new Date(item.date_creation).toLocaleDateString() }}</td>
               <td>
                 <div class="dropdown">
@@ -273,7 +225,7 @@ onBeforeUnmount(() => {
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="updateModalLabel">Modifier le statut</h5>
+          <h5 class="modal-title" id="updateModalLabel">Modifier le motif</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -281,43 +233,18 @@ onBeforeUnmount(() => {
         <div class="modal-body">
           <form @submit.prevent="submitUpdateForm">
             <div class="form-group">
-              <label for="nom_status" class="col-form-label">Nom du statut:</label>
+              <label for="nom-motif" class="col-form-label">Nom du motif:</label>
               <input
                 type="text"
-                v-model="form.nom_status"
+                v-model="form.nom_motif_tache"
                 class="form-control"
-                id="nom_status"
-                :class="{ 'is-invalid': v$.nom_status.$invalid && v$.nom_status.$dirty }"
-              />
-              <span v-if="v$.nom_status.$error" class="error"
-                >Le nom du statut est requis.</span
-              >
-            </div>
-            <div class="form-group">
-              <label for="couleur">Couleur du statut</label>
-              <input
-                class="form-control"
-                v-model="form.couleur"
-                id="couleur"
-                type="color"
-              />
-            </div>
-            <div class="form-group">
-              <label for="identifiant">Identifiant</label>
-              <input
-                class="form-control"
-                v-model="form.identifiant"
-                id="identifiant"
-                type="number"
+                id="nom-motif"
                 :class="{
-                  'is-invalid': v$.identifiant.$invalid && v$.identifiant.$dirty,
+                  'is-invalid': v$.nom_motif_tache.$invalid && v$.nom_motif_tache.$dirty,
                 }"
               />
-              <span
-                v-for="error of v$.identifiant.$errors"
-                :key="error.$uid"
-                class="error"
-                >{{ error.$message }}</span
+              <span v-if="v$.nom_motif_tache.$error" class="error"
+                >Le nom du motif est requis.</span
               >
             </div>
             <div class="modal-footer">

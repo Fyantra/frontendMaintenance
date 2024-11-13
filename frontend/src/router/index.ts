@@ -54,6 +54,11 @@ const router = createRouter({
     /////////ROUTER BACK-OFFICE FOURNISSEUR////////////////////////
     { path: '/fournisseur', component: () => import('@/views/fournisseur/FournisseurView.vue'), meta: { requiresAuth: true }, },
 
+    /////////ROUTER BACK-OFFICE TACHE////////////////////////
+    { path: '/motif_tache', component: () => import('@/views/tache/MotifTacheView.vue'), meta: { requiresAuth: true }, },
+    { path: '/status_tache', component: () => import('@/views/tache/StatusTacheView.vue'), meta: { requiresAuth: true }, },
+    { path: '/ajoutTache', component: () => import('@/views/tache/FormTache.vue'), meta: { requiresAuth: true }, },
+
     /////////ROUTER PIECE DETACHE////////////////////////
     { path: '/listePiecedetache', component: () => import('@/views/piece_detache/ListePieceDetache.vue'), meta: { requiresAuth: true }, },
     { path: '/ajoutPiecedetache', component: () => import('@/views/piece_detache/FormPieceDetache.vue'), meta: { requiresAuth: true }, },
@@ -70,7 +75,7 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
 
-    { path: '/test', component: () => import('@/views/piece_detache/ExempleListe.vue'), meta: { requiresAuth: true }, },
+    { path: '/test', component: () => import('@/views/test/CalendarView.vue'), meta: { requiresAuth: true }, },
   ],
 
   scrollBehavior(to, from, savedPosition) {

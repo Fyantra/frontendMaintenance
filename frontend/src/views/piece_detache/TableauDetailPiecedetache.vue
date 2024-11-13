@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Machine } from "@/types/MachineType";
+import { ref, onMounted } from "vue";
+import { Machine, Status } from "@/types/MachineType";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
+import { useCrud } from "@/composables/useCrud";
+import { getStatusForMachine } from "@/composables/useFonction";
+
+const statusCrud = useCrud<Status>("machine/status/");
 
 const props = defineProps<{
   machines: Machine[];
 }>();
 
 const activeTab = ref("machines");
+
+onMounted(async () => {
+  await statusCrud.fetchItems();
+});
 </script>
 
 <template>
@@ -97,7 +105,12 @@ const activeTab = ref("machines");
                   />
                   <span
                     class="dot dot-md mr-1"
-                    :style="{ backgroundColor: machine.status?.couleur }"
+                    :style="{
+                      backgroundColor: getStatusForMachine(
+                        machine,
+                        statusCrud.items.value
+                      )?.couleur,
+                    }"
                   ></span>
                 </td>
                 <th scope="row">

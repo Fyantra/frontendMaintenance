@@ -175,6 +175,14 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
     }
   };
 
+  const updateItemPatch = async (id: number, updatedItem: Partial<T> | FormData) => {
+    try {
+      await axios.patch(`${apiUrl}${id}/`, updatedItem, authHeader);
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   return {
     items,
     errorMessage,
@@ -183,6 +191,7 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
     deleteItem,
     deleteItemWithoutInitialize,
     updateItem,
+    updateItemPatch,
     fetchItems,
     fetchItemsById,
     initializeDataTable,

@@ -5,6 +5,7 @@ import { useCrud } from "@/composables/useCrud";
 import { Machine, Marque, Type } from "@/types/MachineType";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
 import { Atelier, Chaine } from "@/types/AtelierType";
+import DeplacementModal from "../machine/DeplacementModal.vue";
 import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.css";
 
@@ -18,6 +19,12 @@ const clearError = () => {
   errorMessage.value = null;
 };
 
+//Deplacement machine dans le modal
+const selectedMachines = ref<number[]>([]); // Pour stocker les machines sélectionnées par le checkbox
+const selectedChaine = ref<Chaine | null>(null);
+const selectedAtelierModal = ref<Atelier | null>(null);
+
+//Les filtres
 const selectedAtelier = ref<Atelier | null>(null);
 const selectedMachine = ref<Machine | null>(null);
 const selectedType = ref<Type | null>(null);
@@ -33,7 +40,6 @@ const chainesOptions = ref<Chaine[]>([]);
 const ateliersCrud = useCrud<Atelier>("atelier/ateliers/");
 const typesCrud = useCrud<Type>("machine/types/");
 const marquesCrud = useCrud<Marque>("machine/marques/");
-
 const chainesCrud = useCrud<Chaine>("atelier/chaines/");
 
 const totalMachines = ref<number>(0);
@@ -90,6 +96,42 @@ const toggleChaine = (chaine: Chaine) => {
 
 const refreshData = async () => {
   await machinesCrud.initializeDataTable();
+};
+
+const resetDeplacement = () => {
+  selectedAtelierModal.value = null;
+  selectedChaine.value = null;
+  selectedMachines.value = [];
+};
+
+const validerDeplacement = async () => {
+  try {
+    for (const machineId of selectedMachines.value) {
+      const updatedItem = {
+        atelier_id: selectedAtelierModal.value.id,
+        chaine_id: selectedChaine.value ? selectedChaine.value.id : null,
+      };
+
+      await machinesCrud.updateItemPatch(machineId, updatedItem);
+    }
+    resetDeplacement(); // Réinitialiser après validation
+    refreshData();
+  } catch (error) {
+    console.error("Erreur lors du déplacement des machines:", error);
+  }
+};
+
+const setSelectedAtelier = (atelier: Atelier) => {
+  selectedAtelierModal.value = atelier;
+};
+
+const setSelectedChaine = (chaine: Chaine) => {
+  selectedChaine.value = chaine;
+};
+
+const resetModal = () => {
+  selectedAtelier.value = null;
+  selectedChaine.value = null;
 };
 
 onMounted(async () => {
@@ -292,19 +334,44 @@ watch(selectedAtelier, (newAtelier) => {
               </span>
             </div>
             <div class="col-5">
-              <strong class="mb-2">Deplacer un ou plusieurs machines ici</strong>
-              <p class="small mt-1 mb-1">Atelier:</p>
-              <p class="small mb-1">Chaine:</p>
+              <strong v-if="!selectedAtelierModal && !selectedChaine" class="mb-2"
+                >Déplacer un ou plusieurs machines ici</strong
+              >
+              <strong v-else class="mb-2"
+                >Sélectionner en bas le(s) machine(s) à déplacer dans:
+              </strong>
+              <p class="small mt-1 mb-1" v-if="selectedAtelierModal">
+                Atelier: {{ selectedAtelierModal.nom_atelier }}
+              </p>
+              <p class="small mb-1" v-if="selectedChaine">
+                Chaine: {{ selectedChaine.nom_chaine }}
+              </p>
             </div>
             <button
               data-toggle="modal"
               data-target="#deplacementModal"
               type="button"
               class="btn mb-2 btn-outline-warning"
+              v-if="!selectedAtelierModal && !selectedChaine"
             >
-              <span class="fe fe-arrow-right fe-16 mr-2"></span>Deplacer
+              <span class="fe fe-arrow-right fe-16 mr-2"></span>Déplacer
             </button>
-            <button type="button" class="btn mb-2 btn-outline-info ml-2">Annuler</button>
+            <button
+              type="button"
+              class="btn mb-2 btn-outline-info mr-2"
+              v-if="selectedAtelierModal || selectedChaine"
+              @click="resetDeplacement"
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              class="btn mb-2 btn-outline-success"
+              v-if="selectedAtelierModal || selectedChaine"
+              @click="validerDeplacement"
+            >
+              Valider le deplacement
+            </button>
           </div>
         </div>
       </div>
@@ -312,53 +379,13 @@ watch(selectedAtelier, (newAtelier) => {
   </div>
 
   <!-- MODAL -->
-  <div class="modal fade" id="deplacementModal" tabindex="-1" role="dialog" aria-labelledby="deplacementModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deplacementModalLabel">
-            Selectionner l`atelier de deplacement
-          </h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="atelier" class="text-white font-weight-bold">Atelier:</label>
-            <multiselect v-model="selectedAtelier" :options="atelierOptions" :close-on-select="true" :clear-on-select="false" 
-              :preserve-search="true" placeholder="Sélectionnez un atelier" label="nom_atelier" track-by="id" id="atelier">
-              <template #option="{ option }">
-                <div class="option-item">
-                  <span>{{ option.nom_atelier }}</span>
-                </div>
-              </template>
-            </multiselect>
-            <transition-group name="fade">
-              <div v-if="chainesOptions.length > 0" class="button-group mt-3">
-                <button
-                  v-for="chaine in chainesOptions"
-                  :key="chaine.id"
-                  class="btn btn-outline-primary mx-1 btn-chaine"
-                  :class="{ active: activeChaines.includes(chaine) }"
-                  @click="toggleChaine(chaine)"
-                >
-                  {{ chaine.nom_chaine }}
-                </button>
-              </div>
-            </transition-group>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">
-              Annuler
-            </button>
-            <button type="submit" class="btn btn-primary">Deplacer</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <DeplacementModal
+    :atelierOptions="atelierOptions"
+    :chainesOptions="chainesOptions"
+    @selectedAtelier="setSelectedAtelier"
+    @selectedChaine="setSelectedChaine"
+    @closeModal="resetModal"
+  />
 
   <div class="row">
     <div class="col-md-12">
@@ -412,11 +439,13 @@ watch(selectedAtelier, (newAtelier) => {
         <tbody class="tbody-piece">
           <tr v-for="machine in machinesOptions" :key="machine.id" class="tr-piece">
             <td>
-              <div class="custom-control custom-checkbox">
+              <div v-if="selectedAtelierModal" class="custom-control custom-checkbox">
                 <input
                   type="checkbox"
                   class="custom-control-input"
                   :id="String(machine.id)"
+                  v-model="selectedMachines"
+                  :value="machine.id"
                 />
                 <label class="custom-control-label" :for="String(machine.id)"></label>
               </div>

@@ -5,12 +5,12 @@ import useVuelidate from "@vuelidate/core";
 import { required, helpers, integer } from "@vuelidate/validators";
 import SectionNavigation from "../templates/SectionNavigation.vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
-import { Status } from "@/types/MachineType";
+import { StatusTache } from "@/types/TacheType";
 
-const form = reactive<Status>({
+const form = reactive<StatusTache>({
   //doit suivre les proprietes de Modele
   id: 0,
-  nom_status: "",
+  nom_status_tache: "",
   couleur: "#28a745",
   identifiant: null,
   date_creation: "",
@@ -18,7 +18,7 @@ const form = reactive<Status>({
 
 // Définir les règles de validation
 const validation = {
-  nom_status: { required },
+  nom_status_tache: { required },
   identifiant: {
     required: helpers.withMessage("Identifiant requis", required),
     integer: helpers.withMessage("Veuillez entrer un entier.", integer),
@@ -28,7 +28,7 @@ const validation = {
 // Utilisation de Vuelidate avec les règles de validation
 const v$ = useVuelidate(validation, form);
 
-const nom_status = ref<string>("");
+const nom_status_tache = ref<string>("");
 
 const {
   items,
@@ -38,9 +38,9 @@ const {
   addItem,
   deleteItem,
   updateItem,
-} = useCrud<Status>("machine/status/", v$);
+} = useCrud<StatusTache>("tache/status_taches/", v$);
 
-const selectedItem = ref<Status | null>(null); // Élément sélectionné pour la modification
+const selectedItem = ref<StatusTache | null>(null); // Élément sélectionné pour la modification
 
 const clearError = () => {
   //reinitialiser le message d`erreur
@@ -52,12 +52,12 @@ const submitForm = async () => {
   v$.value.$touch(); // Marquer les champs comme touchés pour la validation
   if (!v$.value.$invalid) {
     await addItem({
-      nom_status: form.nom_status,
+      nom_status_tache: form.nom_status_tache,
       couleur: form.couleur,
       identifiant: form.identifiant,
     });
     initializeDataTable();
-    nom_status.value = ""; // Réinitialiser le formulaire
+    nom_status_tache.value = ""; // Réinitialiser le formulaire
     $("#addModal").modal("hide");
   } else {
     console.error("Formulaire invalide");
@@ -69,13 +69,13 @@ const submitUpdateForm = async () => {
   v$.value.$touch();
   if (!v$.value.$invalid && selectedItem.value) {
     await updateItem(selectedItem.value.id, {
-      nom_status: form.nom_status,
+      nom_status_tache: form.nom_status_tache,
       couleur: form.couleur,
       identifiant: form.identifiant,
     });
     initializeDataTable();
     selectedItem.value = null; // Réinitialiser après la mise à jour
-    nom_status.value = "";
+    nom_status_tache.value = "";
     $("#updateModal").modal("hide");
   } else {
     console.error("Formulaire de mise à jour invalide");
@@ -83,9 +83,9 @@ const submitUpdateForm = async () => {
 };
 
 // Ouvrir le modal de modification
-const openUpdateModal = (item: Status) => {
+const openUpdateModal = (item: StatusTache) => {
   form.id = item.id;
-  form.nom_status = item.nom_status;
+  form.nom_status_tache = item.nom_status_tache;
   form.couleur = item.couleur;
   form.identifiant = item.identifiant;
   selectedItem.value = item; // Stocker l'élément à mettre à jour
@@ -107,7 +107,7 @@ onBeforeUnmount(() => {
 
   <div class="row">
     <div class="col-md-8">
-      <h2 class="page-title">Statut de machine</h2>
+      <h2 class="page-title">Statut de tâche</h2>
     </div>
 
     <button
@@ -117,11 +117,11 @@ onBeforeUnmount(() => {
       class="btn mb-2 btn-primary"
       style="width: 22%"
     >
-      <span class="fe fe-plus fe-16 mr-2"></span>Ajouter un statut
+      <span class="fe fe-plus fe-16 mr-2"></span>Ajouter un statut de tâche
     </button>
   </div>
 
-  <p>Voici les différents statuts disponibles.</p>
+  <p>Voici les différents statuts de tâche disponibles.</p>
 
   <!-- Formulaire d'ajout de modèle -->
   <div
@@ -143,15 +143,20 @@ onBeforeUnmount(() => {
         <div class="modal-body">
           <form @submit.prevent="submitForm">
             <div class="form-group">
-              <label for="nom_status" class="col-form-label">Nom du statut:</label>
+              <label for="nom_status_tache" class="col-form-label">Nom du statut:</label>
               <input
                 type="text"
-                v-model="form.nom_status"
+                v-model="form.nom_status_tache"
                 class="form-control"
-                id="nom_status"
-                :class="{ 'is-invalid': v$.nom_status.$invalid && v$.nom_status.$dirty }"
+                id="nom_status_tache"
+                :class="{
+                  'is-invalid':
+                    v$.nom_status_tache.$invalid && v$.nom_status_tache.$dirty,
+                }"
               />
-              <span v-if="v$.nom_status.$error" class="error">Nom de statut requis.</span>
+              <span v-if="v$.nom_status_tache.$error" class="error"
+                >Nom de statut requis.</span
+              >
             </div>
             <div class="form-group">
               <label for="couleur">Couleur du statut</label>
@@ -162,6 +167,7 @@ onBeforeUnmount(() => {
                 type="color"
               />
             </div>
+
             <div class="form-group">
               <label for="identifiant">Identifiant</label>
               <input
@@ -180,6 +186,7 @@ onBeforeUnmount(() => {
                 >{{ error.$message }}</span
               >
             </div>
+
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">
                 Annuler
@@ -203,7 +210,7 @@ onBeforeUnmount(() => {
   <div class="col-md-14 my-4">
     <div class="card shadow">
       <div class="card-body">
-        <h5 class="card-title">Liste des statuts</h5>
+        <h5 class="card-title">Liste des statuts de tache</h5>
         <table id="datatable-1" class="table table-striped table-hover">
           <thead>
             <tr>
@@ -218,7 +225,7 @@ onBeforeUnmount(() => {
           <tbody>
             <tr v-for="item in items" :key="item.id">
               <td>{{ item.id }}</td>
-              <td>{{ item.nom_status }}</td>
+              <td>{{ item.nom_status_tache }}</td>
               <td>
                 <span
                   class="dot dot-lg"
@@ -281,15 +288,18 @@ onBeforeUnmount(() => {
         <div class="modal-body">
           <form @submit.prevent="submitUpdateForm">
             <div class="form-group">
-              <label for="nom_status" class="col-form-label">Nom du statut:</label>
+              <label for="nom_status_tache" class="col-form-label">Nom du statut:</label>
               <input
                 type="text"
-                v-model="form.nom_status"
+                v-model="form.nom_status_tache"
                 class="form-control"
-                id="nom_status"
-                :class="{ 'is-invalid': v$.nom_status.$invalid && v$.nom_status.$dirty }"
+                id="nom_status_tache"
+                :class="{
+                  'is-invalid':
+                    v$.nom_status_tache.$invalid && v$.nom_status_tache.$dirty,
+                }"
               />
-              <span v-if="v$.nom_status.$error" class="error"
+              <span v-if="v$.nom_status_tache.$error" class="error"
                 >Le nom du statut est requis.</span
               >
             </div>

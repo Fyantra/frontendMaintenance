@@ -1,14 +1,27 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { MachineRelation } from "@/types/MachineType";
+import { ref, onMounted } from "vue";
+import {
+  HistoriqueDeplacementmachine,
+  MachineRelation,
+  Status,
+} from "@/types/MachineType";
 import { PieceDetachee } from "@/types/PieceDetacheType";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
-import { dotColor } from "@/composables/useFonction";
+import { formatDateTime } from "@/composables/useFonction";
+import { dotColor, getStatusForMachine } from "@/composables/useFonction";
+import { useCrud } from "@/composables/useCrud";
+
+const statusCrud = useCrud<Status>("machine/status/");
 
 const props = defineProps<{
   machineRelations: MachineRelation[];
   piecesDetachees: PieceDetachee[];
+  historiqueDeplacement: HistoriqueDeplacementmachine[];
 }>();
+
+onMounted(async () => {
+  await statusCrud.fetchItems();
+});
 
 const activeTab = ref("machines");
 </script>
@@ -60,11 +73,11 @@ const activeTab = ref("machines");
             <li class="nav-item">
               <a
                 class="nav-link"
-                id="histo-tab"
+                id="historique-tab"
                 data-toggle="tab"
-                href="#histo"
+                href="#historique_deplacement"
                 role="tab"
-                aria-controls="histo"
+                aria-controls="historique_deplacement"
                 aria-selected="false"
                 >Historique des mouvements</a
               >
@@ -84,7 +97,7 @@ const activeTab = ref("machines");
             <thead>
               <tr>
                 <th></th>
-                <th class="w-50">Nom</th>
+                <th class="w-30">Nom</th>
                 <th>Type</th>
                 <th>Quantité</th>
                 <th>Date d`acquisition</th>
@@ -101,7 +114,12 @@ const activeTab = ref("machines");
                   />
                   <span
                     class="dot dot-md mr-1"
-                    :style="{ backgroundColor: relation.machine_liee?.status?.couleur }"
+                    :style="{
+                      backgroundColor: getStatusForMachine(
+                        relation.machine_liee,
+                        statusCrud.items.value
+                      )?.couleur,
+                    }"
                   ></span>
                 </td>
                 <th scope="row">
@@ -141,7 +159,7 @@ const activeTab = ref("machines");
             <thead>
               <tr>
                 <th></th>
-                <th class="w-50">Nom</th>
+                <th class="w-30">Nom</th>
                 <th>Emplacement</th>
                 <th>Prix unitaire</th>
                 <th>Quantité</th>
@@ -181,6 +199,37 @@ const activeTab = ref("machines");
                 </td>
                 <td>{{ piece.prix_unitaire }}</td>
                 <td>{{ piece.quantite }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!--Historique deplacement-->
+        <div
+          class="tab-pane fade"
+          id="historique_deplacement"
+          role="tabpanel"
+          aria-labelledby="historique-tab"
+        >
+          <table id="datatable-deplacement" class="table table-borderless table-striped">
+            <thead>
+              <tr>
+                <th class="w-30">Date et heure de deplacement</th>
+                <th>Atelier</th>
+                <th>Chaine</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="machine in historiqueDeplacement" :key="machine.id">
+                <th scope="row">
+                  {{ formatDateTime(String(machine.date_creation)) }}<br />
+                </th>
+                <td>
+                  <ForeignKeyDisplay :description="machine.atelier?.nom_atelier" />
+                </td>
+                <td>
+                  <ForeignKeyDisplay :description="machine.chaine?.nom_chaine" />
+                </td>
               </tr>
             </tbody>
           </table>

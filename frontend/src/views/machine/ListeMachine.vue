@@ -5,6 +5,7 @@ import SectionNavigation from "../templates/SectionNavigation.vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
 import { Machine, Status } from "@/types/MachineType";
+import { getStatusForMachine } from "@/composables/useFonction";
 
 // Récupérer les données des nachines
 const machinesCrud = useCrud<Machine>("machine/machines/");
@@ -27,7 +28,7 @@ const selectedStatus = ref<number | null>(null);
 const filteredMachines = computed(() => {
   if (selectedStatus.value) {
     return machinesCrud.items.value.filter(
-      (machine) => machine.status_id === selectedStatus.value
+      (machine) => machine.identifiant_status_machine === selectedStatus.value // Changer status_id en identifiant_status_machine
     );
   }
   return machinesCrud.items.value;
@@ -36,7 +37,7 @@ const filteredMachines = computed(() => {
 const statusCounts = computed(() => {
   const counts = {};
   machinesCrud.items.value.forEach((machine) => {
-    const statusId = machine.status_id;
+    const statusId = machine.identifiant_status_machine; // Changer status_id en identifiant_status_machine
     if (!counts[statusId]) {
       counts[statusId] = 0;
     }
@@ -118,13 +119,15 @@ onMounted(async () => {
                 class="nav-link status-link"
                 :style="{
                   backgroundColor:
-                    selectedStatus === status.id ? status.couleur : 'transparent',
+                    selectedStatus === status.identifiant
+                      ? status.couleur
+                      : 'transparent',
                 }"
-                @click.prevent="selectStatus(status.id)"
+                @click.prevent="selectStatus(status.identifiant)"
               >
-                {{ status.nom_status
-                }}<span class="badge badge-pill bg-primary text-white ml-2">
-                  {{ statusCounts[status.id] || 0 }}
+                {{ status.nom_status }}
+                <span class="badge badge-pill bg-primary text-white ml-2">
+                  {{ statusCounts[status.identifiant] || 0 }}
                 </span>
               </a>
             </li>
@@ -224,10 +227,17 @@ onMounted(async () => {
                 <td>
                   <span
                     class="badge badge-pill text-white"
-                    :style="{ backgroundColor: machine.status?.couleur }"
+                    :style="{
+                      backgroundColor: getStatusForMachine(machine, status.items.value)
+                        ?.couleur,
+                    }"
                   >
-                    <ForeignKeyDisplay :description="machine.status?.nom_status"
-                  /></span>
+                    <ForeignKeyDisplay
+                      :description="
+                        getStatusForMachine(machine, status.items.value)?.nom_status
+                      "
+                    />
+                  </span>
                 </td>
                 <td>
                   {{

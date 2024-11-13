@@ -140,7 +140,7 @@ onBeforeUnmount(() => {
         <div class="modal-body">
           <form @submit.prevent="submitForm">
             <div class="form-group">
-              <label for="atelier" class="col-form-label">Nom de l`atelier`:</label>
+              <label for="atelier" class="col-form-label">Nom de l`atelier:</label>
               <input
                 type="text"
                 v-model="form.nom_atelier"
@@ -302,7 +302,7 @@ onBeforeUnmount(() => {
         <div class="modal-body">
           <form @submit.prevent="submitUpdateForm">
             <div class="form-group">
-              <label for="atelier" class="col-form-label">Nom de l`atelier`:</label>
+              <label for="atelier" class="col-form-label">Nom de l`atelier:</label>
               <input
                 type="text"
                 v-model="form.nom_atelier"

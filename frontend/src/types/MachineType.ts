@@ -30,6 +30,7 @@ export interface Status {
   id: number;
   nom_status: string;
   couleur?: string;
+  identifiant: number;
   date_creation?: Date | string;
 }
 
@@ -48,8 +49,7 @@ export interface Machine{
   chaine_id: number | null;
   date_mis_en_place?: Date | string | null;
   date_acquisition?: Date | string | null;
-  status?: Status;
-  status_id: number;
+  identifiant_status_machine?: number;
   date_hors_service?: Date | null;
   description?: string | null;
   image?: string | null;
@@ -58,7 +58,6 @@ export interface Machine{
   fournisseur_id?: number | null;
   pieces_detachees?: PieceDetachee[] | null;
   pieces_detachees_id?: number | null;
-  // quantite: number | null;
   date_creation?: Date | string;
 }
 
@@ -69,3 +68,14 @@ export interface MachineRelation{
   machine_liee?: Machine | null;
   quantite: number | null;
 }
+
+export interface HistoriqueDeplacementmachine{
+  id?: number;
+  machine?: Machine | null;
+  atelier?: Atelier | null;
+  chaine?: Chaine | null;
+  date_creation?: Date | string;
+}
+
+ // status?: Status;
+  // status_id: number;

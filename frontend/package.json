@@ -16,6 +16,13 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@fullcalendar/bootstrap5": "^6.1.15",
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/list": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
+    "@fullcalendar/vue3": "^6.1.15",
     "@heroicons/vue": "^2.1.5",
     "@popperjs/core": "^2.11.8",
     "@primevue/themes": "^4.0.7",

@@ -43,20 +43,22 @@ import { RouterLink } from "vue-router";
       </RouterLink>
     </div>
     <div class="col-md-3">
-      <div class="card shadow mb-4">
-        <div class="card-body">
-          <div class="row align-items-center">
-            <div class="col-3 text-center">
-              <span class="circle circle-md bg-warning justify-content-center">
-                <span class="material-icons notranslate text-white">assignment</span>
-              </span>
-            </div>
-            <div class="col">
-              <h3 class="h6 mb-0 text-uppercase">Taches</h3>
+      <RouterLink to="/ajoutTache">
+        <div class="card shadow mb-4">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-3 text-center">
+                <span class="circle circle-md bg-warning justify-content-center">
+                  <span class="material-icons notranslate text-white">assignment</span>
+                </span>
+              </div>
+              <div class="col">
+                <h3 class="h6 mb-0 text-uppercase">Taches</h3>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </RouterLink>
     </div>
     <div class="col-md-3">
       <div class="card shadow mb-4">

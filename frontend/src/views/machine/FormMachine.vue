@@ -16,8 +16,8 @@ import "vue-multiselect/dist/vue-multiselect.css";
 const selectedPieces = ref<PieceDetachee[]>([]);
 const machinesLiees = ref<MachineRelation[]>([]);
 
-const piecesOptions = ref<PieceDetachee[]>([]); 
-const machinesOptions = ref<Machine[]>([]); 
+const piecesOptions = ref<PieceDetachee[]>([]);
+const machinesOptions = ref<Machine[]>([]);
 
 const router = useRouter();
 const route = useRoute();
@@ -34,16 +34,15 @@ const form = reactive<Machine>({
   numero_de_serie: "",
   type_id: null,
   chaine_id: null,
-  status_id: null,
+  identifiant_status_machine: null,
   date_creation: null,
 });
 
 const validation = {
   nom_machine: { required },
-  numero_de_serie:{ required },
-  type_id : { required },
-  chaine_id:{ required },
-  status_id: { required },
+  numero_de_serie: { required },
+  type_id: { required },
+  chaine_id: { required },
 };
 
 const v$ = useVuelidate(validation, form);
@@ -83,14 +82,17 @@ const submitForm = async () => {
     formData.append("marque_id", String(form.marque_id || ""));
     formData.append("atelier_id", String(form.atelier_id || ""));
     formData.append("chaine_id", String(form.chaine_id || ""));
-    formData.append("date_mis_en_place", String(form.date_mis_en_place || "")) ;
+    formData.append("date_mis_en_place", String(form.date_mis_en_place || ""));
     formData.append("date_acquisition", String(form.date_acquisition || ""));
-    formData.append("status_id", String(form.status_id || ""));
+    formData.append(
+      "identifiant_status_machine",
+      String(form.identifiant_status_machine)
+    );
     formData.append("date_hors_service", String(form.date_hors_service || ""));
     formData.append("reference_fabricant", String(form.reference_fabricant || ""));
     formData.append("fournisseur_id", String(form.fournisseur_id || ""));
-    selectedPieces.value.forEach(piece => {
-      formData.append('pieces_detachees_id', String(piece.id) || "");
+    selectedPieces.value.forEach((piece) => {
+      formData.append("pieces_detachees_id", String(piece.id) || "");
     });
 
     if (fileInput.value?.files?.[0]) {
@@ -101,8 +103,8 @@ const submitForm = async () => {
       formData.append("image", "");
     }
 
-    const validMachinesLiees = machinesLiees.value.filter(machine => 
-      machine.machine_liee?.id
+    const validMachinesLiees = machinesLiees.value.filter(
+      (machine) => machine.machine_liee?.id
     );
 
     if (machineId) {
@@ -174,14 +176,18 @@ onMounted(async () => {
     image.value = machine.value.image;
 
     selectedPieces.value = machine?.value.pieces_detachees ?? [];
-
   }
   await Promise.all([
     await piecedetachees.fetchItems(),
-    piecesOptions.value = piecedetachees.items.value,
+    (piecesOptions.value = piecedetachees.items.value),
     await machines.fetchItems(),
-    machinesOptions.value = machines.items.value,
-    types.fetchItems(),marques.fetchItems(),ateliers.fetchItems(),chaines.fetchItems(),status.fetchItems(),fournisseurs.fetchItems(),
+    (machinesOptions.value = machines.items.value),
+    types.fetchItems(),
+    marques.fetchItems(),
+    ateliers.fetchItems(),
+    chaines.fetchItems(),
+    status.fetchItems(),
+    fournisseurs.fetchItems(),
   ]);
 });
 </script>
@@ -267,8 +273,7 @@ onMounted(async () => {
                     placeholder="Nom du machine"
                     v-model="form.nom_machine"
                     :class="{
-                      'is-invalid':
-                        v$.nom_machine.$invalid && v$.nom_machine.$dirty,
+                      'is-invalid': v$.nom_machine.$invalid && v$.nom_machine.$dirty,
                     }"
                   />
                 </div>
@@ -278,7 +283,11 @@ onMounted(async () => {
               </div>
               <div class="form-group col-md-4">
                 <label for="marque">Marque:</label>
-                <select id="marque" class="form-control custom-select" v-model="form.marque_id">
+                <select
+                  id="marque"
+                  class="form-control custom-select"
+                  v-model="form.marque_id"
+                >
                   <option selected disabled>Selectionner une marque</option>
                   <option
                     v-for="marque in marques.items.value"
@@ -323,13 +332,14 @@ onMounted(async () => {
 
             <div class="form-group">
               <label for="type">Type*:</label>
-              <select id="type" class="form-control custom-select" v-model="form.type_id" :class="{ 'is-invalid': v$.type_id.$invalid && v$.type_id.$dirty }">
+              <select
+                id="type"
+                class="form-control custom-select"
+                v-model="form.type_id"
+                :class="{ 'is-invalid': v$.type_id.$invalid && v$.type_id.$dirty }"
+              >
                 <option selected disabled>Selectionner un type</option>
-                <option
-                  v-for="type in types.items.value"
-                  :key="type.id"
-                  :value="type.id"
-                >
+                <option v-for="type in types.items.value" :key="type.id" :value="type.id">
                   {{ type.nom_type }}
                 </option>
               </select>
@@ -349,7 +359,7 @@ onMounted(async () => {
             <div class="form-row">
               <div class="form-group col-md-6">
                 <label for="atelier">Atelier:</label>
-                <select 
+                <select
                   id="atelier"
                   class="form-control custom-select"
                   v-model="form.atelier_id"
@@ -366,7 +376,12 @@ onMounted(async () => {
               </div>
               <div class="form-group col-md-6">
                 <label for="chaine">Chaine*:</label>
-                <select id="chaine" class="form-control custom-select" v-model="form.chaine_id" :class="{ 'is-invalid': v$.chaine_id.$invalid && v$.chaine_id.$dirty }">
+                <select
+                  id="chaine"
+                  class="form-control custom-select"
+                  v-model="form.chaine_id"
+                  :class="{ 'is-invalid': v$.chaine_id.$invalid && v$.chaine_id.$dirty }"
+                >
                   <option selected disabled>Selectionner le chaine correspondant</option>
                   <option
                     v-for="chaine in chaines.items.value"
@@ -404,19 +419,20 @@ onMounted(async () => {
             <div class="form-row">
               <div class="form-group col-md-6">
                 <label for="status">Statut*</label>
-                <select id="status" class="form-control custom-select" v-model="form.status_id" :class="{ 'is-invalid': v$.status_id.$invalid && v$.status_id.$dirty }">
+                <select
+                  id="status"
+                  class="form-control custom-select"
+                  v-model="form.identifiant_status_machine"
+                >
                   <option selected disabled>Selectionner le statut</option>
                   <option
                     v-for="status in status.items.value"
                     :key="status.id"
-                    :value="status.id"
+                    :value="status.identifiant"
                   >
                     {{ status.nom_status }}
                   </option>
                 </select>
-                <span v-if="v$.status_id.$error" class="error"
-                  >Statut requis.</span
-                >
               </div>
               <div class="form-group col-md-6">
                 <label for="date_hors_service">Date de hors service</label>
@@ -460,8 +476,17 @@ onMounted(async () => {
 
             <div class="form-group">
               <label for="piecedetache">Pièce détachée liée(s):</label>
-              <multiselect v-model="selectedPieces" :options="piecesOptions" :multiple="true" :close-on-select="false" :clear-on-select="false"
-                :preserve-search="true" placeholder="Sélectionnez les pièces détaché" label="nom_piecedetache" track-by="id" id="piecedetache"
+              <multiselect
+                v-model="selectedPieces"
+                :options="piecesOptions"
+                :multiple="true"
+                :close-on-select="false"
+                :clear-on-select="false"
+                :preserve-search="true"
+                placeholder="Sélectionnez les pièces détaché"
+                label="nom_piecedetache"
+                track-by="id"
+                id="piecedetache"
               >
                 <template #option="{ option }">
                   <div class="option-item">
@@ -470,22 +495,35 @@ onMounted(async () => {
                   </div>
                 </template>
               </multiselect>
-            </div> 
+            </div>
 
             <p style="font-style: italic">
               Ajouter un machine liée
               <span
-                class="circle circle-sm bg-danger justify-content-center text-white ml-2" @click="addMachineLiaison"
+                class="circle circle-sm bg-danger justify-content-center text-white ml-2"
+                @click="addMachineLiaison"
               >
                 <i class="fe fe-plus-circle fe-16"></i>
               </span>
-            </p> 
+            </p>
 
-            <div class="form-row mb-2" v-for="(machine, index) in machinesLiees" :key="index">
+            <div
+              class="form-row mb-2"
+              v-for="(machine, index) in machinesLiees"
+              :key="index"
+            >
               <div class="form-group col-md-8">
                 <label for="machine_liee">Machine liée</label>
-                <multiselect v-model="machine.machine_liee" :options="machinesOptions" :close-on-select="false" :clear-on-select="false" :preserve-search="true"
-                  placeholder="Sélectionnez les options" label="nom_machine" track-by="id" id="machine_liee"
+                <multiselect
+                  v-model="machine.machine_liee"
+                  :options="machinesOptions"
+                  :close-on-select="false"
+                  :clear-on-select="false"
+                  :preserve-search="true"
+                  placeholder="Sélectionnez les options"
+                  label="nom_machine"
+                  track-by="id"
+                  id="machine_liee"
                 >
                   <template #option="{ option }">
                     <div class="option-item">
@@ -497,11 +535,17 @@ onMounted(async () => {
               </div>
               <div class="form-group col-md-4">
                 <label for="quantite">Quantite</label>
-                  <input style="height: 43px" type="number" v-model="machine.quantite" class="form-control" id="quantite" placeholder="1"
-                  
-                  />
-               </div>
-            </div> 
+                <input
+                  style="height: 43px"
+                  type="number"
+                  :min="0"
+                  v-model="machine.quantite"
+                  class="form-control"
+                  id="quantite"
+                  placeholder="1"
+                />
+              </div>
+            </div>
 
             <button v-if="machineId" type="submit" class="btn mb-2 mt-4 btn-primary">
               <span class="fe fe-edit-2 fe-16 mr-2"></span>Modifier le machine
@@ -517,6 +561,37 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.circle {
+  cursor: pointer;
+}
+
+.default-message {
+  color: #6c757d;
+}
+
+.default-message i {
+  font-size: 48px;
+}
+
+.uploaded-image img {
+  width: 13rem;
+  height: 13rem;
+  border-radius: 10px;
+}
+
+.is-invalid {
+  border: 1px solid red;
+}
+.error {
+  color: red;
+  font-size: 12px;
+}
+#reconnect {
+  margin-left: 3%;
+}
+</style>
+
+<style>
 .multiselect__tags {
   font-size: 17px;
 }
@@ -549,32 +624,19 @@ onMounted(async () => {
   border-color: #007bff;
 }
 
-.circle {
-  cursor: pointer;
+.card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.default-message {
-  color: #6c757d;
+.form-control {
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
 }
 
-.default-message i {
-  font-size: 48px;
-}
-
-.uploaded-image img {
-  width: 13rem;
-  height: 13rem;
-  border-radius: 10px;
-}
-
-.is-invalid {
-  border: 1px solid red;
-}
-.error {
-  color: red;
-  font-size: 12px;
-}
-#reconnect {
-  margin-left: 3%;
+.form-control:focus {
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.4);
 }
 </style>

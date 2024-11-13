@@ -123,6 +123,30 @@ import { ChartBarIcon } from "@heroicons/vue/20/solid";
               <span class="ml-3 item-text">Fournisseur</span>
             </RouterLink>
           </li>
+
+          <li class="nav-item dropdown">
+            <a
+              href="#taches"
+              data-toggle="collapse"
+              aria-expanded="false"
+              class="dropdown-toggle nav-link"
+            >
+              <i class="material-icons notranslate">assignment</i>
+              <span class="ml-3 item-text">Tâches</span>
+            </a>
+            <ul class="collapse list-unstyled pl-4 w-100" id="taches">
+              <li class="nav-item">
+                <RouterLink class="nav-link pl-3" to="/motif_tache"
+                  ><span class="ml-1 item-text">Motif tâche</span></RouterLink
+                >
+              </li>
+              <li class="nav-item">
+                <RouterLink class="nav-link pl-3" to="/status_tache"
+                  ><span class="ml-1 item-text">Statut tâche</span></RouterLink
+                >
+              </li>
+            </ul>
+          </li>
         </ul>
         <p class="text-muted nav-heading mt-4 mb-1">
           <span>CHEF ET RESPONSABLE</span>

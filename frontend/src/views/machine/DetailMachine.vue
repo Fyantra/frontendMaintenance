@@ -2,17 +2,27 @@
 import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrud } from "@/composables/useCrud";
+import { getStatusForMachine } from "@/composables/useFonction";
 import TableauDetailMachine from "./TableauDetailMachine.vue";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
-import { Machine, MachineRelation } from "@/types/MachineType";
+import {
+  HistoriqueDeplacementmachine,
+  Machine,
+  Status,
+  MachineRelation,
+} from "@/types/MachineType";
 import { PieceDetachee } from "@/types/PieceDetacheType";
 
 const route = useRoute();
 const router = useRouter();
 const machineCrud = useCrud<Machine>("machine/machines/");
+const statusCrud = useCrud<Status>("machine/status/");
 const relationCrud = useCrud<MachineRelation>("machine/machine_relation/");
 const pieceCrud = useCrud<PieceDetachee>("piece/piecedetachees/");
+const historiqueDeplacementCrud = useCrud<HistoriqueDeplacementmachine>(
+  "machine/historique_machine/"
+);
 
 const errorMessage = machineCrud.errorMessage;
 const error401Message = machineCrud.error401Message;
@@ -25,15 +35,22 @@ const clearError = () => {
 const machine = ref<Machine | null>(null);
 const machineRelations = ref<MachineRelation[]>([]);
 const piecesDetachees = ref<PieceDetachee[]>([]);
+const historiqueDeplacement = ref<HistoriqueDeplacementmachine[]>([]);
 
 const fetchMachineDetails = async (machineId: number) => {
   try {
+    await statusCrud.fetchItems();
     await machineCrud.fetchItemsById(Number(machineId));
     machine.value = machineCrud.items.value[0];
 
     await relationCrud.fetchItems();
     machineRelations.value = relationCrud.items.value.filter(
       (relation) => relation.machine_principale === machine.value.id
+    );
+
+    await historiqueDeplacementCrud.fetchItems();
+    historiqueDeplacement.value = historiqueDeplacementCrud.items.value.filter(
+      (historique) => historique.machine?.id === machine.value.id
     );
 
     if (machine.value.pieces_detachees_id) {
@@ -58,6 +75,7 @@ const deleteItem = async (id: number) => {
 const refreshData = async () => {
   await relationCrud.initializeDataTableWithId("datatable-machines");
   await pieceCrud.initializeDataTableWithId("datatable-pieces");
+  await historiqueDeplacementCrud.initializeDataTableWithId("datatable-deplacement");
 };
 
 // Recuperer l'ID de la machine depuis l'URL
@@ -124,8 +142,18 @@ watch(
               <span class="float-right"
                 ><i class="material-icons badge-icon notranslate mr-2"
                   >precision_manufacturing</i
-                ><span class="badge badge-pill text-white" :style="{ backgroundColor: machine.status?.couleur }">
-                  <ForeignKeyDisplay :description="machine.status?.nom_status" /> </span
+                ><span
+                  class="badge badge-pill text-white"
+                  :style="{
+                    backgroundColor: getStatusForMachine(machine, statusCrud.items.value)
+                      ?.couleur,
+                  }"
+                >
+                  <ForeignKeyDisplay
+                    :description="
+                      getStatusForMachine(machine, statusCrud.items.value)?.nom_status
+                    "
+                  /> </span
               ></span>
             </div>
             <div class="card-body">
@@ -322,6 +350,7 @@ watch(
   <TableauDetailMachine
     :machineRelations="machineRelations"
     :piecesDetachees="piecesDetachees"
+    :historique-deplacement="historiqueDeplacement"
   />
 </template>
 
