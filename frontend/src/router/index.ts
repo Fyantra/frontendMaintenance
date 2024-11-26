@@ -44,7 +44,6 @@ const router = createRouter({
 
     /////////ROUTER INVENTAIRE MACHINE////////////////////////
     { path: '/inventaireMachine', component: () => import('@/views/machine/InventaireMachine.vue'), meta: { requiresAuth: true }, },
-    // { path: '/inventaireMachine', component: () => import('@/views/piece_detache/FormExemple.vue'), meta: { requiresAuth: true }, },
 
     /////////ROUTER BACK-OFFICE ATELIER////////////////////////
     { path: '/endroit', component: () => import('@/views/atelier/EndroitView.vue'), meta: { requiresAuth: true }, },
@@ -57,7 +56,25 @@ const router = createRouter({
     /////////ROUTER BACK-OFFICE TACHE////////////////////////
     { path: '/motif_tache', component: () => import('@/views/tache/MotifTacheView.vue'), meta: { requiresAuth: true }, },
     { path: '/status_tache', component: () => import('@/views/tache/StatusTacheView.vue'), meta: { requiresAuth: true }, },
+    { path: '/listeTache', component: () => import('@/views/tache/ListeTache.vue'), meta: { requiresAuth: true }, },
     { path: '/ajoutTache', component: () => import('@/views/tache/FormTache.vue'), meta: { requiresAuth: true }, },
+    // { path: '/ajoutTache', component: () => import('@/views/piece_detache/FormExemple.vue'), meta: { requiresAuth: true }, },
+    {
+      path: '/modifierTache/:id',
+      name: 'modifierTache',
+      component: () => import('@/views/tache/FormTache.vue'),
+      meta: { requiresAuth: true },
+    },
+
+    { path: '/calendrierTache', component: () => import('@/views/tache/CalendarView.vue'), meta: { requiresAuth: true }, },
+    {
+      path: '/detailTache/:id',
+      name: 'detailTache',
+      // component: () => import('@/views/tache/ExempleTache.vue'),
+      component: () => import('@/views/tache/DetailTache.vue'),
+      meta: { requiresAuth: true },
+    },
+
 
     /////////ROUTER PIECE DETACHE////////////////////////
     { path: '/listePiecedetache', component: () => import('@/views/piece_detache/ListePieceDetache.vue'), meta: { requiresAuth: true }, },
@@ -75,7 +92,10 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
 
-    { path: '/test', component: () => import('@/views/test/CalendarView.vue'), meta: { requiresAuth: true }, },
+    { path: '/test', component: () => import('@/views/test/DetailTacheExemple.vue'), meta: { requiresAuth: true }, },
+
+    ////////////ROUTER NOTIFICATION/////////////
+    { path: '/notification', component: () => import('@/views/templates_composant/NotificationView.vue'), meta: { requiresAuth: true }, },
   ],
 
   scrollBehavior(to, from, savedPosition) {

@@ -154,9 +154,9 @@ onMounted(() => {
                       </div>
                     </div>
 
-                    <div v-if="piece.emplacement.nom_atelier" class="col-sm-6 mb-5">
+                    <div v-if="piece.emplacement?.nom_atelier" class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
-                        <i class="material-icons mr-4">storefront</i>
+                        <i class="material-icons notranslate mr-4">storefront</i>
                         <div>
                           <div class="text-muted">Emplacement</div>
                           <div>
@@ -218,7 +218,7 @@ onMounted(() => {
                       </div>
                     </div>
 
-                    <div v-if="piece.fournisseur.nom_fournisseur" class="col-sm-6 mb-5">
+                    <div v-if="piece.fournisseur?.nom_fournisseur" class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
                         <i class="material-icons mr-4">business_center</i>
                         <div>

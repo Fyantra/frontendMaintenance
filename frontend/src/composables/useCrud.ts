@@ -150,8 +150,10 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
   // Delete item
   const deleteItem = async (id: number) => {
     try {
-      await axios.delete(`${apiUrl}${id}/`, authHeader);
-      initializeDataTable(); 
+      if (confirm("Êtes-vous sûr de vouloir supprimer cet element ?")) {
+        await axios.delete(`${apiUrl}${id}/`, authHeader);
+        initializeDataTable(); 
+      }
     } catch (error) {
       handleError(error);
     }
@@ -159,7 +161,9 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
 
   const deleteItemWithoutInitialize = async (id: number) => {
     try {
-      await axios.delete(`${apiUrl}${id}/`, authHeader);
+      if (confirm("Êtes-vous sûr de vouloir supprimer cet element ?")) {
+        await axios.delete(`${apiUrl}${id}/`, authHeader);
+      }
     } catch (error) {
       handleError(error);
     }
@@ -183,6 +187,22 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
     }
   };
 
+  //pour appeler un API d`un methode specifique
+  const actionItemApi = async (id: number, actionPath: string, method: 'post' | 'get' | 'put' | 'delete' = 'post', data: any = null) => {
+    try {
+      const url = `${apiUrl}${id}/${actionPath}/`;
+      const response = await axios({
+        url,
+        method,
+        data,
+        ...authHeader,
+      });
+      return response.data;
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   return {
     items,
     errorMessage,
@@ -196,6 +216,7 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
     fetchItemsById,
     initializeDataTable,
     initializeDataTableWithId,
+    actionItemApi,
     v$,
   };
 }

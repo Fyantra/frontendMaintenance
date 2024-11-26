@@ -34,7 +34,7 @@ const form = reactive<Machine>({
   numero_de_serie: "",
   type_id: null,
   chaine_id: null,
-  identifiant_status_machine: null,
+  identifiant_status_machine: 1,
   date_creation: null,
 });
 
@@ -69,7 +69,8 @@ const clearError = () => {
 const image = ref<string | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 
-//Ajouter un nouveau piece detache
+const formError = ref<HTMLElement | null>(null);
+//Ajouter un nouveau machine
 const submitForm = async () => {
   v$.value.$touch();
   if (!v$.value.$invalid) {
@@ -137,6 +138,11 @@ const submitForm = async () => {
     }
   } else {
     console.error("Formulaire invalide");
+    formError.value?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+      inline: "nearest", // Positionne horizontalement de façon la plus proche
+    });
   }
 };
 
@@ -223,7 +229,7 @@ onMounted(async () => {
           >{{ machineId ? "Modifier le machine" : "Ajouter un machine " }}
           (* champ obligatoire)
         </div>
-        <div class="card-body">
+        <div class="card-body" ref="formError">
           <form @submit.prevent="submitForm">
             <div class="d-flex justify-content-center">
               <div class="card shadow mb-4">
@@ -536,7 +542,7 @@ onMounted(async () => {
               <div class="form-group col-md-4">
                 <label for="quantite">Quantite</label>
                 <input
-                  style="height: 43px"
+                  style="height: 40px"
                   type="number"
                   :min="0"
                   v-model="machine.quantite"
@@ -588,55 +594,5 @@ onMounted(async () => {
 }
 #reconnect {
   margin-left: 3%;
-}
-</style>
-
-<style>
-.multiselect__tags {
-  font-size: 17px;
-}
-
-.option-item {
-  display: flex;
-  align-items: center;
-}
-.option-icon {
-  width: 40px;
-  height: 40px;
-  margin-right: 10px;
-  border-radius: 18px;
-}
-
-#drag-drop-area {
-  border: 2px dashed #6c757d;
-  border-radius: 10px;
-  padding: 20px;
-  width: 100%;
-  min-height: 100px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: border-color 0.3s ease-in-out;
-}
-
-#drag-drop-area:hover {
-  border-color: #007bff;
-}
-
-.card {
-  border-radius: 12px;
-  border: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.form-control {
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease;
-}
-
-.form-control:focus {
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.4);
 }
 </style>

@@ -43,7 +43,7 @@ import { RouterLink } from "vue-router";
       </RouterLink>
     </div>
     <div class="col-md-3">
-      <RouterLink to="/ajoutTache">
+      <RouterLink to="/listeTache">
         <div class="card shadow mb-4">
           <div class="card-body">
             <div class="row align-items-center">
@@ -66,7 +66,7 @@ import { RouterLink } from "vue-router";
           <div class="row align-items-center">
             <div class="col-3 text-center">
               <span class="circle circle-md bg-secondary justify-content-center">
-                <span class="material-icons notranslate text-white">event</span>
+                <span class="material-icons notranslate text-white">list_alt</span>
               </span>
             </div>
             <div class="col">

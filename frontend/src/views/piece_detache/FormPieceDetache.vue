@@ -92,6 +92,8 @@ const clearError = () => {
 const image = ref<string | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 
+const formError = ref<HTMLElement | null>(null);
+
 //Ajouter un nouveau piece detache
 const submitForm = async () => {
   v$.value.$touch();
@@ -135,6 +137,11 @@ const submitForm = async () => {
     }
   } else {
     console.error("Formulaire invalide");
+    formError.value?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+      inline: "nearest", // Positionne horizontalement de façon la plus proche
+    });
   }
 };
 
@@ -212,7 +219,7 @@ onMounted(async () => {
           >{{ pieceId ? "Modifier une pièce détachée" : "Ajouter une pièce détachée " }}
           (* champ obligatoire)
         </div>
-        <div class="card-body">
+        <div class="card-body" ref="formError">
           <form @submit.prevent="submitForm">
             <div class="d-flex justify-content-center">
               <div class="card shadow mb-4">
@@ -295,7 +302,7 @@ onMounted(async () => {
             </div>
 
             <div class="form-row">
-              <div class="form-group col-md-6">
+              <div class="form-group" :class="[pieceId ? 'col-md-12' : 'col-md-6']">
                 <label for="prix">Prix unitaire*</label>
                 <div class="input-group">
                   <div class="input-group-prepend">
@@ -319,7 +326,7 @@ onMounted(async () => {
                   >{{ error.$message }}</span
                 >
               </div>
-              <div class="form-group col-md-6">
+              <div v-if="!pieceId" class="form-group col-md-6">
                 <label for="quantite">Quantite*</label>
                 <div class="input-group">
                   <input

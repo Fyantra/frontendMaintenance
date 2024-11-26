@@ -292,11 +292,6 @@ onMounted(async () => {
   vertical-align: middle;
 }
 
-.dot-lg {
-  width: 18px;
-  height: 18px;
-}
-
 .routerlink_piece {
   color: #5ec0d8;
 }

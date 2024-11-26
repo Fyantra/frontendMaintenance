@@ -44,6 +44,22 @@ import { ChartBarIcon } from "@heroicons/vue/20/solid";
             </a>
             <ul class="collapse list-unstyled pl-4 w-100" id="dashboard"></ul>
           </li>
+
+          <!-- <li class="nav-item w-100">
+            <RouterLink class="nav-link" to="/notification">
+              <i class="material-icons notranslate">notifications_active</i>
+              <span class="ml-3 item-text">Notification</span>
+            </RouterLink>
+          </li> -->
+          <li class="nav-item w-100 position-relative">
+            <RouterLink class="nav-link" to="/notification">
+              <i class="material-icons notranslate position-relative"
+                >notifications_active</i
+              >
+              <span class="badge badge-danger notification-badge">3</span>
+              <span class="ml-3 item-text">Notification</span>
+            </RouterLink>
+          </li>
         </ul>
         <p class="text-muted nav-heading mt-4 mb-1">
           <span>ADMINISTRATION</span>
@@ -173,6 +189,24 @@ import { ChartBarIcon } from "@heroicons/vue/20/solid";
             </RouterLink>
           </li>
         </ul>
+
+        <p class="text-muted nav-heading mt-4 mb-1">
+          <span>PLANNING</span>
+        </p>
+        <ul class="navbar-nav flex-fill w-100 mb-2">
+          <li class="nav-item w-100">
+            <RouterLink class="nav-link" to="/listeTache">
+              <i class="material-icons notranslate">assignment</i>
+              <span class="ml-3 item-text">Tâches</span>
+            </RouterLink>
+          </li>
+          <li class="nav-item w-100">
+            <RouterLink class="nav-link" to="/calendrierTache">
+              <i class="fe fe-calendar fe-16"></i>
+              <span class="ml-3 item-text">Calendrier de tâche</span>
+            </RouterLink>
+          </li>
+        </ul>
       </nav>
     </aside>
   </div>
@@ -243,5 +277,34 @@ import { ChartBarIcon } from "@heroicons/vue/20/solid";
   line-height: 0;
   vertical-align: middle;
   font-size: 19px;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 5px; 
+  right: 72px; /* Positionné par rapport au nav-item */
+  background-color: #de1d2f; 
+  color: #fff; 
+  font-size: 0.75rem; 
+  font-weight: bold; 
+  padding: 2px 6px; 
+  border-radius: 50%; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.2);
+  }
+  60% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 </style>

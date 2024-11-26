@@ -1,0 +1,51 @@
+.multiselect__tags {
+    font-size: 17px;
+  }
+  
+  .option-item {
+    display: flex;
+    align-items: center;
+  }
+  .option-icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    border-radius: 18px;
+  }
+  
+  #drag-drop-area {
+    border: 2px dashed #6c757d;
+    border-radius: 10px;
+    padding: 20px;
+    width: 100%;
+    min-height: 100px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: border-color 0.3s ease-in-out;
+  }
+  
+  #drag-drop-area:hover {
+    border-color: #007bff;
+  }
+  
+  .card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .form-control {
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease;
+  }
+  
+  .form-control:focus {
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.4);
+  }
+  
+  .multiselect {
+    line-height: 20px;
+  }
