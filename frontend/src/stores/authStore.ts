@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import {jwtDecode} from 'jwt-decode';
 import axios from 'axios';
+import { useNotificationStore } from './notificationStore';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -26,6 +27,8 @@ export const useAuthStore = defineStore('auth', {
 
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('accessToken', accessToken);
+      const notificationStore = useNotificationStore();
+      notificationStore.fetchUnreadNotifications();
       // localStorage.setItem('refreshToken', refreshToken);
     },
     logout() {
@@ -34,7 +37,9 @@ export const useAuthStore = defineStore('auth', {
       // this.refreshToken = null;
       localStorage.removeItem('user');
       localStorage.removeItem('accessToken');
+      const notificationStore = useNotificationStore();
       // localStorage.removeItem('refreshToken');
+      notificationStore.$dispose(); 
     },
 
     async refreshToken() {

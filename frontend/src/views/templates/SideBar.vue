@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import NavBar from "./NavBar.vue";
 import { RouterLink } from "vue-router";
-
 import { ChartBarIcon } from "@heroicons/vue/20/solid";
+import { useNotificationStore } from "@/stores/notificationStore";
+
+const notificationStore = useNotificationStore();
+
+notificationStore.fetchUnreadNotifications();
 </script>
 
 <template>
@@ -45,18 +49,16 @@ import { ChartBarIcon } from "@heroicons/vue/20/solid";
             <ul class="collapse list-unstyled pl-4 w-100" id="dashboard"></ul>
           </li>
 
-          <!-- <li class="nav-item w-100">
-            <RouterLink class="nav-link" to="/notification">
-              <i class="material-icons notranslate">notifications_active</i>
-              <span class="ml-3 item-text">Notification</span>
-            </RouterLink>
-          </li> -->
           <li class="nav-item w-100 position-relative">
             <RouterLink class="nav-link" to="/notification">
               <i class="material-icons notranslate position-relative"
                 >notifications_active</i
               >
-              <span class="badge badge-danger notification-badge">3</span>
+              <span
+                v-if="notificationStore.unreadCount > 0"
+                class="badge badge-danger notification-badge"
+                >{{ notificationStore.unreadCount }}</span
+              >
               <span class="ml-3 item-text">Notification</span>
             </RouterLink>
           </li>
@@ -281,15 +283,15 @@ import { ChartBarIcon } from "@heroicons/vue/20/solid";
 
 .notification-badge {
   position: absolute;
-  top: 5px; 
+  top: 5px;
   right: 72px; /* Positionné par rapport au nav-item */
-  background-color: #de1d2f; 
-  color: #fff; 
-  font-size: 0.75rem; 
-  font-weight: bold; 
-  padding: 2px 6px; 
-  border-radius: 50%; 
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+  background-color: #de1d2f;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   animation: heartbeat 1.5s ease-in-out infinite;
 }
 

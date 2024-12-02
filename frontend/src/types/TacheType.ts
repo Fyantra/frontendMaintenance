@@ -34,6 +34,13 @@ export interface Tache{
     temps_maintenance_minute : minute | null;
     temps_arret_heure : heure | null;
     temps_arret_minute : minute | null; 
+    total_duree_tache?: string;
+    date_creation?: Date | string;
+}
+
+export interface HistoriqueTache{
+    id?: number;
+    tache?: Tache | null;
     date_creation?: Date | string;
 }
 
@@ -44,7 +51,6 @@ export interface ActiviteTache{
     temps_passe_heure: heure | null;
     temps_passe_minute: minute | null;
     tache?: number;     //fk de tache
-    total_duree?: string | null;        //total temps_passe_heure et temps_passe_minute de tous les taches
     date_creation?: Date | string;
 }
 

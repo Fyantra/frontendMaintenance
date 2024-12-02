@@ -22,7 +22,6 @@ const router = createRouter({
     /////////ROUTER BACK-OFFICE MACHINE////////////////////////
     { path: '/modele', component: () => import('@/views/machine/ModeleView.vue'), meta: { requiresAuth: true }, },
     { path: '/type', component: () => import('@/views/machine/TypeView.vue'), meta: { requiresAuth: true }, },
-    { path: '/nom_machine', component: () => import('@/views/machine/NomMachineView.vue'), meta: { requiresAuth: true }, },
     { path: '/marque', component: () => import('@/views/machine/MarqueView.vue'), meta: { requiresAuth: true }, },
     { path: '/status', component: () => import('@/views/machine/StatusView.vue'), meta: { requiresAuth: true }, },
 
@@ -32,6 +31,12 @@ const router = createRouter({
       path: '/detailMachine/:id',
       name: 'detailMachine',
       component: () => import('@/views/machine/DetailMachine.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/formDynamiqueMachine/:id',
+      name: 'formDynamiqueMachine',
+      component: () => import('@/views/machine/FormDynamiqueMachine.vue'),
       meta: { requiresAuth: true },
     },
 
@@ -65,6 +70,12 @@ const router = createRouter({
       component: () => import('@/views/tache/FormTache.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/ajoutTacheMachine/:machineId',
+      name: 'ajoutTacheMachine',
+      component: () => import('@/views/tache/FormTache.vue'),
+      meta: { requiresAuth: true },
+    },
 
     { path: '/calendrierTache', component: () => import('@/views/tache/CalendarView.vue'), meta: { requiresAuth: true }, },
     {
@@ -92,7 +103,7 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
 
-    { path: '/test', component: () => import('@/views/test/DetailTacheExemple.vue'), meta: { requiresAuth: true }, },
+    // { path: '/test', component: () => import('@/views/test/DetailTacheExemple.vue'), meta: { requiresAuth: true }, },
 
     ////////////ROUTER NOTIFICATION/////////////
     { path: '/notification', component: () => import('@/views/templates_composant/NotificationView.vue'), meta: { requiresAuth: true }, },

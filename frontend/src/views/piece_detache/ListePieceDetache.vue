@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useCrud } from "@/composables/useCrud";
-import { dotColor } from "@/composables/useFonction";
+import { dotColor, getformatNumber } from "@/composables/useFonction";
 import { PieceDetachee, ActiveFilters } from "@/types/PieceDetacheType";
 import SectionNavigation from "../templates/SectionNavigation.vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
+import ReapproModal from "./ReapproModal.vue";
 
 // Récupérer les données des pièces détachées
 const pieceDetacheCrud = useCrud<PieceDetachee>("piece/piecedetachees/");
@@ -16,6 +17,15 @@ const error401Message = pieceDetacheCrud.error401Message;
 const clearError = () => {
   //reinitialiser le message d`erreur
   errorMessage.value = null;
+};
+
+const { formatNumber } = getformatNumber();
+
+const selectedPiece = ref<PieceDetachee>(null);
+
+const openReapproModal = (piece: PieceDetachee) => {
+  selectedPiece.value = piece;
+  $("#reapproModal").modal("show");
 };
 
 const formFilters = ref({
@@ -323,142 +333,182 @@ onMounted(async () => {
       <!--Liste des pièces détachées-->
       <div class="row">
         <div class="col-md-12">
-          <table id="datatable-1" class="table table-borderless">
-            <thead class="thead-piece">
-              <tr>
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-1 notranslate">tag</i> ID</strong
-                  >
-                </th>
-                <th>
-                  <strong><i class="fe fe-image fe-12 mr-2"></i>Image</strong>
-                </th>
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate">handyman</i
-                    >Nom</strong
-                  >
-                </th>
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate">money</i>Prix
-                    unitaire</strong
-                  >
-                </th>
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate">layers</i
-                    >Quantité</strong
-                  >
-                </th>
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate">storefront</i
-                    >Emplacement</strong
-                  >
-                </th>
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate">calendar_today</i
-                    >Date de création</strong
-                  >
-                </th>
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate">gesture</i
-                    >Action</strong
-                  >
-                </th>
-              </tr>
-            </thead>
-            <tbody class="tbody-piece">
-              <tr v-for="piece in filteredPieces" :key="piece.id" class="tr-piece">
-                <td>
-                  <span>{{ piece.id }}</span>
-                </td>
-                <td>
-                  <div v-if="piece.image" class="avatar avatar-md">
-                    <img :src="piece.image" alt="Ceci est un image" class="avatar-img" />
-                  </div>
-                  <div v-else class="material-icons notranslate" style="font-size: 6rem">
-                    handyman
-                  </div>
-                </td>
-                <!--Nom et modele-->
-                <th scope="col">
-                  <strong
-                    ><RouterLink
-                      class="routerlink_piece"
-                      :to="{ name: 'detailPieceDetache', params: { id: piece.id } }"
-                      >{{ piece.nom_piecedetache }}
-                      <ForeignKeyDisplay
-                        :description="piece.modele?.nom_modele"
-                      /> </RouterLink
-                  ></strong>
-                </th>
-
-                <td>{{ piece.prix_unitaire }}</td>
-                <td>
-                  <div class="d-flex align-items-center justify-content-center">
-                    <span
-                      :class="[
-                        'dot',
-                        'dot-lg',
-                        dotColor(piece.quantite, piece.stock_min, piece.stock_max),
-                        'mr-2',
-                      ]"
-                    ></span>
-                    <span>{{ piece.quantite }}</span>
-                  </div>
-                </td>
-                <td>
-                  <ForeignKeyDisplay :description="piece.emplacement?.nom_atelier" />
-                </td>
-                <td>{{ new Date(piece.date_creation).toLocaleDateString() }}</td>
-                <td>
-                  <div class="col-auto">
+          <div class="card shadow">
+            <div class="card-body">
+              <div class="toolbar row mb-3">
+                <div class="col ml-auto">
+                  <div class="dropdown float-right">
                     <button
-                      class="btn btn-sm dropdown-toggle more-horizontal"
+                      class="btn btn-secondary dropdown-toggle"
                       type="button"
+                      id="actionMenuButton"
                       data-toggle="dropdown"
                       aria-haspopup="true"
                       aria-expanded="false"
-                    ></button>
-                    <div class="dropdown-menu m-2">
-                      <a class="dropdown-item"
-                        ><i class="fe fe-meh fe-12 mr-4"></i>Créer une tâche</a
-                      >
-                      <a class="dropdown-item"
-                        ><i class="fe fe-message-circle fe-12 mr-4"></i
-                        >Réapprovisionner</a
-                      >
-                      <a
-                        class="dropdown-item"
-                        @click="
-                          $router.push({
-                            name: 'modifierPieceDetache',
-                            params: { id: piece.id },
-                          })
-                        "
-                      >
-                        <i class="fe fe-edit fe-12 mr-4"></i> Modifier
-                      </a>
+                    >
+                      Telecharger
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="actionMenuButton">
+                      <a class="dropdown-item" href="#">CSV</a>
+                      <a class="dropdown-item" href="#">PDF</a>
+                      <a class="dropdown-item" href="#">Excel</a>
                     </div>
                   </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </div>
+              </div>
+              <table id="datatable-1" class="table table-hover">
+                <thead class="thead-piece">
+                  <tr>
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-1 notranslate">tag</i>
+                        ID</strong
+                      >
+                    </th>
+                    <th>
+                      <strong><i class="fe fe-image fe-12 mr-2"></i>Image</strong>
+                    </th>
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-2 notranslate">handyman</i
+                        >Nom</strong
+                      >
+                    </th>
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-2 notranslate">money</i>Prix
+                        unitaire</strong
+                      >
+                    </th>
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-2 notranslate">layers</i
+                        >Quantité</strong
+                      >
+                    </th>
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-2 notranslate">storefront</i
+                        >Emplacement</strong
+                      >
+                    </th>
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-2 notranslate"
+                          >calendar_today</i
+                        >Date de création</strong
+                      >
+                    </th>
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-2 notranslate">gesture</i
+                        >Action</strong
+                      >
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="tbody-piece">
+                  <tr v-for="piece in filteredPieces" :key="piece.id" class="tr-piece">
+                    <td>
+                      <span>{{ piece.id }}</span>
+                    </td>
+                    <td>
+                      <div v-if="piece.image" class="avatar avatar-md">
+                        <img
+                          :src="piece.image"
+                          alt="Ceci est un image"
+                          class="avatar-img"
+                        />
+                      </div>
+                      <div
+                        v-else
+                        class="material-icons notranslate"
+                        style="font-size: 6rem"
+                      >
+                        handyman
+                      </div>
+                    </td>
+                    <!--Nom et modele-->
+                    <th scope="col">
+                      <strong
+                        ><RouterLink
+                          class="routerlink_piece"
+                          :to="{ name: 'detailPieceDetache', params: { id: piece.id } }"
+                          >{{ piece.nom_piecedetache }}
+                          <ForeignKeyDisplay
+                            :description="piece.modele?.nom_modele"
+                          /> </RouterLink
+                      ></strong>
+                    </th>
+
+                    <td>{{ formatNumber(piece.prix_unitaire) }}</td>
+                    <td>
+                      <div class="d-flex align-items-center justify-content-center">
+                        <span
+                          :class="[
+                            'dot',
+                            'dot-lg',
+                            dotColor(piece.quantite, piece.stock_min, piece.stock_max),
+                            'mr-2',
+                          ]"
+                        ></span>
+                        <span>{{ piece.quantite }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <ForeignKeyDisplay :description="piece.emplacement?.nom_atelier" />
+                    </td>
+                    <td>{{ new Date(piece.date_creation).toLocaleDateString() }}</td>
+                    <td>
+                      <div class="col-auto">
+                        <button
+                          class="btn btn-sm dropdown-toggle more-horizontal"
+                          type="button"
+                          data-toggle="dropdown"
+                          aria-haspopup="true"
+                          aria-expanded="false"
+                        ></button>
+                        <div class="dropdown-menu m-2">
+                          <a @click="openReapproModal(piece)" class="dropdown-item"
+                            ><i class="material-icons layers mr-4 notranslate">layers</i
+                            >Réapprovisionner</a
+                          >
+                          <a
+                            class="dropdown-item"
+                            @click="
+                              $router.push({
+                                name: 'modifierPieceDetache',
+                                params: { id: piece.id },
+                              })
+                            "
+                          >
+                            <i class="fe fe-edit fe-12 mr-4"></i> Modifier
+                          </a>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!--Modal de reapprovisionnement-->
+  <ReapproModal :piece="selectedPiece" @refreshPiece="refreshData" />
 </template>
 
 <style scoped>
 .nb {
   line-height: 0;
+  vertical-align: middle;
+}
+
+.layers {
+  font-size: 15px;
   vertical-align: middle;
 }
 
@@ -499,5 +549,11 @@ td {
 
 .all {
   border-top: dashed;
+}
+</style>
+
+<style>
+.dataTables_wrapper {
+  margin-top: 20px;
 }
 </style>

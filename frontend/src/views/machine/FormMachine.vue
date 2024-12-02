@@ -294,7 +294,7 @@ onMounted(async () => {
                   class="form-control custom-select"
                   v-model="form.marque_id"
                 >
-                  <option selected disabled>Selectionner une marque</option>
+                  <option selected disabled>Sélectionner une marque</option>
                   <option
                     v-for="marque in marques.items.value"
                     :key="marque.id"
@@ -308,7 +308,7 @@ onMounted(async () => {
 
             <div class="form-row">
               <div class="form-group col-md-6">
-                <label for="num_serie">Numero de serie*</label>
+                <label for="num_serie">Numéro de série*</label>
                 <input
                   type="text"
                   class="form-control"
@@ -321,11 +321,11 @@ onMounted(async () => {
                   }"
                 />
                 <span v-if="v$.numero_de_serie.$error" class="error"
-                  >Numero de serie requis.</span
+                  >Numéro de série requis.</span
                 >
               </div>
               <div class="form-group col-md-6">
-                <label for="num_moteur">Numero de moteur</label>
+                <label for="num_moteur">Numéro de moteur</label>
                 <input
                   type="text"
                   class="form-control"
@@ -344,7 +344,7 @@ onMounted(async () => {
                 v-model="form.type_id"
                 :class="{ 'is-invalid': v$.type_id.$invalid && v$.type_id.$dirty }"
               >
-                <option selected disabled>Selectionner un type</option>
+                <option selected disabled>Sélectionner un type</option>
                 <option v-for="type in types.items.value" :key="type.id" :value="type.id">
                   {{ type.nom_type }}
                 </option>
@@ -370,7 +370,7 @@ onMounted(async () => {
                   class="form-control custom-select"
                   v-model="form.atelier_id"
                 >
-                  <option selected disabled>Selectionner un atelier</option>
+                  <option selected disabled>Sélectionner un atelier</option>
                   <option
                     v-for="atelier in ateliers.items.value"
                     :key="atelier.id"
@@ -388,7 +388,7 @@ onMounted(async () => {
                   v-model="form.chaine_id"
                   :class="{ 'is-invalid': v$.chaine_id.$invalid && v$.chaine_id.$dirty }"
                 >
-                  <option selected disabled>Selectionner le chaine correspondant</option>
+                  <option selected disabled>Sélectionner le chaine correspondant</option>
                   <option
                     v-for="chaine in chaines.items.value"
                     :key="chaine.id"
@@ -430,7 +430,7 @@ onMounted(async () => {
                   class="form-control custom-select"
                   v-model="form.identifiant_status_machine"
                 >
-                  <option selected disabled>Selectionner le statut</option>
+                  <option selected disabled>Sélectionner le statut</option>
                   <option
                     v-for="status in status.items.value"
                     :key="status.id"
@@ -468,7 +468,7 @@ onMounted(async () => {
                   class="form-control"
                   v-model="form.fournisseur_id"
                 >
-                  <option selected disabled>Selectionner un fournisseur</option>
+                  <option selected disabled>Sélectionner un fournisseur</option>
                   <option
                     v-for="fournisseur in fournisseurs.items.value"
                     :key="fournisseur.id"

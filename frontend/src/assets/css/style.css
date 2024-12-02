@@ -49,3 +49,9 @@
   .multiselect {
     line-height: 20px;
   }
+
+  .tableauDetail {
+    border: 1px solid #7e7575;
+    border-radius: 10px;
+  }
+  

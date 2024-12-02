@@ -12045,11 +12045,9 @@ a.uppy-Dashboard-poweredBy {
     top: -10px;
     right: -35px; } }
 
-    .thead-piece{
-      background-color: #383c3c;
-    }
+    
 
-    .tbody-piece .tr-piece:hover {
+    /* .tbody-piece .tr-piece:hover {
       background-color: rgb(87, 87, 87);
-    }
+    } */
     

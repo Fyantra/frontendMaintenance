@@ -31,3 +31,23 @@ export interface ActiveFilters {
     prix_max: number | null;
   }
   
+export interface ReapprovisionnementPieceDetachee{
+    id?: number;
+    pieces_detachees: number;   //fk piece detachee
+    prix_piece_detachees: number;
+    quantite: number;
+    date_realisation: Date | string;
+    date_creation: Date | string;
+}
+
+export interface HistoriqueMouvementPieceDetachee{
+    id?: number;
+    piece_detachee: number;   //fk piece detachee
+    tache: number | null;      //fk tache
+    source: string;
+    date_realisation: Date | string;
+    quantite: number;
+    cout: number;
+    quantite_piece: number;
+    date_creation: Date | string;
+}

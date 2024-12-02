@@ -27,6 +27,7 @@ const machinesOptions = ref<Machine[]>([]);
 const router = useRouter();
 const route = useRoute();
 const tacheId = route.params.id; //en cas de modification
+const machineId = ref(route.params.machineId); //insertion tache machine
 
 const isAllDay = ref(false);
 
@@ -228,6 +229,12 @@ onMounted(async () => {
     form.heure_fin = tache?.value.heure_fin ? tache?.value.heure_fin : nextTime.value;
     selectedMachine.value = tache?.value.machine;
   }
+
+  if (machineId.value) {
+    await machines.fetchItemsById(Number(machineId.value));
+    selectedMachine.value = machines.items.value[0];
+  }
+
   await Promise.all([
     await machines.fetchItems(),
     (machinesOptions.value = machines.items.value),
@@ -331,7 +338,7 @@ onMounted(async () => {
                 >
               </div>
               <div class="form-row">
-                <div class="form-group col-md-6">
+                <div class="form-group" :class="[isAllDay ? 'col-md-12' : 'col-md-6']">
                   <label for="date_debut">Date de début*</label>
                   <input
                     class="form-control"
@@ -372,7 +379,7 @@ onMounted(async () => {
                 </div>
               </div>
               <div class="form-row">
-                <div class="form-group col-md-6">
+                <div class="form-group" :class="[isAllDay ? 'col-md-12' : 'col-md-6']">
                   <label for="date_fin">Date de fin*</label>
                   <input
                     class="form-control"

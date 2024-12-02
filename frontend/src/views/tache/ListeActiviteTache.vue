@@ -17,10 +17,13 @@ import { ActiviteTache, ActiviteTachePieceDetachee, Tache } from "@/types/TacheT
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
 import { PieceDetachee } from "@/types/PieceDetacheType";
 import { formatDateTime } from "@/composables/useFonction";
-import { formatDateTimeLocal } from "@/composables/useFonction";
+import { formatDateTimeLocal, getformatNumber } from "@/composables/useFonction";
 import { IdentifiantStatusTache } from "@/config/statusConfig";
+import { useNotificationStore } from "@/stores/notificationStore";
 
 const isOpen = ref(false);
+const notificationStore = useNotificationStore();
+const { formatNumber } = getformatNumber();
 
 const props = defineProps<{
   tacheProps: Tache;
@@ -138,7 +141,8 @@ watchEffect(() => {
   }
 });
 
-const addPieceToActivite = (activiteId: number) => {    //ajouter le formulaire dynamique
+const addPieceToActivite = (activiteId: number) => {
+  //ajouter le formulaire dynamique
   if (!newPieceDetacheeByActivite.value[activiteId]) {
     newPieceDetacheeByActivite.value[activiteId] = [];
     errors[activiteId] = {};
@@ -150,12 +154,14 @@ const addPieceToActivite = (activiteId: number) => {    //ajouter le formulaire 
   });
 };
 
-const removePieceFromActivite = (activiteId: number, index: number) => {    //supprimer le formulaire dynamique
+const removePieceFromActivite = (activiteId: number, index: number) => {
+  //supprimer le formulaire dynamique
   newPieceDetacheeByActivite.value[activiteId].splice(index, 1);
   delete errors[activiteId][index];
 };
 
-const savePieceForActivite = async (activiteId: number, index: number) => {   //ajouter un piece detachee dans un activite
+const savePieceForActivite = async (activiteId: number, index: number) => {
+  //ajouter un piece detachee dans un activite
   const piece = newPieceDetacheeByActivite.value[activiteId][index];
   const pieceErrors = validationRulesPieceDetachee(piece);
 
@@ -169,6 +175,7 @@ const savePieceForActivite = async (activiteId: number, index: number) => {   //
 
       await fetchActivites();
       removePieceFromActivite(activiteId, index);
+      notificationStore.fetchUnreadNotifications();
     } catch (error) {
       console.error("Erreur lors de l'enregistrement :", error);
     }
@@ -177,11 +184,15 @@ const savePieceForActivite = async (activiteId: number, index: number) => {   //
   }
 };
 
-const deletePieceFromActivite = async (activitePieceId: number) => {    //supprimer un piece detachee d`un activite
+const deletePieceFromActivite = async (activitePieceId: number) => {
+  //supprimer un piece detachee d`un activite
   try {
-    await activitePieceCrud.deleteItemWithoutInitialize(activitePieceId);
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce pièce détachée de l`activité ?")) {
+      await activitePieceCrud.deleteItemWithoutInitialize(activitePieceId);
+    }
 
     await fetchActivites();
+    notificationStore.fetchUnreadNotifications();
   } catch (error) {
     console.error("Erreur lors de la suppression :", error);
     alert("Une erreur est survenue lors de la suppression de la pièce détachée.");
@@ -229,9 +240,13 @@ const fetchPiecesDetachees = async () => {
   pieceOptions.value = pieceDetacheeCrud.items.value;
 };
 
-const deleteActivite = async (id: number) => {    //supprimer un activite entiere
-  await activiteCrud.deleteItemWithoutInitialize(id);
+const deleteActivite = async (id: number) => {
+  //supprimer un activite entiere
+  if (confirm("Êtes-vous sûr de vouloir supprimer cette activité ?")) {
+    await activiteCrud.deleteItemWithoutInitialize(id);
+  }
   fetchActivites();
+  notificationStore.fetchUnreadNotifications();
 };
 
 // Ouvrir le modal de modification d`activite
@@ -243,7 +258,8 @@ const openEditModal = (activite: ActiviteTache) => {
   }
 };
 
-const submitUpdateModal = async () => {   //modifier un activite
+const submitUpdateModal = async () => {
+  //modifier un activite
   v$.value.$touch();
   let isValid = !v$.value.$invalid;
 
@@ -263,7 +279,6 @@ onMounted(async () => {
   await fetchPiecesDetachees();
   await fetchActivites();
 });
-
 </script>
 
 <template>
@@ -273,11 +288,11 @@ onMounted(async () => {
     :error401Message="error401Message"
     :clearError="clearError"
   />
-  <div class="card card-fill timeline">
+  <div class="card card-fill timeline mb-4">
     <div class="card-header">
       <strong class="card-title">Liste des activités</strong>
     </div>
-    <div class="card-body">
+    <div v-if="activites.length > 0" class="card-body">
       <div
         v-for="activite in activites"
         :key="activite.id"
@@ -293,7 +308,8 @@ onMounted(async () => {
                   formatDateTime(String(activite.date_creation))
                 }}</span></strong
               >
-              <button v-if="!isTacheTerminee && !isTacheAnnulee"
+              <button
+                v-if="!isTacheTerminee && !isTacheAnnulee"
                 @click="deleteActivite(activite.id)"
                 type="button"
                 class="btn btn-danger btn-sm float-right"
@@ -301,7 +317,8 @@ onMounted(async () => {
                 Supprimer
               </button>
               <!--Modifier l`activite en ouvrant un modal-->
-              <button v-if="!isTacheTerminee && !isTacheAnnulee"
+              <button
+                v-if="!isTacheTerminee && !isTacheAnnulee"
                 @click="openEditModal(activite)"
                 data-toggle="modal"
                 data-target="#updateActivite"
@@ -367,24 +384,24 @@ onMounted(async () => {
                   >{{ activitePiece.pieces_detachees?.nom_piecedetache }}
                 </RouterLink>
                 (<strong>{{ activitePiece.quantite }}</strong
-                >) = {{ activitePiece.total }} Ariary
+                >) = {{ formatNumber(activitePiece.total) }} Ariary
                 <span v-if="!isTacheTerminee && !isTacheAnnulee">
-                <button
-                  class="btn btn-sm dropdown-toggle more-vertical"
-                  type="button"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                ></button>
-                <div class="dropdown-menu" style="padding: initial">
-                  <a
-                    class="dropdown-item"
-                    @click="deletePieceFromActivite(activitePiece.id)"
-                  >
-                    <i class="fe fe-delete mr-4"></i> Supprimer
-                  </a>
-                </div>
-              </span>
+                  <button
+                    class="btn btn-sm dropdown-toggle more-vertical"
+                    type="button"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  ></button>
+                  <div class="dropdown-menu" style="padding: initial">
+                    <a
+                      class="dropdown-item"
+                      @click="deletePieceFromActivite(activitePiece.id)"
+                    >
+                      <i class="fe fe-delete mr-4"></i> Supprimer
+                    </a>
+                  </div>
+                </span>
               </div>
             </div>
             <div class="row mb-4 align-items-center">
@@ -405,7 +422,9 @@ onMounted(async () => {
                 <div class="total-box">
                   <strong
                     >TOTAL:
-                    {{ piecesParActivite[activite.id]?.[0]?.somme_totale }}</strong
+                    {{
+                      formatNumber(piecesParActivite[activite.id]?.[0]?.somme_totale)
+                    }}</strong
                   >
                   Ariary
                 </div>
@@ -483,6 +502,7 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+    <div v-else><h6 class="text-muted text-center">Aucune activité</h6></div>
   </div>
 
   <!--Modal de modification d`activite-->

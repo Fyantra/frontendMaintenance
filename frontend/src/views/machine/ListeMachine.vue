@@ -100,186 +100,221 @@ onMounted(async () => {
 
   <div class="row justify-content-center">
     <div class="col-12">
-      <div class="row items-align-center my-4 d-none d-lg-flex">
-        <div class="col-md">
-          <button
-            @click="toggleStatusFilters"
-            type="button"
-            class="btn mb-2 btn-outline-warning"
-          >
-            <span class="fe fe-arrow-down fe-16 mr-2"></span>Filtre sur les status
-          </button>
-          <ul v-if="showStatusFilters" class="nav nav-pills justify-content-start mt-2">
-            <li
-              v-for="status in status.items.value"
-              :key="status.id"
-              class="nav-item ml-2"
-            >
-              <a
-                class="nav-link status-link"
-                :style="{
-                  backgroundColor:
-                    selectedStatus === status.identifiant
-                      ? status.couleur
-                      : 'transparent',
-                }"
-                @click.prevent="selectStatus(status.identifiant)"
-              >
-                {{ status.nom_status }}
-                <span class="badge badge-pill bg-primary text-white ml-2">
-                  {{ statusCounts[status.identifiant] || 0 }}
-                </span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
-
       <!--Liste des pièces détachées-->
       <div class="row">
         <div class="col-md-12">
-          <table id="datatable-1" class="table table-borderless">
-            <thead class="thead-piece">
-              <tr>
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-1 notranslate">tag</i> ID</strong
+          <div class="card shadow">
+            <div class="card-body">
+              <div class="row items-align-center my-2 mb-4 d-none d-lg-flex">
+                <div class="col-md">
+                  <button
+                    @click="toggleStatusFilters"
+                    type="button"
+                    class="btn mb-2 btn-outline-warning"
                   >
-                </th>
-                <th>
-                  <strong><i class="fe fe-image fe-12 mr-2"></i>Image</strong>
-                </th>
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate"
-                      >precision_manufacturing</i
-                    >Nom</strong
+                    <span class="fe fe-arrow-down fe-16 mr-2"></span>Filtre sur les status
+                  </button>
+                  <ul
+                    v-if="showStatusFilters"
+                    class="nav nav-pills justify-content-start mt-2"
                   >
-                </th>
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate"
-                      >confirmation_number</i
-                    >Numero de serie
-                  </strong>
-                </th>
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate">category</i
-                    >Type</strong
-                  >
-                </th>
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate">info</i
-                    >Statut</strong
-                  >
-                </th>
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate">calendar_today</i
-                    >Date d'acquisition</strong
-                  >
-                </th>
-
-                <th>
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate">gesture</i
-                    >Action</strong
-                  >
-                </th>
-              </tr>
-            </thead>
-            <tbody class="tbody-piece">
-              <tr v-for="machine in filteredMachines" :key="machine.id" class="tr-piece">
-                <td>
-                  <span>{{ machine.id }}</span>
-                </td>
-                <td>
-                  <div v-if="machine.image" class="avatar avatar-md">
-                    <img
-                      :src="machine.image"
-                      alt="Ceci est un image"
-                      class="avatar-img"
-                    />
-                  </div>
-                  <div v-else class="material-icons notranslate" style="font-size: 6rem">
-                    precision_manufacturing
-                  </div>
-                </td>
-                <!--Nom et modele-->
-                <th scope="col">
-                  <strong
-                    ><RouterLink
-                      class="routerlink_piece"
-                      :to="{ name: 'detailMachine', params: { id: machine.id } }"
-                      >{{ machine.nom_machine }}
-                      <ForeignKeyDisplay
-                        :description="machine.marque?.nom_marque"
-                      /> </RouterLink
-                  ></strong>
-                </th>
-
-                <td>{{ machine.numero_de_serie }}</td>
-                <td>
-                  <ForeignKeyDisplay :description="machine.type?.nom_type" />
-                </td>
-                <td>
-                  <span
-                    class="badge badge-pill text-white"
-                    :style="{
-                      backgroundColor: getStatusForMachine(machine, status.items.value)
-                        ?.couleur,
-                    }"
-                  >
-                    <ForeignKeyDisplay
-                      :description="
-                        getStatusForMachine(machine, status.items.value)?.nom_status
-                      "
-                    />
-                  </span>
-                </td>
-                <td>
-                  {{
-                    machine.date_acquisition
-                      ? new Date(machine.date_acquisition).toLocaleDateString()
-                      : null
-                  }}
-                </td>
-                <td>
-                  <div class="col-auto">
-                    <button
-                      class="btn btn-sm dropdown-toggle more-horizontal"
-                      type="button"
-                      data-toggle="dropdown"
-                      aria-haspopup="true"
-                      aria-expanded="false"
-                    ></button>
-                    <div class="dropdown-menu m-2">
-                      <a class="dropdown-item"
-                        ><i class="fe fe-meh fe-12 mr-4"></i>Créer une tâche</a
-                      >
-                      <a class="dropdown-item"
-                        ><i class="fe fe-message-circle fe-12 mr-4"></i
-                        >Réapprovisionner</a
-                      >
+                    <li
+                      v-for="status in status.items.value"
+                      :key="status.id"
+                      class="nav-item ml-2"
+                    >
                       <a
-                        class="dropdown-item"
-                        @click="
-                          $router.push({
-                            name: 'modifierMachine',
-                            params: { id: machine.id },
-                          })
-                        "
+                        class="nav-link status-link"
+                        :style="{
+                          backgroundColor:
+                            selectedStatus === status.identifiant
+                              ? status.couleur
+                              : 'transparent',
+                          color:
+                            selectedStatus === status.identifiant ? 'floralwhite' : '',
+                        }"
+                        @click.prevent="selectStatus(status.identifiant)"
                       >
-                        <i class="fe fe-edit fe-12 mr-4"></i> Modifier
+                        {{ status.nom_status }}
+                        <span class="badge badge-pill bg-primary text-white ml-2">
+                          {{ statusCounts[status.identifiant] || 0 }}
+                        </span>
                       </a>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <table id="datatable-1" class="table table-hover">
+                <thead class="thead-piece">
+                  <tr>
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-1 notranslate">tag</i>
+                        ID</strong
+                      >
+                    </th>
+                    <th>
+                      <strong><i class="fe fe-image fe-12 mr-2"></i>Image</strong>
+                    </th>
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-2 notranslate"
+                          >precision_manufacturing</i
+                        >Nom</strong
+                      >
+                    </th>
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-2 notranslate"
+                          >confirmation_number</i
+                        >Numero de serie
+                      </strong>
+                    </th>
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-2 notranslate">category</i
+                        >Type</strong
+                      >
+                    </th>
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-2 notranslate">info</i
+                        >Statut</strong
+                      >
+                    </th>
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-2 notranslate"
+                          >calendar_today</i
+                        >Date d'acquisition</strong
+                      >
+                    </th>
+
+                    <th>
+                      <strong
+                        ><i class="material-icons fe-12 mr-2 notranslate">gesture</i
+                        >Action</strong
+                      >
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="tbody-piece">
+                  <tr
+                    v-for="machine in filteredMachines"
+                    :key="machine.id"
+                    class="tr-piece"
+                  >
+                    <td>
+                      <span>{{ machine.id }}</span>
+                    </td>
+                    <td>
+                      <div v-if="machine.image" class="avatar avatar-md">
+                        <img
+                          :src="machine.image"
+                          alt="Ceci est un image"
+                          class="avatar-img"
+                        />
+                      </div>
+                      <div
+                        v-else
+                        class="material-icons notranslate"
+                        style="font-size: 6rem"
+                      >
+                        precision_manufacturing
+                      </div>
+                    </td>
+                    <!--Nom et modele-->
+                    <th scope="col">
+                      <strong
+                        ><RouterLink
+                          class="routerlink_piece"
+                          :to="{ name: 'detailMachine', params: { id: machine.id } }"
+                          >{{ machine.nom_machine }}
+                          <ForeignKeyDisplay
+                            :description="machine.marque?.nom_marque"
+                          /> </RouterLink
+                      ></strong>
+                    </th>
+
+                    <td>{{ machine.numero_de_serie }}</td>
+                    <td>
+                      <ForeignKeyDisplay :description="machine.type?.nom_type" />
+                    </td>
+                    <td>
+                      <span
+                        class="badge-status badge btn btn-outline"
+                        :style="{
+                          borderColor: getStatusForMachine(machine, status.items.value)
+                            ?.couleur,
+                          color: getStatusForMachine(machine, status.items.value)
+                            ?.couleur,
+                        }"
+                      >
+                        <ForeignKeyDisplay
+                          :description="
+                            getStatusForMachine(machine, status.items.value)?.nom_status
+                          "
+                      /></span>
+                    </td>
+                    <td>
+                      {{
+                        machine.date_acquisition
+                          ? new Date(machine.date_acquisition).toLocaleDateString()
+                          : null
+                      }}
+                    </td>
+                    <td>
+                      <div class="col-auto">
+                        <button
+                          class="btn btn-sm dropdown-toggle more-horizontal"
+                          type="button"
+                          data-toggle="dropdown"
+                          aria-haspopup="true"
+                          aria-expanded="false"
+                        ></button>
+                        <div class="dropdown-menu m-2">
+                          <a
+                            class="dropdown-item"
+                            @click="
+                              $router.push({
+                                name: 'formDynamiqueMachine',
+                                params: { id: machine.id },
+                              })
+                            "
+                          >
+                            <i class="fe fe-plus fe-12 mr-4"></i> Créer un nouveau machine
+                          </a>
+                          <a
+                            class="dropdown-item"
+                            @click="
+                              $router.push({
+                                name: 'ajoutTacheMachine',
+                                params: { machineId: machine.id },
+                              })
+                            "
+                            ><i class="material-icons assignment mr-4 notranslate"
+                              >assignment</i
+                            >Créer une tâche</a
+                          >
+                          <a
+                            class="dropdown-item"
+                            @click="
+                              $router.push({
+                                name: 'modifierMachine',
+                                params: { id: machine.id },
+                              })
+                            "
+                          >
+                            <i class="fe fe-edit fe-12 mr-4"></i> Modifier
+                          </a>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -289,6 +324,11 @@ onMounted(async () => {
 <style scoped>
 .nb {
   line-height: 0;
+  vertical-align: middle;
+}
+
+.assignment {
+  font-size: 15px;
   vertical-align: middle;
 }
 

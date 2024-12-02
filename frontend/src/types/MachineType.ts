@@ -50,7 +50,7 @@ export interface Machine{
   date_mis_en_place?: Date | string | null;
   date_acquisition?: Date | string | null;
   identifiant_status_machine?: number;
-  date_hors_service?: Date | null;
+  date_hors_service?: Date | string | null;
   description?: string | null;
   image?: string | null;
   reference_fabricant?: string | null;
@@ -58,6 +58,7 @@ export interface Machine{
   fournisseur_id?: number | null;
   pieces_detachees?: PieceDetachee[] | null;
   pieces_detachees_id?: number | null;
+  total_duree_machine?: string;
   date_creation?: Date | string;
 }
 

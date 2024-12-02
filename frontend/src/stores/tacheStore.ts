@@ -25,7 +25,7 @@ export const useTacheStore = defineStore("tacheStore", () => {
     }
   
     try {
-      if (dateFin < now && heureFin && heureFin < now) {
+      if ((dateFin < now && heureFin && heureFin < now) || dateFin < now) {
         switch (tache.identifiant_status_tache) {
           case IdentifiantStatusTache.enCours:
             // Si la tâche est "En cours", elle devient "En retard et commencée"
@@ -74,19 +74,9 @@ export const useTacheStore = defineStore("tacheStore", () => {
     }
   };
 
-  // Observer les tâches en temps réel
-  const startRealtimeStatusUpdates = () => {
-    setInterval(() => {
-      taches.value.forEach((tache) => {
-        updateTacheStatus(tache);
-      });
-    }, 60000); // Vérifier toutes les 60 secondes
-  };
-
   return {
     taches,
     fetchTaches,
     updateTacheStatus,
-    startRealtimeStatusUpdates,
   };
 });

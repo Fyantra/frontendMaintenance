@@ -11,7 +11,13 @@ import { getStatusForTache, formatLocalDate } from "@/composables/useFonction";
 import router from "@/router";
 
 const calendarEvents = ref<
-  { title: string; start: Date | string; end: Date | string; allDay: boolean }[]
+  {
+    id: number;
+    title: string;
+    start: Date | string;
+    end: Date | string;
+    allDay: boolean;
+  }[]
 >([]);
 
 const statusCrud = useCrud<StatusTache>("tache/status_taches/");
@@ -38,8 +44,11 @@ const calendarOptions = ref({
   locale: "fr",
   editable: true,
   selectable: true,
-  eventClick: (info) => {
-    // Rediriger vers la page d'insertion de tâche avec les détails si besoin
+  eventClick: (info: any) => {
+    const eventId = info.event.id;
+    router.push({
+      path: `/detailTache/${eventId}`,
+    });
   },
   select: (info: any) => {
     const startDate = info.start as Date;
@@ -86,6 +95,7 @@ const fetchEvents = async () => {
     const color = status?.couleur;
 
     return {
+      id: tache.id,
       title: tache.description,
       start: startDate,
       end: endDate,

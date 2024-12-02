@@ -93,6 +93,14 @@ export const getNextHour = () => {    //pour l`insertion de tache
   return formattedNextHour;
 };
 
+export function getformatNumber() {    //formater un nombre
+  const formatNumber = (value: number, locale: string = "fr-FR") => {
+    return new Intl.NumberFormat(locale).format(value);
+  };
+  return {
+    formatNumber,
+  };
+}
 
 export const dotColor = (quantite: number, stock_min: number, stock_max: number | null) => {
   if (quantite < stock_min) return "bg-danger";
@@ -103,7 +111,7 @@ export const dotColor = (quantite: number, stock_min: number, stock_max: number 
 
 //FONCTION POUR AVOIR LES STATUTS
 import { Status, Machine } from "@/types/MachineType";
-import { StatusTache, Tache } from "@/types/TacheType";
+import { StatusTache, Tache, ActiviteTache } from "@/types/TacheType";
 
 export const getStatusForMachine = (machine: Machine, statuts: Status[]) => {
   return statuts.find(status => status.identifiant === machine.identifiant_status_machine);

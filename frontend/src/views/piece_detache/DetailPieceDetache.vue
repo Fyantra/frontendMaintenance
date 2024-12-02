@@ -3,17 +3,24 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCrud } from "@/composables/useCrud";
 import { dotColor } from "@/composables/useFonction";
-import { formatDateTime } from "@/composables/useFonction";
+import { formatDateTime, getformatNumber } from "@/composables/useFonction";
 import { Machine } from "@/types/MachineType";
-import { PieceDetachee } from "@/types/PieceDetacheType";
+import {
+  HistoriqueMouvementPieceDetachee,
+  PieceDetachee,
+} from "@/types/PieceDetacheType";
 import TableauDetailPiecedetache from "./TableauDetailPiecedetache.vue";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
+import ReapproModal from "./ReapproModal.vue";
 
 const route = useRoute();
 const router = useRouter();
 const pieceDetacheCrud = useCrud<PieceDetachee>("piece/piecedetachees/");
 const machineCrud = useCrud<Machine>("machine/machines/");
+const historiqueMouvementPieceCrud = useCrud<HistoriqueMouvementPieceDetachee>(
+  "piece/historique_mouvement_pieces/"
+);
 
 const errorMessage = pieceDetacheCrud.errorMessage;
 const error401Message = pieceDetacheCrud.error401Message;
@@ -25,7 +32,9 @@ const clearError = () => {
 
 const piece = ref<PieceDetachee | null>(null);
 const machines = ref<Machine[]>([]);
+const historiqueMouvementPiece = ref<HistoriqueMouvementPieceDetachee[]>([]);
 
+const { formatNumber } = getformatNumber();
 // Recuperer l'ID de la piece depuis l'URL
 const pieceId = route.params.id;
 
@@ -40,6 +49,11 @@ const fetchPieceDetails = async () => {
         (piecedetachees) => piecedetachees.id === piece.value.id
       )
     );
+
+    await historiqueMouvementPieceCrud.fetchItems();
+    historiqueMouvementPiece.value = historiqueMouvementPieceCrud.items.value.filter(
+      (historique) => historique.piece_detachee === piece.value.id
+    );
   } catch (err) {
     console.error("Erreur lors du recuperation des details");
   }
@@ -49,8 +63,10 @@ const fetchPieceDetails = async () => {
 
 const deleteItem = async (id: number) => {
   try {
-    await pieceDetacheCrud.deleteItemWithoutInitialize(id);
-    router.push("/listePiecedetache");
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce pièce détachée ?")) {
+      await pieceDetacheCrud.deleteItemWithoutInitialize(id);
+      router.push("/listePiecedetache");
+    }
   } catch (error) {
     console.error("Erreur lors de la suppression:", error);
   }
@@ -83,10 +99,16 @@ onMounted(() => {
           </h2>
         </div>
         <div class="col-auto">
-          <button type="button" class="btn btn-success text-white">
+          <button
+            data-toggle="modal"
+            data-target="#reapproModal"
+            type="button"
+            class="btn btn-success text-white"
+          >
             <span class="material-icons layers fe-16 mr-2 notranslate">layers</span
             >Réapprovisionner
           </button>
+
           <button
             @click="
               $router.push({ name: 'modifierPieceDetache', params: { id: piece.id } })
@@ -95,9 +117,6 @@ onMounted(() => {
             class="btn btn-primary ml-3"
           >
             <span class="fe fe-edit-2 fe-16 mr-2"></span>Modifier la pièce détachée
-          </button>
-          <button type="button" class="btn btn-primary ml-3">
-            <span class="fe fe-plus fe-16 mr-2"></span>Creer une tache
           </button>
           <button @click="deleteItem(piece.id)" type="button" class="btn btn-danger ml-3">
             <span class="fe fe-delete fe-16 mr-2"></span>Supprimer
@@ -126,7 +145,7 @@ onMounted(() => {
             </div>
             <div class="card-body">
               <div class="row">
-                <div class="col-md-4 text-center">
+                <div class="col-md-4">
                   <img
                     v-if="piece.image"
                     :src="piece.image"
@@ -173,7 +192,7 @@ onMounted(() => {
                         <i class="material-icons mr-4">money</i>
                         <div>
                           <div class="text-muted">Prix Unitaire</div>
-                          <div>{{ piece.prix_unitaire }} Ariary</div>
+                          <div>{{ formatNumber(piece.prix_unitaire) }} Ariary</div>
                         </div>
                       </div>
                     </div>
@@ -290,7 +309,13 @@ onMounted(() => {
   </div>
   <div v-else><p>Erreur lors du recuperation des details!</p></div>
 
-  <TableauDetailPiecedetache :machines="machines" />
+  <TableauDetailPiecedetache
+    :machines="machines"
+    :historiqueMouvementPieceDetachee="historiqueMouvementPiece"
+  />
+
+  <!--Modal de reapprovisionnement-->
+  <ReapproModal :piece="piece" @refreshPiece="fetchPieceDetails" />
 </template>
 
 <style scoped>

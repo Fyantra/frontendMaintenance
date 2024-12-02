@@ -14,6 +14,7 @@ import {
 } from "@vuelidate/validators";
 import {
   getStatusForTache,
+  getStatusForMachine,
   formatDateAndTimeInWords,
   formatDateTimeLocal,
 } from "@/composables/useFonction";
@@ -29,12 +30,18 @@ import { useTacheStore } from "@/stores/tacheStore";
 import { PieceDetachee } from "@/types/PieceDetacheType";
 import { IdentifiantStatusTache } from "@/config/statusConfig";
 import ListeActiviteTache from "./ListeActiviteTache.vue";
+import ModificationStatusModal from "../machine/ModificationStatusModal.vue";
 import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.css";
+import { Status } from "@/types/MachineType";
+import { useNotificationStore } from "@/stores/notificationStore";
+
+const notificationStore = useNotificationStore();
 
 const route = useRoute();
 const tachesCrud = useCrud<Tache>("tache/taches/");
 const statusTacheCrud = useCrud<StatusTache>("tache/status_taches/");
+const statusMachineCrud = useCrud<Status>("machine/status/"); //pour le status de machine
 
 const errorMessage = tachesCrud.errorMessage;
 const error401Message = tachesCrud.error401Message;
@@ -218,9 +225,8 @@ const availablePieces = computed(() =>
 );
 
 const formError = ref<HTMLElement | null>(null);
-const formSubmit = ref<HTMLElement | null>(null);   //pour le defilement apres insertion
 
-const refreshKey = ref(0);  //pour recharger le composant fils
+const refreshKey = ref(0); //pour recharger le composant fils
 
 const submitForm = async (isTerminee: boolean) => {
   let isValid = true;
@@ -254,6 +260,10 @@ const submitForm = async (isTerminee: boolean) => {
       }
     }
     resetForm();
+    const activityFormContainer = document.getElementById("collapseactivite");
+    if (activityFormContainer) {
+      activityFormContainer.classList.remove("show"); // Suppression de la classe 'show'
+    }
 
     if (isTerminee) {
       await tachesCrud.updateItemPatch(tache.value.id, {
@@ -267,7 +277,7 @@ const submitForm = async (isTerminee: boolean) => {
 
     refreshKey.value++;
     fetchTacheDetails();
-    
+    notificationStore.fetchUnreadNotifications();
   } else {
     console.error("Formulaire invalide");
     formError.value?.scrollIntoView({
@@ -290,6 +300,7 @@ const resetForm = () => {
 
 onMounted(async () => {
   await statusTacheCrud.fetchItems();
+  await statusMachineCrud.fetchItems();
   fetchTacheDetails();
   fetchPiecesDetachees();
 });
@@ -440,7 +451,7 @@ onMounted(async () => {
                         <i class="material-icons mr-4">access_time</i>
                         <div>
                           <div class="text-muted">Temps passé</div>
-                          <div>10mn</div>
+                          <div>{{ tache.total_duree_tache }}</div>
                         </div>
                       </div>
                     </div>
@@ -514,7 +525,27 @@ onMounted(async () => {
                     <h4 class="h6 mb-0 font-weight-bold">
                       {{ tache.machine?.nom_machine }}
                     </h4>
-                    <span class="text-muted">{{ tache.machine?.numero_de_serie }}</span>
+
+                    <span class="text-muted">{{ tache.machine?.numero_de_serie }}</span
+                    ><br />
+                    <span
+                      class="badge badge-pill text-white"
+                      :style="{
+                        backgroundColor: getStatusForMachine(
+                          tache.machine,
+                          statusMachineCrud.items.value
+                        )?.couleur,
+                      }"
+                    >
+                      <ForeignKeyDisplay
+                        :description="
+                          getStatusForMachine(
+                            tache.machine,
+                            statusMachineCrud.items.value
+                          )?.nom_status
+                        "
+                      />
+                    </span>
                   </div>
                 </div>
               </RouterLink>
@@ -537,7 +568,7 @@ onMounted(async () => {
           </div>
           <div class="card shadow mb-4">
             <div class="card-body">
-              <h3 class="h5 mb-1">Integrations</h3>
+              <h3 class="h5 mb-1">Historiques</h3>
               <p class="text-muted mb-4">How to integrate the theme?</p>
               <ul class="list-unstyled">
                 <li class="my-1">
@@ -590,6 +621,7 @@ onMounted(async () => {
             v-if="!isTacheTerminee && !isTacheAnnulee"
             class="container collapse"
             id="collapseactivite"
+            ref="activityFormContainer"
           >
             <div class="activity-form mb-3" ref="formError">
               <h4 class="mb-4">Ajouter une activité</h4>
@@ -632,7 +664,7 @@ onMounted(async () => {
                 >
               </div>
 
-              <div class="form-row mb-3 align-items-center">
+              <div class="form-row mb-3">
                 <div class="form-group col-md-6">
                   <label for="heure" class="form-label">Temps passé</label>
                   <div class="input-group">
@@ -695,7 +727,7 @@ onMounted(async () => {
                 </button>
                 <button
                   data-toggle="modal"
-                  data-target=".bd-example-modal-sm"
+                  data-target="#statusMachineModal"
                   type="button"
                   class="btn btn-outline-info ml-2"
                 >
@@ -789,7 +821,10 @@ onMounted(async () => {
         </div>
 
         <!--Liste des activites dans ce tache-->
-        <ListeActiviteTache :tacheProps="tache" :key="refreshKey"/>
+        <ListeActiviteTache :tacheProps="tache" :key="refreshKey" />
+
+        <!--Modal de modification de status machine-->
+        <ModificationStatusModal :machine="tache?.machine" />
       </div>
     </div>
   </div>

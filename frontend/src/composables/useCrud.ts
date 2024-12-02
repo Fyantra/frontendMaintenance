@@ -161,9 +161,7 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
 
   const deleteItemWithoutInitialize = async (id: number) => {
     try {
-      if (confirm("Êtes-vous sûr de vouloir supprimer cet element ?")) {
-        await axios.delete(`${apiUrl}${id}/`, authHeader);
-      }
+      await axios.delete(`${apiUrl}${id}/`, authHeader);
     } catch (error) {
       handleError(error);
     }

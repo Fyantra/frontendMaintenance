@@ -137,6 +137,8 @@ onMounted(async () => {
                             selectedStatus === status.identifiant
                               ? status.couleur
                               : 'transparent',
+                          color:
+                            selectedStatus === status.identifiant ? 'floralwhite' : '',
                         }"
                         @click.prevent="selectStatus(status.identifiant)"
                       >
@@ -203,7 +205,7 @@ onMounted(async () => {
                     <th>ID</th>
                     <th>Description</th>
                     <th>Date de début</th>
-                    <th>Date de fin</th>
+                    <th>Date fin</th>
                     <th>Image</th>
                     <th>Nom</th>
                     <th>Statut</th>
@@ -228,7 +230,7 @@ onMounted(async () => {
                       </RouterLink>
                       <hr />
                       <i class="fe fe-clock fe-16 mr-3"></i>
-                      10h 0mn
+                      {{ tache.total_duree_tache }}
                       <div v-if="tache.motif_tache?.nom_motif_tache">
                         <hr />
                         <i class="material-icons fe-16 mr-3 notranslate">label</i>
@@ -262,12 +264,12 @@ onMounted(async () => {
                     </td>
                     <td>
                       <span
-                        class="badge badge-pill text-white"
+                        class="badge-status badge btn btn-outline"
                         :style="{
-                          backgroundColor: getStatusForTache(
-                            tache,
-                            statusTache.items.value
-                          )?.couleur,
+                          borderColor: getStatusForTache(tache, statusTache.items.value)
+                            ?.couleur,
+                          color: getStatusForTache(tache, statusTache.items.value)
+                            ?.couleur,
                         }"
                       >
                         <ForeignKeyDisplay
@@ -340,5 +342,10 @@ hr {
 
 .status-link:hover {
   opacity: 0.8;
+}
+
+.badge-status {
+  border-radius: 10px;
+  font-size: 85%;
 }
 </style>

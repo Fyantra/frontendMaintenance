@@ -13,6 +13,7 @@ import {
   MachineRelation,
 } from "@/types/MachineType";
 import { PieceDetachee } from "@/types/PieceDetacheType";
+import { Tache, ActiviteTache } from "@/types/TacheType";
 
 const route = useRoute();
 const router = useRouter();
@@ -23,6 +24,8 @@ const pieceCrud = useCrud<PieceDetachee>("piece/piecedetachees/");
 const historiqueDeplacementCrud = useCrud<HistoriqueDeplacementmachine>(
   "machine/historique_machine/"
 );
+const tacheCrud = useCrud<Tache>("tache/taches/");
+const activiteCrud = useCrud<ActiviteTache>("tache/activites_taches/");
 
 const errorMessage = machineCrud.errorMessage;
 const error401Message = machineCrud.error401Message;
@@ -36,6 +39,8 @@ const machine = ref<Machine | null>(null);
 const machineRelations = ref<MachineRelation[]>([]);
 const piecesDetachees = ref<PieceDetachee[]>([]);
 const historiqueDeplacement = ref<HistoriqueDeplacementmachine[]>([]);
+const taches = ref<Tache[]>([]);
+const activites = ref<ActiviteTache[]>([]);
 
 const fetchMachineDetails = async (machineId: number) => {
   try {
@@ -56,17 +61,30 @@ const fetchMachineDetails = async (machineId: number) => {
     if (machine.value.pieces_detachees_id) {
       piecesDetachees.value = machine.value.pieces_detachees;
     }
+
+    await tacheCrud.fetchItems();
+    taches.value = tacheCrud.items.value.filter(
+      (tache) => tache.machine.id === machineId
+    );
+
+    // Récupération des activités liées aux tâches
+    await activiteCrud.fetchItems();
+    activites.value = activiteCrud.items.value.filter((activite) =>
+      taches.value.some((tache) => tache.id === activite.tache)
+    );
+
+    refreshData();
   } catch (err) {
     console.error("Erreur lors du recuperation des details");
   }
-
-  refreshData();
 };
 
 const deleteItem = async (id: number) => {
   try {
-    await machineCrud.deleteItemWithoutInitialize(id);
-    router.push("/listeMachine");
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce machine ?")) {
+      await machineCrud.deleteItemWithoutInitialize(id);
+      router.push("/listeMachine");
+    }
   } catch (error) {
     console.error("Erreur lors de la suppression:", error);
   }
@@ -119,7 +137,16 @@ watch(
           >
             <span class="fe fe-edit-2 fe-16 mr-2"></span>Modifier le machine
           </button>
-          <button type="button" class="btn btn-primary ml-3">
+          <button
+            @click="
+              $router.push({
+                name: 'ajoutTacheMachine',
+                params: { machineId: machine.id },
+              })
+            "
+            type="button"
+            class="btn btn-primary ml-3"
+          >
             <span class="fe fe-plus fe-16 mr-2"></span>Creer une tache
           </button>
           <button
@@ -274,7 +301,7 @@ watch(
                       <div class="d-flex align-items-start">
                         <i class="material-icons mr-4">event</i>
                         <div>
-                          <div class="text-muted">Date de mis en place</div>
+                          <div class="text-muted">Date de mis hors-service</div>
                           <div>
                             {{ new Date(machine.date_hors_service).toLocaleDateString() }}
                           </div>
@@ -314,34 +341,19 @@ watch(
             </div>
           </div>
         </div>
-        <!-- <div class="col-md-3">
+        <div class="col-md-3">
           <div class="card shadow mb-4">
             <div class="card-body">
-              <h3 class="h5 mb-1">Integrations</h3>
-              <p class="text-muted mb-4">How to integrate the theme?</p>
+              <h3 class="h6 mb-1">Temps passé sur le machine</h3>
+              <p class="text-muted mb-4">C'est le total des temp passés sur les tâches</p>
               <ul class="list-unstyled">
                 <li class="my-1">
-                  <i class="fe fe-file-text mr-2 text-muted"></i>Lorem ipsum dolor sit
-                  amet
-                </li>
-                <li class="my-1">
-                  <i class="fe fe-file-text mr-2 text-muted"></i>Consectetur adipiscing
-                  elit
-                </li>
-                <li class="my-1">
-                  <i class="fe fe-file-text mr-2 text-muted"></i>Integer molestie lorem
-                </li>
-                <li class="my-1">
-                  <i class="fe fe-file-text mr-2 text-muted"></i>Facilisis in pretium
-                </li>
-                <li class="my-1">
-                  <i class="fe fe-file-text mr-2 text-muted"></i>Nulla volutpat aliquam
-                  velit
+                  <i class="fe fe-clock mr-2"></i>{{ machine.total_duree_machine }}
                 </li>
               </ul>
             </div>
           </div>
-        </div> -->
+        </div>
       </div>
     </div>
   </div>
@@ -351,6 +363,8 @@ watch(
     :machineRelations="machineRelations"
     :piecesDetachees="piecesDetachees"
     :historique-deplacement="historiqueDeplacement"
+    :taches="taches"
+    :activites="activites"
   />
 </template>
 
