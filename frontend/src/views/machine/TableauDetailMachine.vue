@@ -178,7 +178,9 @@ const activeTab = ref("machines");
                       />
                     </td>
                     <td>{{ relation.quantite }}</td>
-                    <td>{{ relation.machine_liee?.date_acquisition }}</td>
+                    <td :data-order="relation.machine_liee?.date_acquisition">
+                      {{ relation.machine_liee?.date_acquisition }}
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -237,7 +239,9 @@ const activeTab = ref("machines");
                     <td>
                       <ForeignKeyDisplay :description="piece.emplacement?.nom_atelier" />
                     </td>
-                    <td>{{ formatNumber(piece.prix_unitaire) }}</td>
+                    <td :data-order="piece.prix_unitaire">
+                      {{ formatNumber(piece.prix_unitaire) }} Ariary
+                    </td>
                     <td>{{ piece.quantite }}</td>
                   </tr>
                 </tbody>
@@ -268,7 +272,7 @@ const activeTab = ref("machines");
                 </thead>
                 <tbody>
                   <tr v-for="machine in historiqueDeplacement" :key="machine.id">
-                    <th scope="row">
+                    <th :data-order="machine.date_creation" scope="row">
                       {{ formatDateTime(String(machine.date_creation)) }}<br />
                     </th>
                     <td>
@@ -362,8 +366,8 @@ const activeTab = ref("machines");
                                     <span class="mx-2">{{ activite.description }}</span>
                                     <span class="float-right"
                                       ><i class="fe fe-clock fe-16 mr-3"></i>
-                                      {{ activite.temps_passe_heure || 0 }}h
-                                      {{ activite.temps_passe_minute || 0 }}m
+                                      {{ activite.temps_passe_heure }}h
+                                      {{ activite.temps_passe_minute }}m
                                     </span>
                                   </div>
                                   <p class="small">

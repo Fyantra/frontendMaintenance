@@ -111,7 +111,7 @@ export const dotColor = (quantite: number, stock_min: number, stock_max: number 
 
 //FONCTION POUR AVOIR LES STATUTS
 import { Status, Machine } from "@/types/MachineType";
-import { StatusTache, Tache, ActiviteTache } from "@/types/TacheType";
+import { StatusTache, Tache } from "@/types/TacheType";
 
 export const getStatusForMachine = (machine: Machine, statuts: Status[]) => {
   return statuts.find(status => status.identifiant === machine.identifiant_status_machine);

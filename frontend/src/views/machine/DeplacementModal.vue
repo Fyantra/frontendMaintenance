@@ -84,7 +84,7 @@ watch(filteredChaines, (newChaines) => {
           </button>
         </div>
         <div class="modal-body">
-          <div class="form-group">
+          <!-- <div class="form-group">
             <label for="date_deplacement">Date et heure de deplacement</label>
             <input
               class="form-control"
@@ -92,7 +92,7 @@ watch(filteredChaines, (newChaines) => {
               type="datetime-local"
               v-model="date_deplacement"
             />
-          </div>
+          </div> -->
           <div class="form-group">
             <label for="atelier" class="col-form-label"
               >Atelier pour le déplacement:</label

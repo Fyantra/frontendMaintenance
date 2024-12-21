@@ -441,7 +441,9 @@ onMounted(async () => {
                       ></strong>
                     </th>
 
-                    <td>{{ formatNumber(piece.prix_unitaire) }}</td>
+                    <td :data-order="piece.prix_unitaire">
+                      {{ formatNumber(piece.prix_unitaire) }} Ariary
+                    </td>
                     <td>
                       <div class="d-flex align-items-center justify-content-center">
                         <span
@@ -458,7 +460,9 @@ onMounted(async () => {
                     <td>
                       <ForeignKeyDisplay :description="piece.emplacement?.nom_atelier" />
                     </td>
-                    <td>{{ new Date(piece.date_creation).toLocaleDateString() }}</td>
+                    <td :data-order="piece.date_creation">
+                      {{ new Date(piece.date_creation).toLocaleDateString() }}
+                    </td>
                     <td>
                       <div class="col-auto">
                         <button

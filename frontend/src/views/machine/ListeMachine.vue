@@ -147,42 +147,42 @@ onMounted(async () => {
               <table id="datatable-1" class="table table-hover">
                 <thead class="thead-piece">
                   <tr>
-                    <th>
+                    <th style="width: 7%">
                       <strong
                         ><i class="material-icons fe-12 mr-1 notranslate">tag</i>
                         ID</strong
                       >
                     </th>
-                    <th>
+                    <th style="width: 11%">
                       <strong><i class="fe fe-image fe-12 mr-2"></i>Image</strong>
                     </th>
-                    <th>
+                    <th style="width: 21%">
                       <strong
                         ><i class="material-icons fe-12 mr-2 notranslate"
                           >precision_manufacturing</i
                         >Nom</strong
                       >
                     </th>
-                    <th>
+                    <th style="width: 20%">
                       <strong
                         ><i class="material-icons fe-12 mr-2 notranslate"
                           >confirmation_number</i
                         >Numero de serie
                       </strong>
                     </th>
-                    <th>
+                    <th style="width: 9%">
                       <strong
                         ><i class="material-icons fe-12 mr-2 notranslate">category</i
                         >Type</strong
                       >
                     </th>
-                    <th>
+                    <th style="width: 10%">
                       <strong
                         ><i class="material-icons fe-12 mr-2 notranslate">info</i
                         >Statut</strong
                       >
                     </th>
-                    <th>
+                    <th style="width: 17%">
                       <strong
                         ><i class="material-icons fe-12 mr-2 notranslate"
                           >calendar_today</i
@@ -191,10 +191,7 @@ onMounted(async () => {
                     </th>
 
                     <th>
-                      <strong
-                        ><i class="material-icons fe-12 mr-2 notranslate">gesture</i
-                        >Action</strong
-                      >
+                      <strong>Action</strong>
                     </th>
                   </tr>
                 </thead>
@@ -236,7 +233,9 @@ onMounted(async () => {
                       ></strong>
                     </th>
 
-                    <td>{{ machine.numero_de_serie }}</td>
+                    <td :data-order="machine.numero_de_serie">
+                      {{ machine.numero_de_serie }}
+                    </td>
                     <td>
                       <ForeignKeyDisplay :description="machine.type?.nom_type" />
                     </td>
@@ -256,7 +255,7 @@ onMounted(async () => {
                           "
                       /></span>
                     </td>
-                    <td>
+                    <td :data-order="machine.date_acquisition">
                       {{
                         machine.date_acquisition
                           ? new Date(machine.date_acquisition).toLocaleDateString()

@@ -49,6 +49,7 @@ const router = createRouter({
 
     /////////ROUTER INVENTAIRE MACHINE////////////////////////
     { path: '/inventaireMachine', component: () => import('@/views/machine/InventaireMachine.vue'), meta: { requiresAuth: true }, },
+    { path: '/historiqueInventaire', component: () => import('@/views/machine/HistoriqueInventaire.vue'), meta: { requiresAuth: true }, },
 
     /////////ROUTER BACK-OFFICE ATELIER////////////////////////
     { path: '/endroit', component: () => import('@/views/atelier/EndroitView.vue'), meta: { requiresAuth: true }, },

@@ -75,6 +75,7 @@ export interface HistoriqueDeplacementmachine{
   machine?: Machine | null;
   atelier?: Atelier | null;
   chaine?: Chaine | null;
+  date_deplacement?: Date | string;
   date_creation?: Date | string;
 }
 

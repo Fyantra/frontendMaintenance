@@ -131,7 +131,9 @@ onMounted(async () => {
                     <td>
                       <ForeignKeyDisplay :description="machine.atelier?.nom_atelier" />
                     </td>
-                    <td>{{ machine.date_acquisition }}</td>
+                    <td :data-order="machine.date_acquisition">
+                      {{ machine.date_acquisition }}
+                    </td>
                   </tr>
                 </tbody>
               </table>

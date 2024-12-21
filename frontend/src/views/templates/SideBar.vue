@@ -190,6 +190,13 @@ notificationStore.fetchUnreadNotifications();
               <span class="ml-3 item-text">Inventaire machine</span>
             </RouterLink>
           </li>
+
+          <li class="nav-item w-100">
+            <RouterLink class="nav-link" to="/historiqueInventaire">
+              <i class="material-icons notranslate">archive</i>
+              <span class="ml-3 item-text">Historique des inventaires</span>
+            </RouterLink>
+          </li>
         </ul>
 
         <p class="text-muted nav-heading mt-4 mb-1">

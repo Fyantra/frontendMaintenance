@@ -103,7 +103,7 @@ const handleSubmit = async () => {
         </p>
 
         <!-- Footer -->
-        <p class="mt-3 mb-0 text-light">&copy; 2024</p>
+        <p class="mt-3 mb-0 text-light">&copy; {{ new Date().getFullYear() }}</p>
       </form>
     </div>
   </div>

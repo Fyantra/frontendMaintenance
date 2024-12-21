@@ -23,9 +23,9 @@ export const useTacheStore = defineStore("tacheStore", () => {
     ) {
       return;
     }
-  
+
     try {
-      if ((dateFin < now && heureFin && heureFin < now) || dateFin < now) {
+      if ((dateFin < now && heureFin && heureFin < now)) {
         switch (tache.identifiant_status_tache) {
           case IdentifiantStatusTache.enCours:
             // Si la tâche est "En cours", elle devient "En retard et commencée"

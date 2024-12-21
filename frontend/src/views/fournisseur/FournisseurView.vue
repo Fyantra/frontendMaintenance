@@ -214,7 +214,7 @@ onBeforeUnmount(() => {
               <td>{{ item.nom_fournisseur }}</td>
               <td>{{ item.email }}</td>
               <td>{{ item.telephone }}</td>
-              <td>{{ new Date(item.date_creation).toLocaleDateString() }}</td>
+              <td :data-order="item.date_creation">{{ new Date(item.date_creation).toLocaleDateString() }}</td>
               <td>
                 <div class="dropdown">
                   <button

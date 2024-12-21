@@ -244,7 +244,7 @@ onBeforeUnmount(() => {
               <td>
                 <ForeignKeyDisplay :description="item.responsable?.nom_responsable" />
               </td>
-              <td>{{ new Date(item.date_creation).toLocaleDateString() }}</td>
+              <td :data-order="item.date_creation">{{ new Date(item.date_creation).toLocaleDateString() }}</td>
               <td>
                 <div class="dropdown">
                   <button

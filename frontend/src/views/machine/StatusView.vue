@@ -226,7 +226,7 @@ onBeforeUnmount(() => {
                 ></span>
               </td>
               <td>{{ item.identifiant }}</td>
-              <td>{{ new Date(item.date_creation).toLocaleDateString() }}</td>
+              <td :data-order="item.date_creation">{{ new Date(item.date_creation).toLocaleDateString() }}</td>
               <td>
                 <div class="dropdown">
                   <button

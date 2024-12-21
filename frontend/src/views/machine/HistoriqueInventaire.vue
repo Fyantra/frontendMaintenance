@@ -3,28 +3,34 @@ import { ref, onMounted, watch } from "vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
 import { useCrud } from "@/composables/useCrud";
 import { getStatusForMachine } from "@/composables/useFonction";
-import { Machine, Marque, Type, Status } from "@/types/MachineType";
+import {
+  Machine,
+  Marque,
+  Type,
+  Status,
+  HistoriqueDeplacementmachine,
+} from "@/types/MachineType";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
 import { Atelier, Chaine } from "@/types/AtelierType";
-import DeplacementModal from "../machine/DeplacementModal.vue";
 import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.css";
 
 const machinesCrud = useCrud<Machine>("machine/machines/");
+const historiquesCrud = useCrud<HistoriqueDeplacementmachine>(
+  "machine/historique_machine/"
+);
 const statusCrud = useCrud<Status>("machine/status/");
+const ateliersCrud = useCrud<Atelier>("atelier/ateliers/");
+const typesCrud = useCrud<Type>("machine/types/");
+const marquesCrud = useCrud<Marque>("machine/marques/");
+const chainesCrud = useCrud<Chaine>("atelier/chaines/");
 
 const errorMessage = machinesCrud.errorMessage;
 const error401Message = machinesCrud.error401Message;
 
 const clearError = () => {
-  //reinitialiser le message d`erreur
   errorMessage.value = null;
 };
-
-//Deplacement machine dans le modal
-const selectedMachines = ref<number[]>([]); // Pour stocker les machines sélectionnées par le checkbox
-const selectedChaineModal = ref<Chaine | null>(null);
-const selectedAtelierModal = ref<Atelier | null>(null);
 
 //Les filtres
 const selectedAtelier = ref<Atelier | null>(null);
@@ -32,60 +38,100 @@ const selectedMachine = ref<Machine | null>(null);
 const selectedType = ref<Type | null>(null);
 const selectedMarque = ref<Marque | null>(null);
 const activeChaines = ref<Chaine[]>([]);
+const selectedDate = ref<string | null>(null);
 
 const atelierOptions = ref<Atelier[]>([]);
-const machinesOptions = ref<Machine[]>([]);
 const typeOptions = ref<Type[]>([]);
 const marqueOptions = ref<Marque[]>([]);
 const chainesOptions = ref<Chaine[]>([]);
 
-const ateliersCrud = useCrud<Atelier>("atelier/ateliers/");
-const typesCrud = useCrud<Type>("machine/types/");
-const marquesCrud = useCrud<Marque>("machine/marques/");
-const chainesCrud = useCrud<Chaine>("atelier/chaines/");
-
+const activeMachines = ref<Machine[]>([]);
 const totalMachines = ref<number>(0);
 
 const applyFilters = () => {
-  let filteredMachines = machinesCrud.items.value;
+  const date = selectedDate.value ? new Date(selectedDate.value) : null;
 
-  if (selectedAtelier.value) {
-    filteredMachines = filteredMachines.filter(
-      (machine) => machine.atelier_id === selectedAtelier.value.id
-    );
+  const formatToDate = (inputDate: Date): string => inputDate.toISOString().split("T")[0]; // Extraire uniquement la partie date
+
+  // par defaut, on affiche les machines de l`objet Machine
+  let filteredMachines = [...machinesCrud.items.value];
+
+  if (date) {
+    //si il y a un date, on affiche les historiques
+    const inputDate = formatToDate(date);
+
+    const historiques = historiquesCrud.items.value.filter((historique) => {
+      const historiqueDate = formatToDate(new Date(historique.date_deplacement));
+      return historiqueDate <= inputDate;
+    });
+
+    //Conserver uniquement la dernière date de déplacement pour chaque machine
+    const latestHistoriques = historiques.reduce((latest, historique) => {
+      const machineId = historique.machine?.id;
+      if (
+        !latest[machineId] ||
+        new Date(latest[machineId].date_deplacement as string) <
+          new Date(historique.date_deplacement as string)
+      ) {
+        latest[machineId] = historique;
+      }
+      return latest;
+    }, {} as Record<number, HistoriqueDeplacementmachine>);
+
+    const filteredHistoriques = Object.values(latestHistoriques).filter((historique) => {
+      return (
+        (!selectedAtelier.value || historique.atelier?.id === selectedAtelier.value.id) &&
+        (!activeChaines.value.length ||
+          activeChaines.value.some((chaine) => chaine.id === historique.chaine?.id)) &&
+        (!selectedType.value || historique.machine?.type?.id === selectedType.value.id) &&
+        (!selectedMarque.value ||
+          historique.machine?.marque?.id === selectedMarque.value.id)
+      );
+    });
+
+    //Convertir les historiques filtrés en machines
+    filteredMachines = filteredHistoriques.map((historique) => historique.machine!);
+  } else if (
+    selectedAtelier.value ||
+    selectedType.value ||
+    selectedMarque.value ||
+    activeChaines.value.length > 0
+  ) {
+    // si il y n`y a pas de date, on affiche juste les machines de l`objet Machine
+    if (selectedAtelier.value) {
+      filteredMachines = filteredMachines.filter(
+        (machine) => machine.atelier_id === selectedAtelier.value.id
+      );
+    }
+    if (activeChaines.value.length > 0) {
+      filteredMachines = filteredMachines.filter((machine) =>
+        activeChaines.value.some((chaine) => chaine.id === machine.chaine_id)
+      );
+    }
+    if (selectedType.value) {
+      filteredMachines = filteredMachines.filter(
+        (machine) => machine.type_id === selectedType.value.id
+      );
+    }
+    if (selectedMarque.value) {
+      filteredMachines = filteredMachines.filter(
+        (machine) => machine.marque_id === selectedMarque.value.id
+      );
+    }
   }
 
+  // appliquer les autres filtres
   if (selectedMachine.value) {
     filteredMachines = filteredMachines.filter(
       (machine) => machine.id === selectedMachine.value.id
     );
   }
 
-  if (selectedType.value) {
-    filteredMachines = filteredMachines.filter(
-      (machine) => machine.type_id === selectedType.value.id
-    );
-  }
-
-  if (selectedMarque.value) {
-    filteredMachines = filteredMachines.filter(
-      (machine) => machine.marque_id === selectedMarque.value.id
-    );
-  }
-
-  if (activeChaines.value.length > 0) {
-    filteredMachines = filteredMachines.filter((machine) =>
-      activeChaines.value.some((chaine) => chaine.id === machine.chaine_id)
-    );
-  }
-
-  // Mettre à jour la liste des machines affichées et le total
-  machinesOptions.value = filteredMachines;
+  activeMachines.value = filteredMachines;
   totalMachines.value = filteredMachines.length;
   refreshData();
 };
 
-// Gérer le clic sur les boutons des chaînes
 const toggleChaine = (chaine: Chaine) => {
   const index = activeChaines.value.indexOf(chaine);
   if (index === -1) {
@@ -98,42 +144,7 @@ const toggleChaine = (chaine: Chaine) => {
 
 const refreshData = async () => {
   await machinesCrud.initializeDataTable();
-};
-
-const resetDeplacement = () => {
-  selectedAtelierModal.value = null;
-  selectedChaineModal.value = null;
-  selectedMachines.value = [];
-};
-
-const validerDeplacement = async () => {
-  try {
-    for (const machineId of selectedMachines.value) {
-      const updatedItem = {
-        atelier_id: selectedAtelierModal.value.id,
-        chaine_id: selectedChaineModal.value ? selectedChaineModal.value.id : null,
-      };
-
-      await machinesCrud.updateItemPatch(machineId, updatedItem);
-    }
-    resetDeplacement(); // Réinitialiser après validation
-    refreshData();
-  } catch (error) {
-    console.error("Erreur lors du déplacement des machines:", error);
-  }
-};
-
-const setSelectedAtelier = (atelier: Atelier) => {
-  selectedAtelierModal.value = atelier;
-};
-
-const setSelectedChaine = (chaine: Chaine) => {
-  selectedChaineModal.value = chaine;
-};
-
-const resetModal = () => {
-  selectedAtelier.value = null;
-  selectedChaineModal.value = null;
+  await historiquesCrud.fetchItems();
 };
 
 onMounted(async () => {
@@ -141,8 +152,6 @@ onMounted(async () => {
     await statusCrud.fetchItems(),
     await ateliersCrud.fetchItems(),
     (atelierOptions.value = ateliersCrud.items.value),
-    await machinesCrud.fetchItems(),
-    (machinesOptions.value = machinesCrud.items.value),
     await typesCrud.fetchItems(),
     (typeOptions.value = typesCrud.items.value),
     await marquesCrud.fetchItems(),
@@ -151,16 +160,13 @@ onMounted(async () => {
     (chainesOptions.value = chainesCrud.items.value),
   ]);
 
-  totalMachines.value = machinesOptions.value.length;
-
   refreshData();
 });
 
-watch([selectedAtelier, selectedMachine, selectedMarque, selectedType], applyFilters);
+watch([selectedAtelier, selectedMarque, selectedType, selectedMachine], applyFilters);
 
 watch(selectedAtelier, (newAtelier) => {
   if (newAtelier) {
-    // Filtrer les chaînes correspondant à l'atelier sélectionné
     chainesOptions.value = chainesCrud.items.value.filter(
       (chaine) => chaine.atelier_id === newAtelier.id
     );
@@ -184,7 +190,7 @@ watch(selectedAtelier, (newAtelier) => {
 
   <div class="row">
     <div class="col">
-      <h2 class="page-title text-center">Inventaire des machines actuellement</h2>
+      <h2 class="page-title text-center">Historique d`inventaire des machines</h2>
     </div>
   </div>
   <div class="row">
@@ -198,11 +204,33 @@ watch(selectedAtelier, (newAtelier) => {
               <i class="material-icons fe-24 text-white notranslate">inventory</i>
             </span>
           </div>
-          <h3 class="h4 mt-4 mb-1 text-white">Inventaire de machine</h3>
+          <h3 class="h4 mt-4 mb-1 text-white">
+            Inventaire de machine
+            <span v-if="selectedDate"
+              >le {{ new Date(selectedDate).toLocaleDateString() }}</span
+            >
+          </h3>
           <p class="text-white mb-4">Sélectionnez les filtres que vous voulez</p>
         </div>
 
         <div class="card-footer bg-light py-4">
+          <div class="form-group col-md-4 mx-auto text-center mb-4">
+            <label for="dateFilter" class="text-white font-weight-bold mb-2">Date:</label>
+            <div class="d-flex justify-content-center align-items-center">
+              <div class="input-group date-picker mr-2">
+                <input
+                  type="date"
+                  id="dateFilter"
+                  v-model="selectedDate"
+                  class="form-control date-input"
+                  placeholder="Sélectionnez une date"
+                />
+              </div>
+              <button type="button" class="btn btn-outline-info" @click="applyFilters">
+                Appliquer
+              </button>
+            </div>
+          </div>
           <div class="form-row">
             <div class="form-group col-md-3">
               <label for="atelier" class="text-white font-weight-bold">Atelier:</label>
@@ -229,7 +257,7 @@ watch(selectedAtelier, (newAtelier) => {
               <label for="machine" class="text-white font-weight-bold">Machine:</label>
               <multiselect
                 v-model="selectedMachine"
-                :options="machinesOptions"
+                :options="activeMachines"
                 :close-on-select="true"
                 :clear-on-select="false"
                 :preserve-search="true"
@@ -327,70 +355,7 @@ watch(selectedAtelier, (newAtelier) => {
         </div>
       </div>
     </div>
-
-    <div class="col-md-8 ml-4 mb-4">
-      <div class="card shadow">
-        <div class="card-body">
-          <div class="row align-items-center">
-            <div class="col-2">
-              <span class="circle circle-md bg-primary justify-content-center">
-                <i class="material-icons fe-18 text-white mb-0 notranslate">swap_horiz</i>
-              </span>
-            </div>
-            <div class="col-5">
-              <strong v-if="!selectedAtelierModal && !selectedChaineModal" class="mb-2"
-                >Déplacer un ou plusieurs machines ici</strong
-              >
-              <strong v-else class="mb-2"
-                >Sélectionner en bas le(s) machine(s) à déplacer dans:
-              </strong>
-              <p class="small mt-1 mb-1" v-if="selectedAtelierModal">
-                Atelier: {{ selectedAtelierModal.nom_atelier }}
-              </p>
-              <p class="small mb-1" v-if="selectedChaineModal">
-                Chaine: {{ selectedChaineModal.nom_chaine }}
-              </p>
-            </div>
-            <button
-              data-toggle="modal"
-              data-target="#deplacementModal"
-              type="button"
-              class="btn mb-2 btn-outline-warning"
-              v-if="!selectedAtelierModal && !selectedChaineModal"
-            >
-              <span class="fe fe-arrow-right fe-16 mr-2"></span>Déplacer
-            </button>
-            <button
-              type="button"
-              class="btn mb-2 btn-outline-info mr-2"
-              v-if="selectedAtelierModal || selectedChaineModal"
-              @click="resetDeplacement"
-            >
-              Annuler
-            </button>
-            <button
-              :disabled="selectedMachines.length === 0"
-              type="button"
-              class="btn mb-2 btn-outline-success"
-              v-if="selectedAtelierModal || selectedChaineModal"
-              @click="validerDeplacement"
-            >
-              Valider le deplacement
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
-
-  <!-- MODAL -->
-  <DeplacementModal
-    :atelierOptions="atelierOptions"
-    :chainesOptions="chainesCrud.items.value"
-    @selectedAtelier="setSelectedAtelier"
-    @selectedChaine="setSelectedChaine"
-    @closeModal="resetModal"
-  />
 
   <div class="row">
     <div class="col-md-12">
@@ -446,18 +411,8 @@ watch(selectedAtelier, (newAtelier) => {
               </tr>
             </thead>
             <tbody class="tbody-piece">
-              <tr v-for="machine in machinesOptions" :key="machine.id" class="tr-piece">
+              <tr v-for="machine in activeMachines" :key="machine.id" class="tr-piece">
                 <td>
-                  <div v-if="selectedAtelierModal" class="custom-control custom-checkbox">
-                    <input
-                      type="checkbox"
-                      class="custom-control-input"
-                      :id="String(machine.id)"
-                      v-model="selectedMachines"
-                      :value="machine.id"
-                    />
-                    <label class="custom-control-label" :for="String(machine.id)"></label>
-                  </div>
                   <span>{{ machine.id }}</span>
                 </td>
                 <td>
@@ -627,5 +582,33 @@ watch(selectedAtelier, (newAtelier) => {
 }
 .dropdown-item:hover {
   color: black;
+}
+
+.date-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.date-input {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 10px 15px;
+  font-size: 16px;
+  /* width: 100%; */
+  max-width: 300px;
+}
+
+.input-group-text {
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 0 8px 8px 0;
+  padding: 8px;
+}
+
+.date-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  outline: none;
 }
 </style>

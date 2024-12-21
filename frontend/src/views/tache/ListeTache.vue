@@ -188,7 +188,7 @@ onMounted(async () => {
                         >Equipement</strong
                       >
                     </th>
-                    <th colspan="2" class="text-center">
+                    <th style="width: 28%" colspan="2" class="text-center">
                       <strong
                         ><i class="material-icons fe-12 mr-2 notranslate">info</i
                         >Propriété</strong
@@ -203,12 +203,12 @@ onMounted(async () => {
                       </div>
                     </th> -->
                     <th>ID</th>
-                    <th>Description</th>
-                    <th>Date de début</th>
-                    <th>Date fin</th>
+                    <th style="width: 22%">Description</th>
+                    <th style="width: 13%">Date de début</th>
+                    <th style="width: 13%">Date fin</th>
                     <th>Image</th>
                     <th>Nom</th>
-                    <th>Statut</th>
+                    <th style="width: 13%">Statut</th>
                     <th>Date de création</th>
                   </tr>
                 </thead>
@@ -221,7 +221,7 @@ onMounted(async () => {
                       </div>
                     </td> -->
                     <td>{{ tache.id }}</td>
-                    <th scope="col">
+                    <td style="width: 22%">
                       <RouterLink
                         class="routerlink_piece"
                         :to="{ name: 'detailTache', params: { id: tache.id } }"
@@ -238,9 +238,13 @@ onMounted(async () => {
                           :description="tache.motif_tache?.nom_motif_tache"
                         />
                       </div>
-                    </th>
-                    <td>{{ formatDateAndTime(tache.date_debut, tache.heure_debut) }}</td>
-                    <td>{{ formatDateAndTime(tache.date_fin, tache.heure_fin) }}</td>
+                    </td>
+                    <td :data-order="tache.date_debut">
+                      {{ formatDateAndTime(tache.date_debut, tache.heure_debut) }}
+                    </td>
+                    <td :data-order="tache.date_fin">
+                      {{ formatDateAndTime(tache.date_fin, tache.heure_fin) }}
+                    </td>
                     <td class="text-center">
                       <div class="avatar">
                         <img
@@ -279,7 +283,9 @@ onMounted(async () => {
                           "
                       /></span>
                     </td>
-                    <td>{{ new Date(tache.date_creation).toLocaleDateString() }}</td>
+                    <td :data-order="tache.date_creation">
+                      {{ new Date(tache.date_creation).toLocaleDateString() }}
+                    </td>
                   </tr>
                 </tbody>
               </table>
