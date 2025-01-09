@@ -21,39 +21,53 @@ const clearError = () => {
 };
 
 // Erreurs de validation
-const errors = ref<string[]>([]);
+const errors = ref<{ numero_de_serie: string; numero_de_moteur: string }[]>([]);
 
-// Formulaires dynamiques pour les numéros de série
-const numerosSerie = ref<{ numero_de_serie: string }[]>([{ numero_de_serie: "" }]);
+// Formulaires dynamiques pour les numéros de série et de moteur
+const machinesData = ref<{ numero_de_serie: string; numero_de_moteur: string }[]>([
+  { numero_de_serie: "", numero_de_moteur: "" },
+]);
 
-const addNumeroSerie = () => {
-  numerosSerie.value.push({ numero_de_serie: "" });
-  errors.value.push("");
+const addMachineData = () => {
+  machinesData.value.push({ numero_de_serie: "", numero_de_moteur: "" });
+  errors.value.push({ numero_de_serie: "", numero_de_moteur: "" });
 };
 
-const removeNumeroSerie = (index: number) => {
-  numerosSerie.value.splice(index, 1);
+const removeMachineData = (index: number) => {
+  machinesData.value.splice(index, 1);
   errors.value.splice(index, 1);
 };
 
 const validate = () => {
-  errors.value = numerosSerie.value.map((item, index) => {
+  errors.value = machinesData.value.map((item, index) => {
+    const error = { numero_de_serie: "", numero_de_moteur: "" };
+
     if (!item.numero_de_serie) {
-      return "Numéro de série requis.";
-    }
-    if (
-      numerosSerie.value.findIndex(
+      error.numero_de_serie = "Numéro de série requis.";
+    } else if (
+      machinesData.value.findIndex(
         (el, i) => el.numero_de_serie === item.numero_de_serie && i !== index
       ) !== -1
     ) {
-      return "Numéro de série doit être unique.";
+      error.numero_de_serie = "Numéro de série doit être unique.";
     }
-    return "";
+
+    if (!item.numero_de_moteur) {
+      error.numero_de_moteur = "Numéro de moteur requis.";
+    } else if (
+      machinesData.value.findIndex(
+        (el, i) => el.numero_de_moteur === item.numero_de_moteur && i !== index
+      ) !== -1
+    ) {
+      error.numero_de_moteur = "Numéro de moteur doit être unique.";
+    }
+
+    return error;
   });
 };
 
 watch(
-  numerosSerie,
+  machinesData,
   () => {
     validate(); // Valider à chaque changement
   },
@@ -71,9 +85,13 @@ onMounted(async () => {
 const submitForm = async () => {
   validate();
 
-  if (errors.value.every((error) => error === "")) {
+  if (
+    errors.value.every(
+      (error) => error.numero_de_serie === "" && error.numero_de_moteur === ""
+    )
+  ) {
     const formDataList: FormData[] = await Promise.all(
-      numerosSerie.value.map(async (item) => {
+      machinesData.value.map(async (item) => {
         const formData = new FormData();
         formData.append("nom_machine", machineSource.value!.nom_machine);
         formData.append("numero_de_serie", item.numero_de_serie);
@@ -150,7 +168,9 @@ const submitForm = async () => {
 
   <div class="row mb-4">
     <div class="col-md-8">
-      <h2 class="page-title">Création de nouveau machine à partir du numéro de série</h2>
+      <h3 class="page-title">
+        Création de nouveau machine à partir du numéro de série et numéro de moteur
+      </h3>
     </div>
   </div>
   <ErrorMessage
@@ -175,27 +195,44 @@ const submitForm = async () => {
         <form @submit.prevent="submitForm">
           <div class="card-body">
             <div
-              v-for="(numero, index) in numerosSerie"
+              v-for="(machine, index) in machinesData"
               :key="index"
               class="formNumero d-flex align-items-center justify-content-between"
               ref="formError"
             >
-              <div class="form-group col-md-10">
-                <label for="num_serie">Numéro de série*</label>
-                <input
-                  v-model="numero.numero_de_serie"
-                  type="text"
-                  class="form-control"
-                  placeholder="Numéro de série"
-                  :class="{ 'is-invalid': errors[index] }"
-                />
-                <span v-if="errors[index]" class="error">{{ errors[index] }}</span>
+              <div class="form-row col-md-10">
+                <div class="form-group col-md-6">
+                  <label for="num_serie">Numéro de série*</label>
+                  <input
+                    v-model="machine.numero_de_serie"
+                    type="text"
+                    class="form-control"
+                    placeholder="Numéro de série"
+                    :class="{ 'is-invalid': errors[index]?.numero_de_serie }"
+                  />
+                  <span v-if="errors[index]?.numero_de_serie" class="error">{{
+                    errors[index]?.numero_de_serie
+                  }}</span>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="num_serie">Numéro de moteur*</label>
+                  <input
+                    v-model="machine.numero_de_moteur"
+                    type="text"
+                    class="form-control"
+                    placeholder="Numéro de série"
+                    :class="{ 'is-invalid': errors[index]?.numero_de_moteur }"
+                  />
+                  <span v-if="errors[index]?.numero_de_moteur" class="error">{{
+                    errors[index]?.numero_de_moteur
+                  }}</span>
+                </div>
               </div>
               <div class="col-md-2 mt-2">
                 <button
                   class="btn btn-sm btn-outline-primary plus-icon"
                   type="button"
-                  @click="addNumeroSerie"
+                  @click="addMachineData"
                 >
                   <i class="material-icons notranslate">add</i>
                 </button>
@@ -203,7 +240,7 @@ const submitForm = async () => {
                   v-if="index !== 0"
                   class="btn btn-sm btn-outline-danger ml-2 plus-icon"
                   type="button"
-                  @click="removeNumeroSerie(index)"
+                  @click="removeMachineData(index)"
                 >
                   <i class="material-icons notranslate">delete</i>
                 </button>
