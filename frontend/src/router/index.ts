@@ -17,7 +17,7 @@ const router = createRouter({
       name: 'login',
       component: LoginUser,
     },
-    { path: '/inscription', component: () => import('@/views/utilisateur/SignUp.vue') },
+    { path: '/inscription', component: () => import('@/views/utilisateur/SignUp.vue'), meta: { requiresAuth: false }, },
 
     /////////ROUTER BACK-OFFICE MACHINE////////////////////////
     { path: '/modele', component: () => import('@/views/machine/ModeleView.vue'), meta: { requiresAuth: true }, },

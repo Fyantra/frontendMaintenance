@@ -94,7 +94,7 @@ onMounted(() => {
       <div class="row align-items-center mb-4">
         <div class="col md-7">
           <h2 class="h5 page-title">
-            <small class="text-muted text-uppercase">Detail pièces détachée</small
+            <small class="text-muted text-uppercase">Détail pièce détachée</small
             ><br />#PD{{ piece.id }}
           </h2>
         </div>

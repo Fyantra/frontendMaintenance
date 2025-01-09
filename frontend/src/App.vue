@@ -11,9 +11,11 @@ const router = useRouter();
 const isAuthenticated = computed(() => !!userStore.accessToken);
 
 // Vérifier l'authentification au moment du montage du composant
+const publicRoutes = ["/login", "/inscription"];
+
 onMounted(async () => {
   const tokenValid = await userStore.checkAuth();
-  if (!tokenValid) {
+  if (!tokenValid && !publicRoutes.includes(router.currentRoute.value.path)) {
     router.push("/login");
   }
 });
@@ -32,6 +34,6 @@ onMounted(async () => {
   </div>
 
   <div v-else>
-    <LoginUser />
+    <RouterView />
   </div>
 </template>

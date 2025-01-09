@@ -35,7 +35,7 @@ import { RouterLink } from "vue-router";
                 </span>
               </div>
               <div class="col">
-                <h3 class="h6 mb-0 text-uppercase">Pièce détachée</h3>
+                <h3 class="h6 mb-0 text-uppercase">Pièce détachées</h3>
               </div>
             </div>
           </div>
@@ -53,7 +53,7 @@ import { RouterLink } from "vue-router";
                 </span>
               </div>
               <div class="col">
-                <h3 class="h6 mb-0 text-uppercase">Taches</h3>
+                <h3 class="h6 mb-0 text-uppercase">Tâches</h3>
               </div>
             </div>
           </div>
@@ -70,7 +70,7 @@ import { RouterLink } from "vue-router";
               </span>
             </div>
             <div class="col">
-              <h3 class="h6 mb-0 text-uppercase">Activites</h3>
+              <h3 class="h6 mb-0 text-uppercase">Activités</h3>
             </div>
           </div>
         </div>

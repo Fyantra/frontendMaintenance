@@ -566,7 +566,7 @@ onMounted(async () => {
               </div>
             </div>
           </div>
-          <div class="card shadow mb-4">
+          <!-- <div class="card shadow mb-4">
             <div class="card-body">
               <h3 class="h5 mb-1">Historiques</h3>
               <p class="text-muted mb-4">How to integrate the theme?</p>
@@ -577,7 +577,7 @@ onMounted(async () => {
                 </li>
               </ul>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
 

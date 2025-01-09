@@ -3,6 +3,9 @@ import SectionNavigation from "./templates/SectionNavigation.vue";
 </script>
 
 <template>
-  <main>Bonjour tous le monde!!</main>
+  <main>
+    Bienvenue dans l`application de gestion des maintenances des machines dans la société
+    AKANJO MADAGASCAR!!
+  </main>
   <SectionNavigation />
 </template>
