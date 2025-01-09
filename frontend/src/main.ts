@@ -11,9 +11,7 @@ import './assets/css/uppy.min.css'
 import './assets/css/jquery.steps.css'
 import './assets/css/jquery.timepicker.css'
 import './assets/css/quill.snow.css'
-import './assets/css/daterangepicker.css'
 import './assets/css/dataTables.bootstrap4.css'
-import './assets/css/fullcalendar.css'
 import './assets/css/style.css'
 
 import "datatables.net-bs5";
