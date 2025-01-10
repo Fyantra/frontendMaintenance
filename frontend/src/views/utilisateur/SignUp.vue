@@ -224,7 +224,7 @@ const handleSubmit = async () => {
   </div>
 </template>
 
-<style>
+<style scoped>
 .logo-container {
   /* display: flex; */
   justify-content: center;
