@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import { useCrud } from "@/composables/useCrud";
 import useVuelidate from "@vuelidate/core";
 import SectionNavigation from "../templates/SectionNavigation.vue";
@@ -33,7 +33,7 @@ const form = reactive<Machine>({
   nom_machine: "",
   numero_de_serie: "",
   type_id: null,
-  chaine_id: null,
+  atelier_id: null,
   identifiant_status_machine: 1,
   date_creation: null,
 });
@@ -42,7 +42,7 @@ const validation = {
   nom_machine: { required },
   numero_de_serie: { required },
   type_id: { required },
-  chaine_id: { required },
+  atelier_id: { required },
 };
 
 const v$ = useVuelidate(validation, form);
@@ -56,6 +56,13 @@ const fournisseurs = useCrud<Fournisseur>("fournisseur/fournisseurs/");
 const piecedetachees = useCrud<PieceDetachee>("piece/piecedetachees/", v$);
 const machines = useCrud<Machine>("machine/machines/", v$);
 const machineRelation = useCrud<MachineRelation>("machine/machine_relation/", v$);
+
+const filteredChaines = computed(() => {
+  if (!form.atelier_id) {
+    return [];
+  }
+  return chaines.items.value.filter((chaine) => chaine.atelier_id === form.atelier_id);
+});
 
 const errorMessage = machines.errorMessage;
 const error401Message = machines.error401Message;
@@ -363,12 +370,18 @@ onMounted(async () => {
             </div>
 
             <div class="form-row">
-              <div class="form-group col-md-6">
+              <div
+                class="form-group"
+                :class="[filteredChaines.length > 0 ? 'col-md-6' : 'col-md-12']"
+              >
                 <label for="atelier">Atelier:</label>
                 <select
                   id="atelier"
                   class="form-control custom-select"
                   v-model="form.atelier_id"
+                  :class="{
+                    'is-invalid': v$.atelier_id.$invalid && v$.atelier_id.$dirty,
+                  }"
                 >
                   <option selected disabled>Sélectionner un atelier</option>
                   <option
@@ -379,25 +392,24 @@ onMounted(async () => {
                     {{ atelier.nom_atelier }}
                   </option>
                 </select>
+                <span v-if="v$.atelier_id.$error" class="error">Atelier requis.</span>
               </div>
-              <div class="form-group col-md-6">
+              <div v-if="form.atelier_id" class="form-group col-md-6">
                 <label for="chaine">Chaine*:</label>
                 <select
                   id="chaine"
                   class="form-control custom-select"
                   v-model="form.chaine_id"
-                  :class="{ 'is-invalid': v$.chaine_id.$invalid && v$.chaine_id.$dirty }"
                 >
                   <option selected disabled>Sélectionner le chaine correspondant</option>
                   <option
-                    v-for="chaine in chaines.items.value"
+                    v-for="chaine in filteredChaines"
                     :key="chaine.id"
                     :value="chaine.id"
                   >
                     {{ chaine.nom_chaine }}
                   </option>
                 </select>
-                <span v-if="v$.chaine_id.$error" class="error">Chaine requis.</span>
               </div>
             </div>
 
@@ -441,7 +453,7 @@ onMounted(async () => {
                 </select>
               </div>
               <div class="form-group col-md-6">
-                <label for="date_hors_service">Date de hors service</label>
+                <label for="date_hors_service">Date hors service</label>
                 <input
                   class="form-control"
                   id="date_hors_service"

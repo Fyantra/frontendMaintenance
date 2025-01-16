@@ -28,5 +28,5 @@ export interface Chaine{
     nom_chaine: string;
     date_creation : Date | null;
     atelier_id: number | null;
-    atelier: Atelier | null;     //id atelier
+    atelier: Atelier | null;     
 }

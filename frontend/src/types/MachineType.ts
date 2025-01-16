@@ -44,9 +44,9 @@ export interface Machine{
   marque?: Marque | null;
   marque_id?: number | null;
   atelier?: Atelier | null;
-  atelier_id?: number | null;
+  atelier_id: number | null;
   chaine?: Chaine | null;
-  chaine_id: number | null;
+  chaine_id?: number | null;
   date_mis_en_place?: Date | string | null;
   date_acquisition?: Date | string | null;
   identifiant_status_machine?: number;
