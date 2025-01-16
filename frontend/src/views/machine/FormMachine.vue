@@ -394,7 +394,10 @@ onMounted(async () => {
                 </select>
                 <span v-if="v$.atelier_id.$error" class="error">Atelier requis.</span>
               </div>
-              <div v-if="form.atelier_id" class="form-group col-md-6">
+              <div
+                v-if="form.atelier_id && filteredChaines.length > 0"
+                class="form-group col-md-6"
+              >
                 <label for="chaine">Chaine*:</label>
                 <select
                   id="chaine"
