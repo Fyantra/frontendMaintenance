@@ -3,7 +3,6 @@ import { RouterView, useRouter } from "vue-router";
 import SideBar from "./views/templates/SideBar.vue";
 import { useAuthStore } from "@/stores/authStore";
 import { computed, onMounted } from "vue";
-import LoginUser from "./views/utilisateur/LoginUser.vue";
 
 const userStore = useAuthStore();
 const router = useRouter();
