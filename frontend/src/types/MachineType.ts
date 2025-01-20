@@ -37,6 +37,7 @@ export interface Status {
 export interface Machine{
   id: number;
   nom_machine: string;
+  numero_machine : string;
   numero_de_serie: string;
   numero_de_moteur?: string | null;
   type?: Type | null;

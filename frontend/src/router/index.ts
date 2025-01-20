@@ -55,6 +55,7 @@ const router = createRouter({
     { path: '/endroit', component: () => import('@/views/atelier/EndroitView.vue'), meta: { requiresAuth: true }, },
     { path: '/atelier', component: () => import('@/views/atelier/AtelierView.vue'), meta: { requiresAuth: true }, },
     { path: '/chaine', component: () => import('@/views/atelier/ChaineView.vue'), meta: { requiresAuth: true }, },
+    { path: '/responsable', component: () => import('@/views/atelier/ResponsableView.vue'), meta: { requiresAuth: true }, },
 
     /////////ROUTER BACK-OFFICE FOURNISSEUR////////////////////////
     { path: '/fournisseur', component: () => import('@/views/fournisseur/FournisseurView.vue'), meta: { requiresAuth: true }, },

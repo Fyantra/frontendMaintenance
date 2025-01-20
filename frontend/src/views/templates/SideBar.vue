@@ -117,11 +117,11 @@ notificationStore.fetchUnreadNotifications();
                   ><span class="ml-1 item-text">Endroit</span></RouterLink
                 >
               </li>
-              <!-- <li class="nav-item">
+              <li class="nav-item">
                 <RouterLink class="nav-link pl-3" to="/responsable"
                   ><span class="ml-1 item-text">Responsable</span></RouterLink
                 >
-              </li> -->
+              </li>
               <li class="nav-item">
                 <RouterLink class="nav-link pl-3" to="/atelier"
                   ><span class="ml-1 item-text">Atelier</span></RouterLink

@@ -147,10 +147,16 @@ onMounted(async () => {
               <table id="datatable-1" class="table table-hover">
                 <thead class="thead-piece">
                   <tr>
-                    <th style="width: 7%">
+                    <!-- <th style="width: 7%">
                       <strong
                         ><i class="material-icons fe-12 mr-1 notranslate">tag</i>
                         ID</strong
+                      >
+                    </th> -->
+                    <th style="width: 7%">
+                      <strong
+                        ><i class="material-icons fe-12 mr-1 notranslate">tag</i>
+                        N°</strong
                       >
                     </th>
                     <th style="width: 11%">
@@ -201,8 +207,8 @@ onMounted(async () => {
                     :key="machine.id"
                     class="tr-piece"
                   >
-                    <td>
-                      <span>{{ machine.id }}</span>
+                    <td :data-order="machine.numero_machine">
+                      <span>{{ machine.numero_machine }}</span>
                     </td>
                     <td>
                       <div v-if="machine.image" class="avatar avatar-md">

@@ -165,6 +165,7 @@ watch(
               <strong class="card-title text-uppercase"
                 >{{ machine.nom_machine }}
                 <ForeignKeyDisplay :description="machine.marque?.nom_marque" />
+                N° {{ machine.numero_machine }}
               </strong>
               <span class="float-right"
                 ><i class="material-icons badge-icon notranslate mr-2"

@@ -401,7 +401,7 @@ watch(selectedAtelier, (newAtelier) => {
               <tr>
                 <th style="width: 7%">
                   <strong
-                    ><i class="material-icons fe-12 mr-1 notranslate">tag</i> ID</strong
+                    ><i class="material-icons fe-12 mr-1 notranslate">tag</i> N°</strong
                   >
                 </th>
                 <th style="width: 11%">
@@ -447,7 +447,7 @@ watch(selectedAtelier, (newAtelier) => {
             </thead>
             <tbody class="tbody-piece">
               <tr v-for="machine in machinesOptions" :key="machine.id" class="tr-piece">
-                <td>
+                <td :data-order="machine.numero_machine">
                   <div v-if="selectedAtelierModal" class="custom-control custom-checkbox">
                     <input
                       type="checkbox"
@@ -458,7 +458,7 @@ watch(selectedAtelier, (newAtelier) => {
                     />
                     <label class="custom-control-label" :for="String(machine.id)"></label>
                   </div>
-                  <span>{{ machine.id }}</span>
+                  <span>{{ machine.numero_machine }}</span>
                 </td>
                 <td>
                   <div v-if="machine.image" class="avatar avatar-md">

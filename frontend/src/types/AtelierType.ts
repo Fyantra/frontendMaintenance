@@ -8,8 +8,8 @@ export interface Responsable{
     id : number;
     nom_responsable: string;
     email: string | null;
-    telephone : string | null;
-    photo: string | null;
+    telephone? : string | null;
+    photo?: string | null;
     date_creation : Date | null;
 }
 

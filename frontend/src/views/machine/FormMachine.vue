@@ -9,6 +9,7 @@ import { PieceDetachee } from "@/types/PieceDetacheType";
 import { Machine, MachineRelation, Marque, Status, Type } from "@/types/MachineType";
 import { Atelier, Chaine } from "@/types/AtelierType";
 import { Fournisseur } from "@/types/FournisseurType";
+import { IdentifiantStatusMachine } from "@/config/statusConfig";
 import { useRoute, useRouter } from "vue-router";
 import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.css";
@@ -31,15 +32,17 @@ const addMachineLiaison = () => {
 const form = reactive<Machine>({
   id: 0,
   nom_machine: "",
+  numero_machine: "",
   numero_de_serie: "",
   type_id: null,
   atelier_id: null,
-  identifiant_status_machine: 1,
+  identifiant_status_machine: IdentifiantStatusMachine.enService,
   date_creation: null,
 });
 
 const validation = {
   nom_machine: { required },
+  numero_machine: { required },
   numero_de_serie: { required },
   type_id: { required },
   atelier_id: { required },
@@ -83,6 +86,7 @@ const submitForm = async () => {
   if (!v$.value.$invalid) {
     const formData = new FormData();
     formData.append("nom_machine", form.nom_machine);
+    formData.append("numero_machine", form.numero_machine);
     formData.append("numero_de_serie", form.numero_de_serie);
     formData.append("numero_de_moteur", String(form.numero_de_moteur || ""));
     formData.append("description", form.description || "");
@@ -275,6 +279,24 @@ onMounted(async () => {
               </div>
             </div>
 
+            <div class="form-group">
+              <label for="numero_machine">Numéro de la machine*</label>
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="numero_machine"
+                  placeholder="1"
+                  v-model="form.numero_machine"
+                  :class="{
+                    'is-invalid': v$.numero_machine.$invalid && v$.numero_machine.$dirty,
+                  }"
+                />
+              </div>
+              <span v-if="v$.numero_machine.$error" class="error"
+                >Numéro de machine requis.</span
+              >
+            </div>
             <div class="form-row">
               <div class="form-group col-md-8">
                 <label for="nom_machine">Nom du machine*</label>
@@ -374,7 +396,7 @@ onMounted(async () => {
                 class="form-group"
                 :class="[filteredChaines.length > 0 ? 'col-md-6' : 'col-md-12']"
               >
-                <label for="atelier">Atelier:</label>
+                <label for="atelier">Atelier*:</label>
                 <select
                   id="atelier"
                   class="form-control custom-select"
@@ -398,7 +420,7 @@ onMounted(async () => {
                 v-if="form.atelier_id && filteredChaines.length > 0"
                 class="form-group col-md-6"
               >
-                <label for="chaine">Chaine*:</label>
+                <label for="chaine">Chaine:</label>
                 <select
                   id="chaine"
                   class="form-control custom-select"
@@ -504,7 +526,7 @@ onMounted(async () => {
                 :close-on-select="false"
                 :clear-on-select="false"
                 :preserve-search="true"
-                placeholder="Sélectionnez les pièces détaché"
+                placeholder="Sélectionnez le(s) pièce(s) détachée(s)"
                 label="nom_piecedetache"
                 track-by="id"
                 id="piecedetache"

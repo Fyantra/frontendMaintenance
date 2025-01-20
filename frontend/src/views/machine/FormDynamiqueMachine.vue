@@ -21,16 +21,22 @@ const clearError = () => {
 };
 
 // Erreurs de validation
-const errors = ref<{ numero_de_serie: string; numero_de_moteur: string }[]>([]);
+const errors = ref<
+  { numero_machine: string; numero_de_serie: string; numero_de_moteur: string }[]
+>([]);
 
 // Formulaires dynamiques pour les numéros de série et de moteur
-const machinesData = ref<{ numero_de_serie: string; numero_de_moteur: string }[]>([
-  { numero_de_serie: "", numero_de_moteur: "" },
-]);
+const machinesData = ref<
+  { numero_machine; numero_de_serie: string; numero_de_moteur: string }[]
+>([{ numero_machine: "", numero_de_serie: "", numero_de_moteur: "" }]);
 
 const addMachineData = () => {
-  machinesData.value.push({ numero_de_serie: "", numero_de_moteur: "" });
-  errors.value.push({ numero_de_serie: "", numero_de_moteur: "" });
+  machinesData.value.push({
+    numero_machine: "",
+    numero_de_serie: "",
+    numero_de_moteur: "",
+  });
+  errors.value.push({ numero_machine: "", numero_de_serie: "", numero_de_moteur: "" });
 };
 
 const removeMachineData = (index: number) => {
@@ -40,7 +46,17 @@ const removeMachineData = (index: number) => {
 
 const validate = () => {
   errors.value = machinesData.value.map((item, index) => {
-    const error = { numero_de_serie: "", numero_de_moteur: "" };
+    const error = { numero_machine: "", numero_de_serie: "", numero_de_moteur: "" };
+
+    if (!item.numero_machine) {
+      error.numero_machine = "Numéro de machine requis.";
+    } else if (
+      machinesData.value.findIndex(
+        (el, i) => el.numero_machine === item.numero_machine && i !== index
+      ) !== -1
+    ) {
+      error.numero_machine = "Le numéro de machine doit être unique.";
+    }
 
     if (!item.numero_de_serie) {
       error.numero_de_serie = "Numéro de série requis.";
@@ -49,7 +65,7 @@ const validate = () => {
         (el, i) => el.numero_de_serie === item.numero_de_serie && i !== index
       ) !== -1
     ) {
-      error.numero_de_serie = "Numéro de série doit être unique.";
+      error.numero_de_serie = "Le numéro de série doit être unique.";
     }
 
     if (!item.numero_de_moteur) {
@@ -59,7 +75,7 @@ const validate = () => {
         (el, i) => el.numero_de_moteur === item.numero_de_moteur && i !== index
       ) !== -1
     ) {
-      error.numero_de_moteur = "Numéro de moteur doit être unique.";
+      error.numero_de_moteur = "Le numéro de moteur doit être unique.";
     }
 
     return error;
@@ -87,15 +103,19 @@ const submitForm = async () => {
 
   if (
     errors.value.every(
-      (error) => error.numero_de_serie === "" && error.numero_de_moteur === ""
+      (error) =>
+        error.numero_machine === "" &&
+        error.numero_de_serie === "" &&
+        error.numero_de_moteur === ""
     )
   ) {
     const formDataList: FormData[] = await Promise.all(
       machinesData.value.map(async (item) => {
         const formData = new FormData();
         formData.append("nom_machine", machineSource.value!.nom_machine);
+        formData.append("numero_machine", item.numero_machine);
         formData.append("numero_de_serie", item.numero_de_serie);
-        formData.append("numero_de_moteur", machineSource.value!.numero_de_moteur || "");
+        formData.append("numero_de_moteur", item.numero_de_moteur || "");
         formData.append("description", machineSource.value!.description || "");
         formData.append("type_id", String(machineSource.value!.type_id || ""));
         formData.append("marque_id", String(machineSource.value!.marque_id || ""));
@@ -201,7 +221,20 @@ const submitForm = async () => {
               ref="formError"
             >
               <div class="form-row col-md-10">
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-4">
+                  <label for="num_serie">Numéro de machine*</label>
+                  <input
+                    v-model="machine.numero_machine"
+                    type="text"
+                    class="form-control"
+                    placeholder="Numéro de machine"
+                    :class="{ 'is-invalid': errors[index]?.numero_machine }"
+                  />
+                  <span v-if="errors[index]?.numero_machine" class="error">{{
+                    errors[index]?.numero_machine
+                  }}</span>
+                </div>
+                <div class="form-group col-md-4">
                   <label for="num_serie">Numéro de série*</label>
                   <input
                     v-model="machine.numero_de_serie"
@@ -214,7 +247,7 @@ const submitForm = async () => {
                     errors[index]?.numero_de_serie
                   }}</span>
                 </div>
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-4">
                   <label for="num_serie">Numéro de moteur*</label>
                   <input
                     v-model="machine.numero_de_moteur"
