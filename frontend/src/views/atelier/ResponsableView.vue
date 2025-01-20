@@ -324,3 +324,16 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.is-invalid {
+  border: 1px solid red;
+}
+.error {
+  color: red;
+  font-size: 12px;
+}
+#reconnect {
+  margin-left: 3%;
+}
+</style>
