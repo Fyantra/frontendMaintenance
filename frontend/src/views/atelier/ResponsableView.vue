@@ -41,15 +41,21 @@ const clearError = () => {
   errorMessage.value = null;
 };
 
-//Ajouter un nouveau item
+const image = ref<string | null>(null); // Aperçu de l'image
+const fileInput = ref<HTMLInputElement | null>(null);
+
+//Ajouter un nouveau responsable
 const submitForm = async () => {
-  v$.value.$touch(); // Marquer les champs comme touchés pour la validation
+  v$.value.$touch();
   if (!v$.value.$invalid) {
-    await addItem({
-      nom_responsable: form.nom_responsable,
-      email: form.email,
-      telephone: form.telephone,
-    });
+    const formData = new FormData();
+    formData.append("nom_responsable", form.nom_responsable);
+    formData.append("email", form.email || "");
+    formData.append("telephone", form.telephone || "");
+    if (fileInput.value?.files?.[0]) {
+      formData.append("photo", fileInput.value.files[0]); // Ajouter l'image
+    }
+    await addItem(formData);
     initializeDataTable();
     $("#addModal").modal("hide");
   } else {
@@ -61,13 +67,16 @@ const submitForm = async () => {
 const submitUpdateForm = async () => {
   v$.value.$touch();
   if (!v$.value.$invalid && selectedItem.value) {
-    await updateItem(selectedItem.value.id, {
-      nom_responsable: form.nom_responsable,
-      email: form.email,
-      telephone: form.telephone,
-    });
+    const formData = new FormData();
+    formData.append("nom_responsable", form.nom_responsable);
+    formData.append("email", form.email || "");
+    formData.append("telephone", form.telephone || "");
+    if (fileInput.value?.files?.[0]) {
+      formData.append("photo", fileInput.value.files[0]); // Ajouter l'image si une nouvelle a été sélectionnée
+    }
+    await updateItem(selectedItem.value.id, formData);
     initializeDataTable();
-    selectedItem.value = null; // Réinitialiser après la mise à jour
+    selectedItem.value = null;
     $("#updateModal").modal("hide");
   } else {
     console.error("Formulaire de mise à jour invalide");
@@ -80,7 +89,32 @@ const openUpdateModal = (item: Responsable) => {
   form.nom_responsable = item.nom_responsable;
   form.email = item.email;
   form.telephone = item.telephone;
+  image.value = item.photo;
   selectedItem.value = item; // Stocker l'élément à mettre à jour
+};
+
+// Gestion de l'upload de fichier
+const triggerFileInput = () => {
+  fileInput.value?.click();
+};
+
+const handleFileUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      image.value = e.target?.result as string; // Affichage en base64
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+const removeImage = () => {
+  image.value = null;
+  if (fileInput.value) {
+    fileInput.value.files = null;
+  }
 };
 
 // Charger les données au montage
@@ -134,6 +168,44 @@ onBeforeUnmount(() => {
         </div>
         <div class="modal-body">
           <form @submit.prevent="submitForm">
+            <div class="d-flex justify-content-center">
+              <div class="card shadow mb-4">
+                <div class="card-header"><strong>Image du responsable</strong></div>
+                <div class="card-body">
+                  <span
+                    v-if="image"
+                    class="circle circle-sm bg-danger justify-content-center"
+                    style="float: right"
+                    @click="removeImage"
+                  >
+                    <i class="material-icons notranslate text-white">delete</i>
+                  </span>
+                  <div
+                    style="width: auto; padding: 9px"
+                    id="drag-drop-area"
+                    class="upload-frame"
+                    @dragover.prevent
+                    @click="triggerFileInput"
+                  >
+                    <div v-if="!image" class="default-message text-center">
+                      <i class="fe fe-user-plus"></i>
+                      <p>Glisser ou deposer votre image ici</p>
+                    </div>
+                    <div v-else class="uploaded-image">
+                      <img :src="image" alt="Pièce détachée" class="img-fluid" />
+                    </div>
+                  </div>
+                  <input
+                    type="file"
+                    ref="fileInput"
+                    accept="image/*"
+                    @change="handleFileUpload"
+                    class="d-none"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div class="form-group">
               <label for="nom_responsable" class="col-form-label"
                 >Nom du responsable:</label
@@ -202,6 +274,7 @@ onBeforeUnmount(() => {
           <thead>
             <tr>
               <th>ID</th>
+              <th>Photo</th>
               <th>Nom responsable</th>
               <th>Email</th>
               <th>Téléphone</th>
@@ -212,6 +285,17 @@ onBeforeUnmount(() => {
           <tbody>
             <tr v-for="item in items" :key="item.id">
               <td>{{ item.id }}</td>
+              <td>
+                <div class="avatar avatar-md">
+                  <img
+                    v-if="item.photo"
+                    :src="item.photo"
+                    alt="image"
+                    class="avatar-img rounded-circle"
+                  />
+                  <i v-else class="fe fe-24 fe-user"></i>
+                </div>
+              </td>
               <td>{{ item.nom_responsable }}</td>
               <td>{{ item.email }}</td>
               <td>{{ item.telephone }}</td>
@@ -271,6 +355,44 @@ onBeforeUnmount(() => {
         </div>
         <div class="modal-body">
           <form @submit.prevent="submitUpdateForm">
+            <div class="d-flex justify-content-center">
+              <div class="card shadow mb-4">
+                <div class="card-header"><strong>Image du responsable</strong></div>
+                <div class="card-body">
+                  <span
+                    v-if="image"
+                    class="circle circle-sm bg-danger justify-content-center"
+                    style="float: right"
+                    @click="removeImage"
+                  >
+                    <i class="material-icons notranslate text-white">delete</i>
+                  </span>
+                  <div
+                    style="width: auto; padding: 9px"
+                    id="drag-drop-area"
+                    class="upload-frame"
+                    @dragover.prevent
+                    @click="triggerFileInput"
+                  >
+                    <div v-if="!image" class="default-message text-center">
+                      <i class="fe fe-user-plus"></i>
+                      <p>Glisser ou deposer votre image ici</p>
+                    </div>
+                    <div v-else class="uploaded-image">
+                      <img :src="image" alt="Pièce détachée" class="img-fluid" />
+                    </div>
+                  </div>
+                  <input
+                    type="file"
+                    ref="fileInput"
+                    accept="image/*"
+                    @change="handleFileUpload"
+                    class="d-none"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div class="form-group">
               <label for="nom_responsable" class="col-form-label"
                 >Nom du responsable:</label
@@ -335,5 +457,23 @@ onBeforeUnmount(() => {
 }
 #reconnect {
   margin-left: 3%;
+}
+
+.circle {
+  cursor: pointer;
+}
+
+.default-message {
+  color: #6c757d;
+}
+
+.default-message i {
+  font-size: 48px;
+}
+
+.uploaded-image img {
+  width: 8rem;
+  height: 8rem;
+  border-radius: 10px;
 }
 </style>
