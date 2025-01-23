@@ -84,7 +84,7 @@ onMounted(async () => {
 
   <div class="row">
     <div class="col-md-7">
-      <h2 class="page-title">Liste de toutes les tâche</h2>
+      <h2 class="page-title">Liste de toutes les tâches</h2>
     </div>
 
     <RouterLink to="/ajoutTache">
@@ -97,7 +97,7 @@ onMounted(async () => {
   <p class="mt-3">
     <i class="material-icons nb notranslate">assignment</i>
     <span v-if="total > 1" class="ml-3 item-text">{{ total }} Tâches au total</span>
-    <span v-else class="ml-3 item-text">{{ total }} Tâches au total</span>
+    <span v-else class="ml-3 item-text">{{ total }} Tâche au total</span>
   </p>
 
   <div class="row">

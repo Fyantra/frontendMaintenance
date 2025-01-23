@@ -6,6 +6,9 @@ import { useCrud } from "@/composables/useCrud";
 import { ReapprovisionnementPieceDetachee } from "@/types/PieceDetacheType";
 import { formatDateTimeLocal } from "@/composables/useFonction";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
+import { useNotificationStore } from "@/stores/notificationStore";
+
+const notificationStore = useNotificationStore();
 
 const props = defineProps({
   piece: Object,
@@ -68,6 +71,7 @@ const submitReapprovisionnement = async () => {
   if (!v$.value.$invalid) {
     form.value.pieces_detachees = props.piece.id;
     await reapprovisionnementCrud.addItem(form.value);
+    notificationStore.fetchUnreadNotifications();
     $("#reapproModal").modal("hide");
     emit("refreshPiece"); // Rafraîchit la liste des pièces détachées
   } else {
