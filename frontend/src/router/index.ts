@@ -16,8 +16,9 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginUser,
+      meta: { requiresGuest: true },
     },
-    { path: '/inscription', component: () => import('@/views/utilisateur/SignUp.vue'), meta: { requiresAuth: false }, },
+    { path: '/inscription', component: () => import('@/views/utilisateur/SignUp.vue'), meta: { requiresGuest: true }, },
 
     /////////ROUTER BACK-OFFICE MACHINE////////////////////////
     { path: '/modele', component: () => import('@/views/machine/ModeleView.vue'), meta: { requiresAuth: true }, },
@@ -125,12 +126,16 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
 
+  if (to.meta.requiresGuest && authStore.isAuthenticated) {
+    return next("/"); // Redirige vers une page pour les utilisateurs authentifiés
+  }
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     // Si la route nécessite l'authentification et que l'utilisateur n'est pas connecté
-    next({ name: 'login' });
-  } else {
-    next();  
-  }
+    return next("/login");
+  } 
+    
+  next();  
 });
 
 export default router

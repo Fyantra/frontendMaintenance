@@ -110,6 +110,7 @@ onMounted(async () => {
               <div class="row items-align-center d-none d-lg-flex">
                 <div class="col-md">
                   <button
+                    v-if="statusTache.items.value.length > 0"
                     href="#collapseactivite"
                     data-toggle="collapse"
                     data-target="#collapseactivite"

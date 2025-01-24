@@ -108,6 +108,7 @@ onMounted(async () => {
               <div class="row items-align-center my-2 mb-4 d-none d-lg-flex">
                 <div class="col-md">
                   <button
+                    v-if="status.items.value.length > 0"
                     @click="toggleStatusFilters"
                     type="button"
                     class="btn mb-2 btn-outline-warning"
