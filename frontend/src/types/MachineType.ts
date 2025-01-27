@@ -42,6 +42,8 @@ export interface Machine{
   numero_de_moteur?: string | null;
   type?: Type | null;
   type_id: number | null;
+  modele?: Modele | null;
+  modele_id?: number | null;
   marque?: Marque | null;
   marque_id?: number | null;
   atelier?: Atelier | null;

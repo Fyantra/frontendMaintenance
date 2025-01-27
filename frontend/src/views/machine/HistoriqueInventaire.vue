@@ -195,7 +195,20 @@ watch(selectedAtelier, (newAtelier) => {
   </div>
   <div class="row">
     <div class="col-md-12 my-3">
-      <div class="card shadow bg-primary text-center mb-4">
+      <div class="card shadow bg-primary text-center mb-4 position-relative">
+        <div class="position-absolute" style="top: 10px; right: 10px">
+          <a
+            href="#collapsefilter"
+            data-toggle="collapse"
+            data-target="#collapsefilter"
+            aria-expanded="false"
+            aria-controls="collapsefilter"
+          >
+            <button type="button" class="btn btn-outline-warning">
+              <span class="fe fe-minimize-2 fe-24"></span>
+            </button>
+          </a>
+        </div>
         <div class="card-body p-4">
           <div class="d-flex justify-content-center align-items-center mb-3">
             <span
@@ -210,10 +223,12 @@ watch(selectedAtelier, (newAtelier) => {
               >le {{ new Date(selectedDate).toLocaleDateString() }}</span
             >
           </h3>
-          <p class="text-white mb-4">Sélectionnez les filtres que vous voulez</p>
+          <p class="text-white mb-4 collapse show" id="collapsefilter">
+            Sélectionnez les filtres que vous voulez
+          </p>
         </div>
 
-        <div class="card-footer bg-light py-4">
+        <div class="card-footer bg-light py-4 collapse show" id="collapsefilter">
           <div class="form-group col-md-4 mx-auto text-center mb-4">
             <label for="dateFilter" class="text-white font-weight-bold mb-2">Date:</label>
             <div class="d-flex justify-content-center align-items-center">
@@ -316,11 +331,14 @@ watch(selectedAtelier, (newAtelier) => {
               </multiselect>
             </div>
             <transition-group name="fade">
-              <div v-if="chainesOptions.length > 0" class="button-group mt-3">
+              <div
+                v-if="chainesOptions.length > 0"
+                class="button-group mt-3 d-flex flex-wrap justify-content-center"
+              >
                 <button
                   v-for="chaine in chainesOptions"
                   :key="chaine.id"
-                  class="btn btn-outline-primary mx-1 btn-chaine"
+                  class="btn btn-outline-primary mx-1 mb-3 btn-chaine"
                   :class="{ active: activeChaines.includes(chaine) }"
                   @click="toggleChaine(chaine)"
                 >
@@ -365,46 +383,32 @@ watch(selectedAtelier, (newAtelier) => {
             <thead class="thead-piece">
               <tr>
                 <th style="width: 7%">
-                  <strong
-                    ><i class="material-icons fe-12 mr-1 notranslate">tag</i> N°</strong
-                  >
+                  <strong> N°</strong>
                 </th>
                 <th style="width: 11%">
-                  <strong><i class="fe fe-image fe-12 mr-2"></i>Image</strong>
-                </th>
-                <th style="width: 21%">
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate"
-                      >precision_manufacturing</i
-                    >Nom</strong
-                  >
-                </th>
-                <th style="width: 20%">
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate"
-                      >confirmation_number</i
-                    >Numero de serie
-                  </strong>
-                </th>
-                <th style="width: 9%">
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate">category</i
-                    >Type</strong
-                  >
-                </th>
-                <th style="width: 10%">
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate">info</i
-                    >Statut</strong
-                  >
+                  <strong>Image</strong>
                 </th>
                 <th style="width: 17%">
-                  <strong
-                    ><i class="material-icons fe-12 mr-2 notranslate">calendar_today</i
-                    >Date d'acquisition</strong
-                  >
+                  <strong>Nom</strong>
                 </th>
-
+                <th style="width: 9%">
+                  <strong>Modèle</strong>
+                </th>
+                <th style="width: 11%">
+                  <strong>Type</strong>
+                </th>
+                <th style="width: 9%">
+                  <strong>Marque</strong>
+                </th>
+                <th style="width: 17%">
+                  <strong>Numéro de série </strong>
+                </th>
+                <th style="width: 17%">
+                  <strong>Date d'acquisition</strong>
+                </th>
+                <th style="width: 10%">
+                  <strong>Statut</strong>
+                </th>
                 <th>
                   <strong>Action</strong>
                 </th>
@@ -427,24 +431,34 @@ watch(selectedAtelier, (newAtelier) => {
                     precision_manufacturing
                   </div>
                 </td>
-                <!--Nom et modele-->
-                <th scope="col" style="width: 21%">
+                <th scope="col">
                   <strong
                     ><RouterLink
                       class="routerlink_piece"
                       :to="{ name: 'detailMachine', params: { id: machine.id } }"
                       >{{ machine.nom_machine }}
-                      <ForeignKeyDisplay
-                        :description="machine.marque?.nom_marque"
-                      /> </RouterLink
-                  ></strong>
+                    </RouterLink></strong
+                  >
                 </th>
+                <td>
+                  <ForeignKeyDisplay :description="machine.modele?.nom_modele" />
+                </td>
+                <td>
+                  <ForeignKeyDisplay :description="machine.type?.nom_type" />
+                </td>
+                <td>
+                  <ForeignKeyDisplay :description="machine.marque?.nom_marque" />
+                </td>
 
                 <td :data-order="machine.numero_de_serie">
                   {{ machine.numero_de_serie }}
                 </td>
-                <td>
-                  <ForeignKeyDisplay :description="machine.type?.nom_type" />
+                <td :data-order="machine.date_acquisition">
+                  {{
+                    machine.date_acquisition
+                      ? new Date(machine.date_acquisition).toLocaleDateString()
+                      : null
+                  }}
                 </td>
                 <td>
                   <span
@@ -461,13 +475,6 @@ watch(selectedAtelier, (newAtelier) => {
                         getStatusForMachine(machine, statusCrud.items.value)?.nom_status
                       "
                   /></span>
-                </td>
-                <td :data-order="machine.date_acquisition">
-                  {{
-                    machine.date_acquisition
-                      ? new Date(machine.date_acquisition).toLocaleDateString()
-                      : null
-                  }}
                 </td>
                 <td>
                   <div class="col-auto">
@@ -491,9 +498,17 @@ watch(selectedAtelier, (newAtelier) => {
                           >assignment</i
                         >Créer une tâche</a
                       >
-                      <a class="dropdown-item"
-                        ><i class="fe fe-message-circle fe-12 mr-4"></i>Déplacer</a
+                      <a
+                        class="dropdown-item"
+                        @click="
+                          $router.push({
+                            name: 'modifierMachine',
+                            params: { id: machine.id },
+                          })
+                        "
                       >
+                        <i class="fe fe-edit fe-12 mr-4"></i> Modifier
+                      </a>
                     </div>
                   </div>
                 </td>
@@ -523,12 +538,20 @@ watch(selectedAtelier, (newAtelier) => {
   border-radius: 18px;
 }
 
+.button-group {
+  display: flex;
+  flex-wrap: wrap; /* Permet aux boutons de passer à la ligne */
+  gap: 1rem;
+  justify-content: center;
+}
+
 .btn-chaine {
   transition: all 0.3s ease;
   padding: 0.5rem 1.5rem;
   font-size: 1rem;
   border-radius: 8px;
   background-color: #f8f9fa;
+  text-align: center;
 }
 
 .btn-chaine:hover {

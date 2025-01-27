@@ -150,53 +150,37 @@ onMounted(async () => {
                   <tr>
                     <!-- <th style="width: 7%">
                       <strong
-                        ><i class="material-icons fe-12 mr-1 notranslate">tag</i>
+                        >
                         ID</strong
                       >
                     </th> -->
                     <th style="width: 7%">
-                      <strong
-                        ><i class="material-icons fe-12 mr-1 notranslate">tag</i>
-                        N°</strong
-                      >
+                      <strong> N°</strong>
                     </th>
                     <th style="width: 11%">
-                      <strong><i class="fe fe-image fe-12 mr-2"></i>Image</strong>
-                    </th>
-                    <th style="width: 21%">
-                      <strong
-                        ><i class="material-icons fe-12 mr-2 notranslate"
-                          >precision_manufacturing</i
-                        >Nom</strong
-                      >
-                    </th>
-                    <th style="width: 20%">
-                      <strong
-                        ><i class="material-icons fe-12 mr-2 notranslate"
-                          >confirmation_number</i
-                        >Numero de serie
-                      </strong>
-                    </th>
-                    <th style="width: 9%">
-                      <strong
-                        ><i class="material-icons fe-12 mr-2 notranslate">category</i
-                        >Type</strong
-                      >
-                    </th>
-                    <th style="width: 10%">
-                      <strong
-                        ><i class="material-icons fe-12 mr-2 notranslate">info</i
-                        >Statut</strong
-                      >
+                      <strong>Image</strong>
                     </th>
                     <th style="width: 17%">
-                      <strong
-                        ><i class="material-icons fe-12 mr-2 notranslate"
-                          >calendar_today</i
-                        >Date d'acquisition</strong
-                      >
+                      <strong>Nom</strong>
                     </th>
-
+                    <th style="width: 9%">
+                      <strong>Modèle</strong>
+                    </th>
+                    <th style="width: 11%">
+                      <strong>Type</strong>
+                    </th>
+                    <th style="width: 9%">
+                      <strong>Marque</strong>
+                    </th>
+                    <th style="width: 17%">
+                      <strong>Numéro de série </strong>
+                    </th>
+                    <th style="width: 17%">
+                      <strong>Date d'acquisition</strong>
+                    </th>
+                    <th style="width: 10%">
+                      <strong>Statut</strong>
+                    </th>
                     <th>
                       <strong>Action</strong>
                     </th>
@@ -227,24 +211,34 @@ onMounted(async () => {
                         precision_manufacturing
                       </div>
                     </td>
-                    <!--Nom et modele-->
                     <th scope="col">
                       <strong
                         ><RouterLink
                           class="routerlink_piece"
                           :to="{ name: 'detailMachine', params: { id: machine.id } }"
                           >{{ machine.nom_machine }}
-                          <ForeignKeyDisplay
-                            :description="machine.marque?.nom_marque"
-                          /> </RouterLink
-                      ></strong>
+                        </RouterLink></strong
+                      >
                     </th>
+                    <td>
+                      <ForeignKeyDisplay :description="machine.modele?.nom_modele" />
+                    </td>
+                    <td>
+                      <ForeignKeyDisplay :description="machine.type?.nom_type" />
+                    </td>
+                    <td>
+                      <ForeignKeyDisplay :description="machine.marque?.nom_marque" />
+                    </td>
 
                     <td :data-order="machine.numero_de_serie">
                       {{ machine.numero_de_serie }}
                     </td>
-                    <td>
-                      <ForeignKeyDisplay :description="machine.type?.nom_type" />
+                    <td :data-order="machine.date_acquisition">
+                      {{
+                        machine.date_acquisition
+                          ? new Date(machine.date_acquisition).toLocaleDateString()
+                          : null
+                      }}
                     </td>
                     <td>
                       <span
@@ -261,13 +255,6 @@ onMounted(async () => {
                             getStatusForMachine(machine, status.items.value)?.nom_status
                           "
                       /></span>
-                    </td>
-                    <td :data-order="machine.date_acquisition">
-                      {{
-                        machine.date_acquisition
-                          ? new Date(machine.date_acquisition).toLocaleDateString()
-                          : null
-                      }}
                     </td>
                     <td>
                       <div class="col-auto">

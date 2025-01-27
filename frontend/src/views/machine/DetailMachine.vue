@@ -125,8 +125,7 @@ watch(
       <div class="row align-items-center mb-4">
         <div class="col">
           <h2 class="h5 page-title">
-            <small class="text-muted text-uppercase">Detail machine</small
-            ><br />#MACHINE{{ machine.id }}
+            <small class="text-muted text-uppercase">Detail machine</small><br />#MACHINE
           </h2>
         </div>
         <div class="col-auto">
@@ -228,6 +227,20 @@ watch(
                       </div>
                     </div>
 
+                    <div v-if="machine.modele?.nom_modele" class="col-sm-6 mb-5">
+                      <div class="d-flex align-items-start">
+                        <i class="material-icons mr-4">view_module</i>
+                        <div>
+                          <div class="text-muted">Modèle</div>
+                          <div>
+                            <ForeignKeyDisplay
+                              :description="machine.modele?.nom_modele"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     <div v-if="machine.chaine?.nom_chaine" class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
                         <i class="material-icons mr-4">storefront</i>
@@ -264,7 +277,7 @@ watch(
 
                     <div v-if="machine.type?.nom_type" class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
-                        <i class="material-icons mr-4">category</i>
+                        <i class="material-icons mr-4">widgets</i>
                         <div>
                           <div class="text-muted">Type</div>
                           <div>

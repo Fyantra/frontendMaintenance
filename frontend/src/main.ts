@@ -14,6 +14,7 @@ import './assets/css/quill.snow.css'
 import './assets/css/dataTables.bootstrap4.css'
 import './assets/css/fullcalendar.css'
 import './assets/css/style.css'
+import './assets/css/material-icons.css'
 
 import "datatables.net-bs5";
 // import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";

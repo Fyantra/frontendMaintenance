@@ -226,7 +226,7 @@ onBeforeUnmount(() => {
             <div class="form-group">
               <label for="email" class="col-form-label">Email:</label>
               <input
-                type="email"
+                type="text"
                 v-model="form.email"
                 class="form-control"
                 id="email"
@@ -234,7 +234,7 @@ onBeforeUnmount(() => {
                   'is-invalid': v$.email.$invalid && v$.email.$dirty,
                 }"
               />
-              <span v-if="v$.email.$error" class="error">Enter un email valide.</span>
+              <span v-if="v$.email.$error" class="error">Entrer un email valide.</span>
             </div>
             <div class="form-group">
               <label for="telephone" class="col-form-label">Téléphone:</label>
@@ -413,7 +413,7 @@ onBeforeUnmount(() => {
             <div class="form-group">
               <label for="email" class="col-form-label">Email:</label>
               <input
-                type="email"
+                type="text"
                 v-model="form.email"
                 class="form-control"
                 id="email"
@@ -421,7 +421,7 @@ onBeforeUnmount(() => {
                   'is-invalid': v$.email.$invalid && v$.email.$dirty,
                 }"
               />
-              <span v-if="v$.email.$error" class="error">Enter un email valide.</span>
+              <span v-if="v$.email.$error" class="error">Entrer un email valide.</span>
             </div>
             <div class="form-group">
               <label for="telephone" class="col-form-label">Téléphone:</label>

@@ -6,7 +6,14 @@ import SectionNavigation from "../templates/SectionNavigation.vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
 import { required } from "@vuelidate/validators";
 import { PieceDetachee } from "@/types/PieceDetacheType";
-import { Machine, MachineRelation, Marque, Status, Type } from "@/types/MachineType";
+import {
+  Machine,
+  MachineRelation,
+  Marque,
+  Modele,
+  Status,
+  Type,
+} from "@/types/MachineType";
 import { Atelier, Chaine } from "@/types/AtelierType";
 import { Fournisseur } from "@/types/FournisseurType";
 import { IdentifiantStatusMachine } from "@/config/statusConfig";
@@ -51,6 +58,7 @@ const validation = {
 const v$ = useVuelidate(validation, form);
 
 const types = useCrud<Type>("machine/types/");
+const modeles = useCrud<Modele>("machine/modeles/");
 const marques = useCrud<Marque>("machine/marques/");
 const ateliers = useCrud<Atelier>("atelier/ateliers/");
 const chaines = useCrud<Chaine>("atelier/chaines/");
@@ -91,6 +99,7 @@ const submitForm = async () => {
     formData.append("numero_de_moteur", String(form.numero_de_moteur || ""));
     formData.append("description", form.description || "");
     formData.append("type_id", String(form.type_id || ""));
+    formData.append("modele_id", String(form.modele_id || ""));
     formData.append("marque_id", String(form.marque_id || ""));
     formData.append("atelier_id", String(form.atelier_id || ""));
     formData.append("chaine_id", String(form.chaine_id || ""));
@@ -200,6 +209,7 @@ onMounted(async () => {
     await machines.fetchItems(),
     (machinesOptions.value = machines.items.value),
     types.fetchItems(),
+    modeles.fetchItems(),
     marques.fetchItems(),
     ateliers.fetchItems(),
     chaines.fetchItems(),
@@ -279,26 +289,8 @@ onMounted(async () => {
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="numero_machine">Numéro de la machine*</label>
-              <div class="input-group">
-                <input
-                  type="text"
-                  class="form-control"
-                  id="numero_machine"
-                  placeholder="1"
-                  v-model="form.numero_machine"
-                  :class="{
-                    'is-invalid': v$.numero_machine.$invalid && v$.numero_machine.$dirty,
-                  }"
-                />
-              </div>
-              <span v-if="v$.numero_machine.$error" class="error"
-                >Numéro de machine requis.</span
-              >
-            </div>
             <div class="form-row">
-              <div class="form-group col-md-8">
+              <div class="form-group col-md-7">
                 <label for="nom_machine">Nom du machine*</label>
                 <div class="input-group">
                   <input
@@ -316,7 +308,45 @@ onMounted(async () => {
                   >Nom de machine requis.</span
                 >
               </div>
-              <div class="form-group col-md-4">
+              <div class="form-group col-md-5">
+                <label for="numero_machine">Numéro de la machine*</label>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="numero_machine"
+                    placeholder="1"
+                    v-model="form.numero_machine"
+                    :class="{
+                      'is-invalid':
+                        v$.numero_machine.$invalid && v$.numero_machine.$dirty,
+                    }"
+                  />
+                </div>
+                <span v-if="v$.numero_machine.$error" class="error"
+                  >Numéro de machine requis.</span
+                >
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="modele">Modèle:</label>
+                <select
+                  id="modele"
+                  class="form-control custom-select"
+                  v-model="form.modele_id"
+                >
+                  <option selected disabled>Sélectionner un modèle</option>
+                  <option
+                    v-for="modele in modeles.items.value"
+                    :key="modele.id"
+                    :value="modele.id"
+                  >
+                    {{ modele.nom_modele }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group col-md-6">
                 <label for="marque">Marque:</label>
                 <select
                   id="marque"
