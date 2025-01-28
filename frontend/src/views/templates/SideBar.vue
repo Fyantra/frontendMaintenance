@@ -80,7 +80,7 @@ notificationStore.fetchUnreadNotifications();
             <ul class="collapse list-unstyled pl-4 w-100" id="machines">
               <li class="nav-item active">
                 <RouterLink class="nav-link pl-3" to="/modele"
-                  ><span class="ml-1 item-text">Modele</span></RouterLink
+                  ><span class="ml-1 item-text">Modèle</span></RouterLink
                 >
               </li>
               <li class="nav-item">
