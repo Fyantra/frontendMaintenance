@@ -96,11 +96,14 @@ const validation = {
       ? helpers.withMessage("Champ obligatoire. ", required)
       : null,
     isAfterOrEqualToHeureDebut: helpers.withMessage(
-      "L'heure de fin doit être postérieure à l'heure de début. ",
-      (value) =>
-        !isAllDay.value ||
-        form.date_debut !== form.date_fin ||
-        (value && form.heure_debut && value > form.heure_debut)
+      "L'heure de fin doit être postérieure à l'heure de début.",
+      (value) => {
+        if (isAllDay.value || !form.date_debut || !form.date_fin) return true;
+        if (form.date_debut === form.date_fin) {
+          return form.heure_debut < value;
+        }
+        return true;
+      }
     ),
   },
   temps_maintenance_heure: {
@@ -151,8 +154,8 @@ const machines = useCrud<Machine>("machine/machines/", v$);
 const tacheCrud = useCrud<Tache>("tache/taches/", v$);
 const motifTacheCrud = useCrud<MotifTache>("tache/motif_taches/", v$);
 
-const errorMessage = tacheCrud.errorMessage;
-const error401Message = tacheCrud.error401Message;
+const errorMessage = machines.errorMessage;
+const error401Message = machines.error401Message;
 
 const clearError = () => {
   //reinitialiser le message d`erreur

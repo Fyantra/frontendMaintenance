@@ -240,10 +240,10 @@ onMounted(async () => {
                         />
                       </div>
                     </td>
-                    <td :data-order="tache.date_debut">
+                    <td :data-order="`${tache.date_debut}T${tache.heure_debut}`">
                       {{ formatDateAndTime(tache.date_debut, tache.heure_debut) }}
                     </td>
-                    <td :data-order="tache.date_fin">
+                    <td :data-order="`${tache.date_fin}T${tache.heure_fin}`">
                       {{ formatDateAndTime(tache.date_fin, tache.heure_fin) }}
                     </td>
                     <td class="text-center">
