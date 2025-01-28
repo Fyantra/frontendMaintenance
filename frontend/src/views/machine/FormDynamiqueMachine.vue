@@ -253,7 +253,7 @@ const submitForm = async () => {
                     v-model="machine.numero_de_moteur"
                     type="text"
                     class="form-control"
-                    placeholder="Numéro de série"
+                    placeholder="Numéro de moteur"
                     :class="{ 'is-invalid': errors[index]?.numero_de_moteur }"
                   />
                   <span v-if="errors[index]?.numero_de_moteur" class="error">{{
