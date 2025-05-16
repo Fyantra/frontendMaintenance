@@ -67,7 +67,10 @@ export const formatDateTime = (dateString: string) => {   //pour l`affichage det
   
     return dateDebutFormatted;
   };
-  
+
+export function stripTime(date: Date) {   //fonction pour extraire juste les dates sans heure
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
   
 export const formatDateTimeLocal = (date: Date) => {   //pour le formulaire type datetime-local
 const pad = (n: number) => (n < 10 ? '0' + n : n);

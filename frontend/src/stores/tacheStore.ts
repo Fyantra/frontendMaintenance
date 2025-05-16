@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 import { Tache } from "@/types/TacheType";
 import { useCrud } from "@/composables/useCrud";
 import { IdentifiantStatusTache } from "@/config/statusConfig";
+import { stripTime } from "@/composables/useFonction";
 
 export const useTacheStore = defineStore("tacheStore", () => {
   const taches = ref<Tache[]>([]);
@@ -12,10 +13,11 @@ export const useTacheStore = defineStore("tacheStore", () => {
   const updateTacheStatus = async (tache: Tache) => {
     const now = new Date();
     const dateFin = new Date(tache.date_fin);
+    const stripNow = stripTime(now);
+    const stripDatefin = stripTime(dateFin);
     const heureFin = tache.heure_fin
       ? new Date(`${tache.date_fin}T${tache.heure_fin}`)
       : null;
-  
     // Ignorer les tâches ayant un statut "Terminée" ou "Annulée"
     if (
       tache.identifiant_status_tache === IdentifiantStatusTache.termine ||
@@ -23,9 +25,8 @@ export const useTacheStore = defineStore("tacheStore", () => {
     ) {
       return;
     }
-
     try {
-      if ((dateFin < now && heureFin && heureFin < now)) {
+      if ((stripDatefin < stripNow || heureFin && heureFin < now)) {
         switch (tache.identifiant_status_tache) {
           case IdentifiantStatusTache.enCours:
             // Si la tâche est "En cours", elle devient "En retard et commencée"

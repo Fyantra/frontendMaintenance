@@ -298,6 +298,12 @@ const resetForm = () => {
   validationsPiece.value = [];
 };
 
+//export
+const { exportTache } = useCrud("");
+const handleExport = async (format: "pdf") => {
+  await exportTache(format, Number(tacheId));
+};
+
 onMounted(async () => {
   await statusTacheCrud.fetchItems();
   await statusMachineCrud.fetchItems();
@@ -340,9 +346,9 @@ onMounted(async () => {
             v-if="!isTacheTerminee && !isTacheAnnulee"
             @click="$router.push({ name: 'modifierTache', params: { id: tache.id } })"
             type="button"
-            class="btn btn-primary ml-3"
+            class="btn btn-primary ml-3 icon"
           >
-            <span class="fe fe-edit-2 fe-16 mr-2"></span>Modifier la tâche
+            <span class="fe fe-edit-2 fe-16 mr-2 icon"></span>Modifier la tâche
           </button>
           <button
             v-if="!isTacheTerminee && !isTacheAnnulee"
@@ -350,15 +356,22 @@ onMounted(async () => {
             type="button"
             class="btn btn-primary ml-3"
           >
-            <span class="fe fe-check fe-16 mr-2"></span>Marquer comme terminée
+            <span class="fe fe-check-circle fe-16 mr-2 icon"></span>Marquer comme terminée
           </button>
           <button
             v-if="!isTacheTerminee && !isTacheAnnulee"
             @click="annulerTache"
             type="button"
+            class="btn btn-primary ml-3 icon"
+          >
+            <span class="fe fe-slash fe-16 mr-2"></span>Annuler
+          </button>
+          <button
+            @click.prevent="handleExport('pdf')"
+            type="button"
             class="btn btn-primary ml-3"
           >
-            <span class="fe fe-x-circle fe-16 mr-2"></span>Annuler
+            <span class="fe fe-printer fe-16 mr-2 icon"></span>Imprimer
           </button>
           <button
             v-if="isTacheTerminee"
@@ -366,13 +379,14 @@ onMounted(async () => {
             type="button"
             class="btn btn-primary ml-3"
           >
-            <span class="fe fe-rotate-ccw fe-16 mr-2"></span>Marquer comme non terminée
+            <span class="fe fe-rotate-ccw fe-16 mr-2 icon"></span>Marquer comme non
+            terminée
           </button>
           <button
             v-if="isTacheAnnulee"
             @click="retablirTache"
             type="button"
-            class="btn btn-primary ml-3"
+            class="btn btn-primary ml-3 icon"
           >
             Rétablir
           </button>
@@ -893,6 +907,11 @@ img:hover {
   height: 40px;
   margin-right: 10px;
   border-radius: 18px;
+}
+
+.icon {
+  font-size: 15px;
+  vertical-align: middle;
 }
 </style>
 
