@@ -167,7 +167,7 @@ notificationStore.fetchUnreadNotifications();
           </li>
         </ul>
         <p class="text-muted nav-heading mt-4 mb-1">
-          <span>CHEF ET RESPONSABLE</span>
+          <span>EQUIPEMENTS</span>
         </p>
         <ul class="navbar-nav flex-fill w-100 mb-2">
           <li class="nav-item w-100">
@@ -180,7 +180,7 @@ notificationStore.fetchUnreadNotifications();
           <li class="nav-item w-100">
             <RouterLink class="nav-link" to="/listePiecedetache">
               <i class="material-icons notranslate">handyman</i>
-              <span class="ml-3 item-text">Pièce détachée</span>
+              <span class="ml-3 item-text">Pièce détachées</span>
             </RouterLink>
           </li>
 
@@ -207,6 +207,12 @@ notificationStore.fetchUnreadNotifications();
             <RouterLink class="nav-link" to="/listeTache">
               <i class="material-icons notranslate">assignment</i>
               <span class="ml-3 item-text">Tâches</span>
+            </RouterLink>
+          </li>
+          <li class="nav-item w-100">
+            <RouterLink class="nav-link" to="">
+              <i class="material-icons notranslate">list_alt</i>
+              <span class="ml-3 item-text">Activités</span>
             </RouterLink>
           </li>
           <li class="nav-item w-100">

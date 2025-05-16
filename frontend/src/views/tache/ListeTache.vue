@@ -60,6 +60,12 @@ const selectStatus = (statusId: number) => {
   refreshData();
 };
 
+//export
+const { exportTache } = useCrud("");
+const handleExport = async (format: "pdf" | "csv" | "excel") => {
+  await exportTache(format);
+};
+
 // Rafraîchir les données
 const refreshData = async () => {
   await tachesCrud.initializeDataTableWithId("dataTable_tache");
@@ -107,7 +113,7 @@ onMounted(async () => {
         <div class="col-md-12 my-4">
           <div class="card shadow">
             <div class="card-body">
-              <div class="row items-align-center d-none d-lg-flex">
+              <div class="row items-align-center my-3 d-none d-lg-flex">
                 <div class="col-md">
                   <button
                     v-if="statusTache.items.value.length > 0"
@@ -151,24 +157,47 @@ onMounted(async () => {
                     </li>
                   </ul>
                 </div>
-              </div>
-              <div class="toolbar row mb-3">
-                <div class="col ml-auto">
-                  <div class="dropdown float-right">
-                    <button
-                      class="btn btn-secondary dropdown-toggle"
-                      type="button"
-                      id="actionMenuButton"
-                      data-toggle="dropdown"
-                      aria-haspopup="true"
-                      aria-expanded="false"
-                    >
-                      Changer le statut des tâches
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="actionMenuButton">
-                      <a class="dropdown-item" href="#">Terminee</a>
-                      <a class="dropdown-item" href="#">Annulee</a>
-                      <a class="dropdown-item" href="#">Something else here</a>
+                <div class="toolbar row mb-3 mr-4">
+                  <div class="col ml-auto">
+                    <div class="dropdown float-right">
+                      <button
+                        class="btn btn-secondary dropdown-toggle"
+                        type="button"
+                        id="actionMenuButton"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                      >
+                        <i class="material-icons icon mr-2 notranslate">download</i>
+                        Télécharger
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="actionMenuButton">
+                        <a
+                          class="dropdown-item"
+                          href="#"
+                          @click.prevent="handleExport('csv')"
+                          ><i class="material-icons icon mr-2 notranslate">grid_on</i
+                          >Fichier CSV</a
+                        >
+                        <a
+                          class="dropdown-item"
+                          href="#"
+                          @click.prevent="handleExport('excel')"
+                          ><i
+                            class="material-icons icon mr-2 notranslate"
+                            style="color: green"
+                            >description</i
+                          >Fichier excel (xlsx)</a
+                        >
+                        <a
+                          class="dropdown-item"
+                          href="#"
+                          @click.prevent="handleExport('pdf')"
+                          ><i class="material-icons icon mr-2 notranslate"
+                            >picture_as_pdf</i
+                          >Fichier PDF</a
+                        >
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -354,5 +383,10 @@ hr {
 .badge-status {
   border-radius: 10px;
   font-size: 85%;
+}
+
+.icon {
+  font-size: 15px;
+  vertical-align: middle;
 }
 </style>

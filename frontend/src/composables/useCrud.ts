@@ -201,6 +201,57 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
     }
   };
 
+  /////////EXPORT/////////////////
+  const exportData = async (exportFormat: 'pdf' | 'csv' | 'excel', modelName?: string) => {
+    try {
+      const exportEndpoint = modelName 
+        ? `${apiUrl}export/${modelName}/${exportFormat}/`
+        : endpoint.replace(/\/$/, '') + `-export/${exportFormat}/`;
+      
+      const response = await axios.get(exportEndpoint, {
+        ...authHeader,
+        responseType: exportFormat === 'pdf' ? 'blob' : 'arraybuffer'
+      });
+  
+      // Créer le fichier téléchargeable
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      link.setAttribute('download', `export_${modelName || endpoint.split('/').filter(Boolean).pop()}_${new Date().toISOString().slice(0,10)}.${exportFormat === 'excel' ? 'xlsx' : exportFormat}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+  
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
+  const exportTache = async (exportFormat: 'pdf' | 'csv' | 'excel', pk?: number) => {
+    try {
+      const url = pk 
+        ? `${apiUrl}export-tache/${pk}/${exportFormat}/`
+        : `${apiUrl}export-tache/${exportFormat}/`;
+      
+      const response = await axios.get(url, {
+        ...authHeader,
+        responseType: exportFormat === 'pdf' ? 'blob' : 'arraybuffer'
+      });
+  
+      const urlObject = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = urlObject;
+      link.setAttribute('download', `taches_export_${new Date().toISOString().slice(0,10)}.${exportFormat === 'excel' ? 'xlsx' : exportFormat}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+  
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   return {
     items,
     errorMessage,
@@ -215,6 +266,8 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
     initializeDataTable,
     initializeDataTableWithId,
     actionItemApi,
+    exportData,
+    exportTache,
     v$,
   };
 }

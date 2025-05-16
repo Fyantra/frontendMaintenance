@@ -6,6 +6,7 @@ import ErrorMessage from "../templates_composant/ErrorMessage.vue";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
 import { Machine, Status } from "@/types/MachineType";
 import { getStatusForMachine } from "@/composables/useFonction";
+import ExportButtons from "../templates_composant/ExportButtons.vue";
 
 // Récupérer les données des nachines
 const machinesCrud = useCrud<Machine>("machine/machines/");
@@ -90,6 +91,11 @@ onMounted(async () => {
         <span class="fe fe-plus fe-16 mr-2"></span>Ajouter un machine
       </button>
     </RouterLink>
+    <RouterLink to="">
+      <button type="button" class="btn btn-primary ml-4">
+        <span class="fe fe-upload fe-16 mr-2"></span>Importer un fichier
+      </button>
+    </RouterLink>
   </div>
 
   <p class="mt-3">
@@ -105,19 +111,25 @@ onMounted(async () => {
         <div class="col-md-12">
           <div class="card shadow">
             <div class="card-body">
-              <div class="row items-align-center my-2 mb-4 d-none d-lg-flex">
+              <div class="row items-align-center my-2 d-none d-lg-flex">
                 <div class="col-md">
                   <button
                     v-if="status.items.value.length > 0"
                     @click="toggleStatusFilters"
+                    href="#collapsestatus"
+                    data-toggle="collapse"
+                    data-target="#collapsestatus"
+                    aria-expanded="false"
+                    aria-controls="collapsestatus"
                     type="button"
                     class="btn mb-2 btn-outline-warning"
                   >
                     <span class="fe fe-arrow-down fe-16 mr-2"></span>Filtre sur les status
                   </button>
                   <ul
+                    id="collapsestatus"
                     v-if="showStatusFilters"
-                    class="nav nav-pills justify-content-start mt-2"
+                    class="nav nav-pills justify-content-start mt-2 collapse"
                   >
                     <li
                       v-for="status in status.items.value"
@@ -143,6 +155,11 @@ onMounted(async () => {
                       </a>
                     </li>
                   </ul>
+                </div>
+                <div class="toolbar row mb-3 mr-4">
+                  <div class="col ml-auto">
+                    <ExportButtons model-name="machine" />
+                  </div>
                 </div>
               </div>
               <table id="datatable-1" class="table table-hover">

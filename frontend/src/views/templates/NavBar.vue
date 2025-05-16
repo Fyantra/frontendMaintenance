@@ -96,10 +96,10 @@ export default defineComponent({
           class="dropdown-menu dropdown-menu-right"
           aria-labelledby="navbarDropdownMenuLink"
         >
-          <a class="dropdown-item" href="#">Profile</a>
-          <a class="dropdown-item" href="#">Settings</a>
+          <a class="dropdown-item" href="#">Profil</a>
+          <a class="dropdown-item" href="#">Paramètre</a>
           <a id="decon" class="dropdown-item" href="#" @click="handleLogout"
-            >Deconnexion</a
+            >Déconnexion</a
           >
         </div>
       </li>

@@ -7,6 +7,7 @@ import SectionNavigation from "../templates/SectionNavigation.vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
 import ReapproModal from "./ReapproModal.vue";
+import ExportButtons from "../templates_composant/ExportButtons.vue";
 
 // Récupérer les données des pièces détachées
 const pieceDetacheCrud = useCrud<PieceDetachee>("piece/piecedetachees/");
@@ -169,6 +170,11 @@ onMounted(async () => {
     <RouterLink to="/ajoutPiecedetache">
       <button type="button" class="btn btn-primary">
         <span class="fe fe-plus fe-16 mr-2"></span>Ajouter une pièce détachée
+      </button>
+    </RouterLink>
+    <RouterLink to="">
+      <button type="button" class="btn btn-primary ml-4">
+        <span class="fe fe-upload fe-16 mr-2"></span>Importer un fichier
       </button>
     </RouterLink>
   </div>
@@ -335,25 +341,9 @@ onMounted(async () => {
         <div class="col-md-12">
           <div class="card shadow">
             <div class="card-body">
-              <div class="toolbar row mb-3">
+              <div class="toolbar row mb-3 mr-4">
                 <div class="col ml-auto">
-                  <div class="dropdown float-right">
-                    <button
-                      class="btn btn-secondary dropdown-toggle"
-                      type="button"
-                      id="actionMenuButton"
-                      data-toggle="dropdown"
-                      aria-haspopup="true"
-                      aria-expanded="false"
-                    >
-                      Telecharger
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="actionMenuButton">
-                      <a class="dropdown-item" href="#">CSV</a>
-                      <a class="dropdown-item" href="#">PDF</a>
-                      <a class="dropdown-item" href="#">Excel</a>
-                    </div>
-                  </div>
+                  <ExportButtons model-name="piecedetachee" />
                 </div>
               </div>
               <table id="datatable-1" class="table table-hover">
