@@ -62,6 +62,7 @@ export interface Machine{
   pieces_detachees?: PieceDetachee[] | null;
   pieces_detachees_id?: number | null;
   total_duree_machine?: string;
+  total_duree_machine_liee?: string;
   date_creation?: Date | string;
 }
 

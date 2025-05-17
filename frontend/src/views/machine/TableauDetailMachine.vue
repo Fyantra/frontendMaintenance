@@ -391,6 +391,43 @@ const activeTab = ref("machines");
           </div>
         </div>
         <!--Fin historique tache-->
+
+        <!--Listes des documents-->
+        <div
+          class="tab-pane fade"
+          id="document"
+          role="tabpanel"
+          aria-labelledby="piece-tab"
+        >
+          <div class="card shadow">
+            <div class="card-body">
+              Aucun document associé.
+              <div class="dropdown float-right mr-5">
+                <button
+                  class="btn btn-primary dropdown-toggle"
+                  type="button"
+                  id="actionMenuButton"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <i class="fe fe-plus fe-16 mr-2"></i>
+                  Ajouter
+                </button>
+                <div class="dropdown-menu" aria-labelledby="actionMenuButton">
+                  <a class="dropdown-item">
+                    <i class="fe fe-link mr-2 notranslate"></i>
+                    Ajouter un lien
+                  </a>
+                  <a class="dropdown-item" href="#">
+                    <i class="fe fe-file mr-2"></i>
+                    Ajouter des documents
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -449,6 +486,12 @@ const activeTab = ref("machines");
   max-height: 1000px;
   opacity: 1;
   transform: scaleY(1);
+}
+.dropdown-item {
+  cursor: pointer;
+}
+.dropdown-item:hover {
+  color: black;
 }
 </style>
 

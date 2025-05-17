@@ -358,11 +358,24 @@ watch(
         <div class="col-md-3">
           <div class="card shadow mb-4">
             <div class="card-body">
-              <h3 class="h6 mb-1">Temps passé sur le machine</h3>
+              <h3 class="h6 mb-1">Temps passé sur l'équipement</h3>
               <p class="text-muted mb-4">C'est le total des temp passés sur les tâches</p>
               <ul class="list-unstyled">
                 <li class="my-1">
                   <i class="fe fe-clock mr-2"></i>{{ machine.total_duree_machine }}
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="card shadow mb-4">
+            <div class="card-body">
+              <h3 class="h6 mb-1">Temps passé sur le groupe d'équipement</h3>
+              <p class="text-muted mb-4">
+                C'est le total des temp passés sur les équipement liées
+              </p>
+              <ul class="list-unstyled">
+                <li class="my-1">
+                  <i class="fe fe-clock mr-2"></i>{{ machine.total_duree_machine_liee }}
                 </li>
               </ul>
             </div>
