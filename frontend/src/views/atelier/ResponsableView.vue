@@ -52,12 +52,13 @@ const submitForm = async () => {
     formData.append("nom_responsable", form.nom_responsable);
     formData.append("email", form.email || "");
     formData.append("telephone", form.telephone || "");
+    formData.append("responsabilite", form.responsabilite || "");
     if (fileInput.value?.files?.[0]) {
       formData.append("photo", fileInput.value.files[0]); // Ajouter l'image
     }
     await addItem(formData);
     initializeDataTable();
-    $("#addModal").modal("hide");
+    ($("#addModal") as any).modal("hide");
   } else {
     console.error("Formulaire invalide");
   }
@@ -71,13 +72,14 @@ const submitUpdateForm = async () => {
     formData.append("nom_responsable", form.nom_responsable);
     formData.append("email", form.email || "");
     formData.append("telephone", form.telephone || "");
+    formData.append("responsabilite", form.responsabilite || "");
     if (fileInput.value?.files?.[0]) {
       formData.append("photo", fileInput.value.files[0]); // Ajouter l'image si une nouvelle a été sélectionnée
     }
     await updateItem(selectedItem.value.id, formData);
     initializeDataTable();
     selectedItem.value = null;
-    $("#updateModal").modal("hide");
+    ($("#updateModal") as any).modal("hide");
   } else {
     console.error("Formulaire de mise à jour invalide");
   }
@@ -87,6 +89,7 @@ const submitUpdateForm = async () => {
 const openUpdateModal = (item: Responsable) => {
   form.id = item.id;
   form.nom_responsable = item.nom_responsable;
+  form.responsabilite = item.responsabilite;
   form.email = item.email;
   form.telephone = item.telephone;
   image.value = item.photo;
@@ -224,6 +227,15 @@ onBeforeUnmount(() => {
               >
             </div>
             <div class="form-group">
+              <label for="responsabilite" class="col-form-label">Responsabilité:</label>
+              <input
+                type="text"
+                v-model="form.responsabilite"
+                class="form-control"
+                id="responsabilite"
+              />
+            </div>
+            <div class="form-group">
               <label for="email" class="col-form-label">Email:</label>
               <input
                 type="text"
@@ -276,6 +288,7 @@ onBeforeUnmount(() => {
               <th>ID</th>
               <th>Photo</th>
               <th>Nom responsable</th>
+              <th>Responsabilité</th>
               <th>Email</th>
               <th>Téléphone</th>
               <th>Date de création</th>
@@ -297,6 +310,7 @@ onBeforeUnmount(() => {
                 </div>
               </td>
               <td>{{ item.nom_responsable }}</td>
+              <td>{{ item.responsabilite }}</td>
               <td>{{ item.email }}</td>
               <td>{{ item.telephone }}</td>
               <td :data-order="item.date_creation">
@@ -409,6 +423,15 @@ onBeforeUnmount(() => {
               <span v-if="v$.nom_responsable.$error" class="error"
                 >Nom de responsable requis.</span
               >
+            </div>
+            <div class="form-group">
+              <label for="responsabilite" class="col-form-label">Responsabilité:</label>
+              <input
+                type="text"
+                v-model="form.responsabilite"
+                class="form-control"
+                id="responsabilite"
+              />
             </div>
             <div class="form-group">
               <label for="email" class="col-form-label">Email:</label>
