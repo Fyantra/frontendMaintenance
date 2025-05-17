@@ -7,6 +7,7 @@ export interface Endroit{
 export interface Responsable{
     id : number;
     nom_responsable: string;
+    responsabilite? : string | null;
     email: string | null;
     telephone? : string | null;
     photo?: string | null;
