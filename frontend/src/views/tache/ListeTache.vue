@@ -228,7 +228,7 @@ onMounted(async () => {
                       </div>
                     </th> -->
                     <th>ID</th>
-                    <th style="width: 22%">Description</th>
+                    <th style="width: 22%">Nom de la tâche</th>
                     <th style="width: 13%">Date de début</th>
                     <th style="width: 13%">Date fin</th>
                     <th>Image</th>
@@ -245,13 +245,13 @@ onMounted(async () => {
                         <label class="custom-control-label" for="4574"></label>
                       </div>
                     </td> -->
-                    <td>{{ tache.id }}</td>
-                    <td style="width: 22%">
+                    <td :data-order="tache.id">{{ tache.id }}</td>
+                    <td :data-order="tache.nom_tache" style="width: 22%">
                       <RouterLink
                         class="routerlink_piece"
                         :to="{ name: 'detailTache', params: { id: tache.id } }"
                       >
-                        <strong style="color: #5ec0d8">{{ tache.description }}</strong>
+                        <strong style="color: #5ec0d8">{{ tache.nom_tache }}</strong>
                       </RouterLink>
                       <hr />
                       <i class="fe fe-clock fe-16 mr-3"></i>
