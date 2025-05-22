@@ -25,15 +25,21 @@ const isOpen = ref(false);
 const notificationStore = useNotificationStore();
 const { formatNumber } = getformatNumber();
 
+//gestion loading
+const loading = ref(false);
+
 const props = defineProps<{
   tacheProps: Tache;
 }>();
+
+const emit = defineEmits(["refreshTache"]);
 
 const activiteCrud = useCrud<ActiviteTache>("tache/activites_taches/");
 const activitePieceCrud = useCrud<ActiviteTachePieceDetachee>(
   "tache/activites_piecedetachees/"
 );
 const pieceDetacheeCrud = useCrud<PieceDetachee>("piece/piecedetachees/");
+const tachesCrud = useCrud<Tache>("tache/taches/");
 
 const activites = ref<ActiviteTache[]>([]);
 const piecesParActivite = ref<{ [activiteId: number]: ActiviteTachePieceDetachee[] }>({}); // afficher les pièces classées par activité
@@ -167,10 +173,15 @@ const savePieceForActivite = async (activiteId: number, index: number) => {
 
   if (Object.keys(pieceErrors).length === 0) {
     try {
+      loading.value = true;
       await activitePieceCrud.addItem({
         activite_tache: activiteId,
         pieces_detachees_id: piece.pieces_detachees?.id,
         quantite: piece.quantite,
+      });
+
+      await tachesCrud.updateItemPatch(props.tacheProps.id, {
+        identifiant_status_tache: IdentifiantStatusTache.enCours,
       });
 
       await fetchActivites();
@@ -178,6 +189,8 @@ const savePieceForActivite = async (activiteId: number, index: number) => {
       notificationStore.fetchUnreadNotifications();
     } catch (error) {
       console.error("Erreur lors de l'enregistrement :", error);
+    } finally {
+      loading.value = false;
     }
   } else {
     errors[activiteId][index] = pieceErrors;
@@ -230,6 +243,7 @@ const fetchActivites = async () => {
         (piece) => piece.activite_tache === activite.id
       );
     });
+    emit("refreshTache");
   } catch (error) {
     console.error("Erreur lors du chargement des activités :", error);
   }
@@ -288,221 +302,228 @@ onMounted(async () => {
     :error401Message="error401Message"
     :clearError="clearError"
   />
-  <div class="card card-fill timeline mb-4">
-    <div class="card-header">
-      <strong class="card-title">Liste des activités</strong>
-    </div>
-    <div v-if="activites.length > 0" class="card-body">
-      <div
-        v-for="activite in activites"
-        :key="activite.id"
-        class="pb-3 timeline-item item-primary"
-      >
-        <div class="pl-5">
-          <div class="zouzou border p-4 rounded shadow-sm">
-            <div class="mb-4">
-              <strong>L`activité #({{ activite.id }})</strong
-              ><span class="mx-2">a été ajoutée le </span
-              ><strong
-                ><span class="badge badge-light">{{
-                  formatDateTime(String(activite.date_creation))
-                }}</span></strong
-              >
-              <button
-                v-if="!isTacheTerminee && !isTacheAnnulee"
-                @click="deleteActivite(activite.id)"
-                type="button"
-                class="btn btn-danger btn-sm float-right"
-              >
-                Supprimer
-              </button>
-              <!--Modifier l`activite en ouvrant un modal-->
-              <button
-                v-if="!isTacheTerminee && !isTacheAnnulee"
-                @click="openEditModal(activite)"
-                data-toggle="modal"
-                data-target="#updateActivite"
-                type="button"
-                class="btn btn-primary btn-sm float-right mr-2"
-              >
-                Modifier
-              </button>
-            </div>
+  <div class="activite-card">
+    <div class="card card-fill timeline mb-4">
+      <div class="card-header">
+        <strong class="card-title">Liste des activités</strong>
+      </div>
+      <div v-if="activites.length > 0" class="card-body">
+        <div
+          v-for="activite in activites"
+          :key="activite.id"
+          class="pb-3 timeline-item item-primary"
+        >
+          <div class="pl-5">
+            <div class="zouzou border p-4 rounded shadow-sm">
+              <div class="mb-4">
+                <strong>L`activité #{{ activite.id }}</strong
+                ><span class="mx-2">a été ajoutée le </span
+                ><strong
+                  ><span class="badge badge-light">{{
+                    formatDateTime(String(activite.date_creation))
+                  }}</span></strong
+                >
+                <button
+                  v-if="!isTacheTerminee && !isTacheAnnulee"
+                  @click="deleteActivite(activite.id)"
+                  type="button"
+                  class="btn btn-danger btn-sm float-right"
+                >
+                  Supprimer
+                </button>
+                <!--Modifier l`activite en ouvrant un modal-->
+                <button
+                  v-if="!isTacheTerminee && !isTacheAnnulee"
+                  @click="openEditModal(activite)"
+                  data-toggle="modal"
+                  data-target="#updateActivite"
+                  type="button"
+                  class="btn btn-primary btn-sm float-right mr-2"
+                >
+                  Modifier
+                </button>
+              </div>
 
-            <!--Detail de l`activite-->
-            <div class="row">
-              <div class="col-md-12">
-                <div class="row">
-                  <div class="col-12 mb-4">
-                    <div class="d-flex align-items-start">
-                      <i class="material-icons notranslate mr-4">description</i>
-                      <div>
-                        <div class="text-muted">Description</div>
-                        <div>{{ activite.description }}</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-sm-6 mb-4">
-                    <div class="d-flex align-items-start">
-                      <i class="material-icons notranslate mr-4">event</i>
-                      <div>
-                        <div class="text-muted">Réalisée le</div>
-                        <div>{{ formatDateTime(String(activite.date_realisation)) }}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-sm-6 mb-4">
-                    <div class="d-flex align-items-start">
-                      <i class="material-icons notranslate mr-4">access_time</i>
-                      <div>
-                        <div class="text-muted">Temps passé</div>
+              <!--Detail de l`activite-->
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="row">
+                    <div class="col-12 mb-4">
+                      <div class="d-flex align-items-start">
+                        <i class="material-icons notranslate mr-4">description</i>
                         <div>
-                          {{ activite.temps_passe_heure || 0 }}h
-                          {{ activite.temps_passe_minute || 0 }}m
+                          <div class="text-muted">Description</div>
+                          <div>{{ activite.description }}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-6 mb-4">
+                      <div class="d-flex align-items-start">
+                        <i class="material-icons notranslate mr-4">event</i>
+                        <div>
+                          <div class="text-muted">Réalisée le</div>
+                          <div>
+                            {{ formatDateTime(String(activite.date_realisation)) }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-sm-6 mb-4">
+                      <div class="d-flex align-items-start">
+                        <i class="material-icons notranslate mr-4">access_time</i>
+                        <div>
+                          <div class="text-muted">Temps passé</div>
+                          <div>
+                            {{ activite.temps_passe_heure || 0 }}h
+                            {{ activite.temps_passe_minute || 0 }}m
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div
-              v-for="(activitePiece, index) in piecesParActivite[activite.id] || []"
-              :key="index"
-              class="card d-inline-flex mb-4 mr-2"
-            >
-              <div class="card-body bg-light py-2 px-3" style="border-radius: 10px">
-                <i class="material-icons notranslate badge-icon mr-2">handyman</i>
-                <RouterLink
-                  class="routerlink_piece"
-                  :to="{
-                    name: 'detailPieceDetache',
-                    params: { id: activitePiece.pieces_detachees?.id },
-                  }"
-                  >{{ activitePiece.pieces_detachees?.nom_piecedetache }}
-                </RouterLink>
-                (<strong>{{ activitePiece.quantite }}</strong
-                >) = {{ formatNumber(activitePiece.total) }} Ariary
-                <span v-if="!isTacheTerminee && !isTacheAnnulee">
-                  <button
-                    class="btn btn-sm dropdown-toggle more-vertical"
-                    type="button"
-                    data-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  ></button>
-                  <div class="dropdown-menu" style="padding: initial">
-                    <a
-                      class="dropdown-item"
-                      @click="deletePieceFromActivite(activitePiece.id)"
-                    >
-                      <i class="fe fe-delete mr-4"></i> Supprimer
-                    </a>
-                  </div>
-                </span>
-              </div>
-            </div>
-            <div class="row mb-4 align-items-center">
-              <div v-if="!isTacheTerminee && !isTacheAnnulee" class="col-auto">
-                <!--Ajouter un nouveau piece detachee dans ce activite-->
-                <button
-                  @click="addPieceToActivite(activite.id)"
-                  type="button"
-                  class="btn btn-outline-info"
-                >
-                  <span class="fe fe-plus fe-16 mr-2"></span>Pièce détachée
-                </button>
+              <div v-if="loading" style="text-align: center">
+                <span class="spinner-border text-primary"></span>
               </div>
               <div
-                v-if="piecesParActivite[activite.id]?.[0]?.somme_totale"
-                class="col text-right"
+                v-for="(activitePiece, index) in piecesParActivite[activite.id] || []"
+                :key="index"
+                class="card d-inline-flex mb-4 mr-2"
               >
-                <div class="total-box">
-                  <strong
-                    >TOTAL:
-                    {{
-                      formatNumber(piecesParActivite[activite.id]?.[0]?.somme_totale)
-                    }}</strong
-                  >
-                  Ariary
+                <div class="card-body bg-light py-2 px-3" style="border-radius: 10px">
+                  <i class="material-icons notranslate badge-icon mr-2">handyman</i>
+                  <RouterLink
+                    class="routerlink_piece"
+                    :to="{
+                      name: 'detailPieceDetache',
+                      params: { id: activitePiece.pieces_detachees?.id },
+                    }"
+                    >{{ activitePiece.pieces_detachees?.nom_piecedetache }}
+                  </RouterLink>
+                  (<strong>{{ activitePiece.quantite }}</strong
+                  >) = {{ formatNumber(activitePiece.total) }} Ariary
+                  <span v-if="!isTacheTerminee && !isTacheAnnulee">
+                    <button
+                      class="btn btn-sm dropdown-toggle more-vertical"
+                      type="button"
+                      data-toggle="dropdown"
+                      aria-haspopup="true"
+                      aria-expanded="false"
+                    ></button>
+                    <div class="dropdown-menu" style="padding: initial">
+                      <a
+                        class="dropdown-item"
+                        @click="deletePieceFromActivite(activitePiece.id)"
+                      >
+                        <i class="fe fe-delete mr-4"></i> Supprimer
+                      </a>
+                    </div>
+                  </span>
                 </div>
               </div>
-            </div>
-            <!--Ajout piece detachee-->
-            <div
-              class="form-row mb-3"
-              v-for="(newPiece, index) in newPieceDetacheeByActivite[activite.id] || []"
-              :key="index"
-            >
-              <div class="form-group col-md-5 mr-2" :class="{ 'col-md-8': isOpen }">
-                <label for="piece" class="form-label">Pièce détachée</label>
-                <multiselect
-                  v-model="newPiece.pieces_detachees"
-                  :options="availablePiecesForActivite(activite.id)"
-                  :close-on-select="true"
-                  :clear-on-select="false"
-                  :preserve-search="false"
-                  placeholder="Sélectionnez un pièce détachée"
-                  label="nom_piecedetache"
-                  track-by="id"
-                  id="piece"
-                  @open="isOpen = true"
-                  @close="isOpen = false"
-                  :class="{
-                    'is-invalid-multiselect':
-                      errors[activite.id]?.[index]?.pieces_detachees,
-                  }"
+              <div class="row mb-4 align-items-center">
+                <div v-if="!isTacheTerminee && !isTacheAnnulee" class="col-auto">
+                  <!--Ajouter un nouveau piece detachee dans ce activite-->
+                  <button
+                    @click="addPieceToActivite(activite.id)"
+                    type="button"
+                    class="btn btn-outline-info"
+                  >
+                    <span class="fe fe-plus fe-16 mr-2"></span>Pièce détachée
+                  </button>
+                </div>
+                <div
+                  v-if="piecesParActivite[activite.id]?.[0]?.somme_totale"
+                  class="col text-right"
                 >
-                  <template #option="{ option }">
-                    <div class="option-item">
-                      <img :src="option.image" alt="image" class="option-icon" />
-                      <span>{{ option.nom_piecedetache }}</span>
-                      <span class="ml-2 text-muted"
-                        >Stock actuel: {{ option.quantite }}</span
-                      >
-                    </div>
-                  </template>
-                </multiselect>
-                <span class="error">{{
-                  errors[activite.id]?.[index]?.pieces_detachees
-                }}</span>
+                  <div class="total-box">
+                    <strong
+                      >TOTAL:
+                      {{
+                        formatNumber(piecesParActivite[activite.id]?.[0]?.somme_totale)
+                      }}</strong
+                    >
+                    Ariary
+                  </div>
+                </div>
               </div>
-              <div class="form-group" :class="{ 'col-md-2': isOpen }">
-                <label for="quantite">Quantité</label>
-                <input
-                  :class="{ 'is-invalid': errors[activite.id]?.[index]?.quantite }"
-                  v-model="newPiece.quantite"
-                  style="height: 40px"
-                  type="number"
-                  class="form-control"
-                  id="quantite"
-                  placeholder="1"
-                />
-                <span v-if="errors[activite.id]?.[index]?.quantite" class="error">{{
-                  errors[activite.id]?.[index]?.quantite
-                }}</span>
-                <span v-else class="text-muted stock"
-                  >Stock actuel: {{ newPiece.pieces_detachees?.quantite }}</span
-                >
-              </div>
-              <span
-                @click="removePieceFromActivite(activite.id, index)"
-                class="circle circle-sm bg-danger justify-content-center text-white"
-                >x</span
+              <!--Ajout piece detachee-->
+              <div
+                class="form-row mb-3"
+                v-for="(newPiece, index) in newPieceDetacheeByActivite[activite.id] || []"
+                :key="index"
               >
-              <span
-                @click="savePieceForActivite(activite.id, index)"
-                class="circle circle-sm bg-success justify-content-center text-white ml-1"
-                ><i class="fe fe-check"></i
-              ></span>
+                <div class="form-group col-md-5 mr-2" :class="{ 'col-md-8': isOpen }">
+                  <label for="piece" class="form-label">Pièce détachée</label>
+                  <multiselect
+                    v-model="newPiece.pieces_detachees"
+                    :options="availablePiecesForActivite(activite.id)"
+                    :close-on-select="true"
+                    :clear-on-select="false"
+                    :preserve-search="false"
+                    placeholder="Sélectionnez un pièce détachée"
+                    label="nom_piecedetache"
+                    track-by="id"
+                    id="piece"
+                    @open="isOpen = true"
+                    @close="isOpen = false"
+                    :class="{
+                      'is-invalid-multiselect':
+                        errors[activite.id]?.[index]?.pieces_detachees,
+                    }"
+                  >
+                    <template #option="{ option }">
+                      <div class="option-item">
+                        <img :src="option.image" alt="image" class="option-icon" />
+                        <span>{{ option.nom_piecedetache }}</span>
+                        <span class="ml-2 text-muted"
+                          >Stock actuel: {{ option.quantite }}</span
+                        >
+                      </div>
+                    </template>
+                  </multiselect>
+                  <span class="error">{{
+                    errors[activite.id]?.[index]?.pieces_detachees
+                  }}</span>
+                </div>
+                <div class="form-group" :class="{ 'col-md-2': isOpen }">
+                  <label for="quantite">Quantité</label>
+                  <input
+                    :class="{ 'is-invalid': errors[activite.id]?.[index]?.quantite }"
+                    v-model="newPiece.quantite"
+                    style="height: 40px"
+                    type="number"
+                    class="form-control"
+                    id="quantite"
+                    placeholder="1"
+                  />
+                  <span v-if="errors[activite.id]?.[index]?.quantite" class="error">{{
+                    errors[activite.id]?.[index]?.quantite
+                  }}</span>
+                  <span v-else class="text-muted stock"
+                    >Stock actuel: {{ newPiece.pieces_detachees?.quantite }}</span
+                  >
+                </div>
+                <span
+                  @click="removePieceFromActivite(activite.id, index)"
+                  class="circle circle-sm bg-danger justify-content-center text-white"
+                  >x</span
+                >
+                <span
+                  @click="savePieceForActivite(activite.id, index)"
+                  class="circle circle-sm bg-success justify-content-center text-white ml-1"
+                  ><i class="fe fe-check"></i
+                ></span>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <div v-else><h6 class="text-muted text-center">Aucune activité</h6></div>
     </div>
-    <div v-else><h6 class="text-muted text-center">Aucune activité</h6></div>
   </div>
 
   <!--Modal de modification d`activite-->

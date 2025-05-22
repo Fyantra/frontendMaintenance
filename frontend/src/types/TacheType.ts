@@ -1,3 +1,4 @@
+import { Responsable } from "./AtelierType";
 import {Machine} from "./MachineType";
 import { PieceDetachee } from "./PieceDetacheType";
 
@@ -20,6 +21,7 @@ export interface StatusTache{
 
 export interface Tache{
     id?: number;
+    nom_tache: string;
     machine?: Machine | null;
     machine_id?: number;
     description: string;
@@ -34,7 +36,10 @@ export interface Tache{
     temps_maintenance_minute : minute | null;
     temps_arret_heure : heure | null;
     temps_arret_minute : minute | null; 
+    responsables?: Responsable[] | null;
+    responsable_ids?: number | null;
     total_duree_tache?: string;
+    cout_total_activites?: number;
     date_creation?: Date | string;
 }
 

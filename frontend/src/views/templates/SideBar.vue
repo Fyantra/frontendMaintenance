@@ -173,7 +173,7 @@ notificationStore.fetchUnreadNotifications();
           <li class="nav-item w-100">
             <RouterLink class="nav-link" to="/listeMachine">
               <i class="material-icons notranslate">precision_manufacturing</i>
-              <span class="ml-3 item-text">Machines</span>
+              <span class="ml-3 item-text">Equipements</span>
             </RouterLink>
           </li>
 

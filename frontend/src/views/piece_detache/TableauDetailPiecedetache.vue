@@ -9,6 +9,7 @@ import {
   getformatNumber,
 } from "@/composables/useFonction";
 import { HistoriqueMouvementPieceDetachee } from "@/types/PieceDetacheType";
+import DocumentManager from "../Documents/DocumentManager.vue";
 
 const statusCrud = useCrud<Status>("machine/status/");
 
@@ -42,7 +43,7 @@ onMounted(async () => {
                 aria-controls="machines-lies"
                 aria-selected="true"
                 @click.prevent="activeTab = 'machines'"
-                >Machine liés
+                >Equipement liés
               </a>
             </li>
             <li class="nav-item">
@@ -200,6 +201,19 @@ onMounted(async () => {
               </table>
             </div>
           </div>
+        </div>
+
+        <!--Listes des documents-->
+        <div
+          class="tab-pane fade"
+          id="document"
+          role="tabpanel"
+          aria-labelledby="document-tab"
+        >
+          <DocumentManager
+            model-type="piece-detachee"
+            :model-id="Number($route.params.id)"
+          />
         </div>
       </div>
     </div>

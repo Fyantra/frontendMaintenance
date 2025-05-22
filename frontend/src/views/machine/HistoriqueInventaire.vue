@@ -190,7 +190,7 @@ watch(selectedAtelier, (newAtelier) => {
 
   <div class="row">
     <div class="col">
-      <h2 class="page-title text-center">Historique d`inventaire des machines</h2>
+      <h2 class="page-title text-center">Historique d`inventaire des équipements</h2>
     </div>
   </div>
   <div class="row">
@@ -218,7 +218,7 @@ watch(selectedAtelier, (newAtelier) => {
             </span>
           </div>
           <h3 class="h4 mt-4 mb-1 text-white">
-            Inventaire de machine
+            Inventaire d'équipement
             <span v-if="selectedDate"
               >le {{ new Date(selectedDate).toLocaleDateString() }}</span
             >
@@ -269,7 +269,7 @@ watch(selectedAtelier, (newAtelier) => {
             </div>
 
             <div class="form-group col-md-3">
-              <label for="machine" class="text-white font-weight-bold">Machine:</label>
+              <label for="machine" class="text-white font-weight-bold">Equipement:</label>
               <multiselect
                 v-model="selectedMachine"
                 :options="activeMachines"
@@ -354,20 +354,21 @@ watch(selectedAtelier, (newAtelier) => {
 
   <div class="row mb-4">
     <div class="col-md-6 col-xl-3 mb-4">
-      <div class="card shadow">
-        <div class="card-body">
-          <div class="row align-items-center">
-            <div class="col-3 text-center">
-              <span class="circle circle-sm bg-primary justify-content-center">
+      <div class="card shadow h-100 d-flex align-items-center justify-content-center">
+        <div class="card-body w-100">
+          <div class="d-flex align-items-center">
+            <div class="text-center mr-3">
+              <span
+                class="circle circle-sm bg-primary d-flex justify-content-center align-items-center"
+              >
                 <i class="material-icons fe-16 text-white mb-0 notranslate">analytics</i>
               </span>
             </div>
-            <div class="col">
-              <p class="small text-muted mb-0">TOTAL</p>
-              <span v-if="totalMachines > 1" class="h3 mb-0"
-                >{{ totalMachines }} Machines</span
-              >
-              <span v-else class="h3 mb-0">{{ totalMachines }} Machine</span>
+            <div class="flex-grow-1 text-left">
+              <p class="small text-muted mb-1">TOTAL</p>
+              <span class="h4 mb-0 text-wrap d-inline-block">
+                {{ totalMachines }} {{ totalMachines > 1 ? "Équipements" : "Équipement" }}
+              </span>
             </div>
           </div>
         </div>

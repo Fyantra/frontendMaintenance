@@ -16,6 +16,7 @@ import {
 } from "@/composables/useFonction";
 import { useCrud } from "@/composables/useCrud";
 import { Tache, ActiviteTache, StatusTache } from "@/types/TacheType";
+import DocumentManager from "../Documents/DocumentManager.vue";
 
 const statusCrud = useCrud<Status>("machine/status/");
 const statusTacheCrud = useCrud<StatusTache>("tache/status_taches/");
@@ -64,7 +65,7 @@ const activeTab = ref("machines");
                 aria-controls="machines-lies"
                 aria-selected="true"
                 @click.prevent="activeTab = 'machines'"
-                >Machine liés
+                >Equipement liés
               </a>
             </li>
             <li class="nav-item">
@@ -386,7 +387,7 @@ const activeTab = ref("machines");
                   </template>
                 </tbody>
               </table>
-              <div v-else>Aucune tache dans ce machine</div>
+              <div v-else>Aucune tâche dans ce équipement</div>
             </div>
           </div>
         </div>
@@ -397,36 +398,9 @@ const activeTab = ref("machines");
           class="tab-pane fade"
           id="document"
           role="tabpanel"
-          aria-labelledby="piece-tab"
+          aria-labelledby="document-tab"
         >
-          <div class="card shadow">
-            <div class="card-body">
-              Aucun document associé.
-              <div class="dropdown float-right mr-5">
-                <button
-                  class="btn btn-primary dropdown-toggle"
-                  type="button"
-                  id="actionMenuButton"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  <i class="fe fe-plus fe-16 mr-2"></i>
-                  Ajouter
-                </button>
-                <div class="dropdown-menu" aria-labelledby="actionMenuButton">
-                  <a class="dropdown-item">
-                    <i class="fe fe-link mr-2 notranslate"></i>
-                    Ajouter un lien
-                  </a>
-                  <a class="dropdown-item" href="#">
-                    <i class="fe fe-file mr-2"></i>
-                    Ajouter des documents
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
+          <DocumentManager model-type="machine" :model-id="Number($route.params.id)" />
         </div>
       </div>
     </div>

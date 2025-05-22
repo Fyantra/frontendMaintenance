@@ -189,7 +189,7 @@ const submitForm = async () => {
   <div class="row mb-4">
     <div class="col-md-8">
       <h3 class="page-title">
-        Création de nouveau machine à partir du numéro de série et numéro de moteur
+        Création de nouveau équipement à partir du numéro de série et numéro de moteur
       </h3>
     </div>
   </div>

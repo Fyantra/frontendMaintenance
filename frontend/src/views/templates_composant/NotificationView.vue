@@ -82,7 +82,9 @@ onMounted(async () => {
           >
             <div class="row align-items-center">
               <div class="col-auto">
-                <span class="material-icons notranslate fe-24">handyman</span>
+                <span class="circle circle-md bg-secondary">
+                  <i class="material-icons notranslate fe-24 text-white">handyman</i>
+                </span>
               </div>
               <div class="col">
                 <label>{{ notification.message }}</label>
@@ -121,6 +123,9 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.circle {
+  justify-content: center;
+}
 .notification-badge {
   background-color: #de1d2f;
   color: #fff;

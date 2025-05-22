@@ -277,7 +277,7 @@ onBeforeUnmount(() => {
     :clearError="clearError"
   />
 
-  <!-- Liste des modèles -->
+  <!-- Liste des responsables -->
   <div class="col-md-14 my-4">
     <div class="card shadow">
       <div class="card-body">

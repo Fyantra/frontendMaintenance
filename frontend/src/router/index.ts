@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginUser from '@/views/utilisateur/LoginUser.vue'
 import { useAuthStore } from '@/stores/authStore';
+import { useLoadingStore } from '@/stores/loadingStore';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -124,6 +125,9 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
+  const loadingStore = useLoadingStore();
+  loadingStore.show();
+
   const authStore = useAuthStore();
 
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
@@ -136,6 +140,11 @@ router.beforeEach((to, from, next) => {
   } 
     
   next();  
+});
+
+router.afterEach(() => {
+  const loadingStore = useLoadingStore();
+  setTimeout(() => loadingStore.hide(), 300); // léger délai pour un effet plus fluide
 });
 
 export default router

@@ -3,6 +3,7 @@ import { RouterView, useRouter } from "vue-router";
 import SideBar from "./views/templates/SideBar.vue";
 import { useAuthStore } from "@/stores/authStore";
 import { computed, onMounted } from "vue";
+import GlobalLoader from "./views/templates_composant/GlobalLoader.vue";
 
 const userStore = useAuthStore();
 const router = useRouter();
@@ -26,6 +27,7 @@ onMounted(async () => {
     <div class="wrapper">
       <main role="main" class="main-content">
         <div class="container-fluid">
+          <GlobalLoader />
           <RouterView />
         </div>
       </main>

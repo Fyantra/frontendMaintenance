@@ -83,12 +83,12 @@ onMounted(async () => {
 
   <div class="row">
     <div class="col-md-7">
-      <h2 class="page-title">Liste des machines</h2>
+      <h2 class="page-title">Liste des équipements</h2>
     </div>
 
     <RouterLink to="/ajoutMachine">
       <button type="button" class="btn btn-primary">
-        <span class="fe fe-plus fe-16 mr-2"></span>Ajouter un machine
+        <span class="fe fe-plus fe-16 mr-2"></span>Ajouter un équipement
       </button>
     </RouterLink>
     <RouterLink to="">
@@ -124,7 +124,8 @@ onMounted(async () => {
                     type="button"
                     class="btn mb-2 btn-outline-warning"
                   >
-                    <span class="fe fe-arrow-down fe-16 mr-2"></span>Filtre sur les status
+                    <span class="fe fe-arrow-down fe-16 mr-2"></span>Filtre sur les
+                    statuts
                   </button>
                   <ul
                     id="collapsestatus"
@@ -292,7 +293,8 @@ onMounted(async () => {
                               })
                             "
                           >
-                            <i class="fe fe-plus fe-12 mr-4"></i> Créer un nouveau machine
+                            <i class="fe fe-plus fe-12 mr-4"></i> Créer un nouveau
+                            équipement
                           </a>
                           <a
                             class="dropdown-item"

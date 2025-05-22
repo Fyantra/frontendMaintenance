@@ -21,6 +21,9 @@ const clearError = () => {
   errorMessage.value = null;
 };
 
+//gestion loading
+const loadingButton = ref(false);
+
 //Deplacement machine dans le modal
 const selectedMachines = ref<number[]>([]); // Pour stocker les machines sélectionnées par le checkbox
 const selectedChaineModal = ref<Chaine | null>(null);
@@ -108,6 +111,7 @@ const resetDeplacement = () => {
 
 const validerDeplacement = async () => {
   try {
+    loadingButton.value = true;
     for (const machineId of selectedMachines.value) {
       const updatedItem = {
         atelier_id: selectedAtelierModal.value.id,
@@ -120,6 +124,8 @@ const validerDeplacement = async () => {
     refreshData();
   } catch (error) {
     console.error("Erreur lors du déplacement des machines:", error);
+  } finally {
+    loadingButton.value = false;
   }
 };
 
@@ -184,7 +190,7 @@ watch(selectedAtelier, (newAtelier) => {
 
   <div class="row">
     <div class="col">
-      <h2 class="page-title text-center">Inventaire des machines actuellement</h2>
+      <h2 class="page-title text-center">Inventaire des équipements actuellement</h2>
     </div>
   </div>
   <div class="row">
@@ -211,7 +217,7 @@ watch(selectedAtelier, (newAtelier) => {
               <i class="material-icons fe-24 text-white notranslate">inventory</i>
             </span>
           </div>
-          <h3 class="h4 mt-4 mb-1 text-white">Inventaire de machine</h3>
+          <h3 class="h4 mt-4 mb-1 text-white">Inventaire d'équipement</h3>
           <p id="collapsefilter" class="text-white mb-4 collapse show">
             Sélectionnez les filtres que vous voulez
           </p>
@@ -241,7 +247,7 @@ watch(selectedAtelier, (newAtelier) => {
             </div>
 
             <div class="form-group col-md-3">
-              <label for="machine" class="text-white font-weight-bold">Machine:</label>
+              <label for="machine" class="text-white font-weight-bold">Equipement:</label>
               <multiselect
                 v-model="selectedMachine"
                 :options="machinesOptions"
@@ -326,20 +332,21 @@ watch(selectedAtelier, (newAtelier) => {
 
   <div class="row mb-4">
     <div class="col-md-6 col-xl-3 mb-4">
-      <div class="card shadow">
-        <div class="card-body">
-          <div class="row align-items-center">
-            <div class="col-3 text-center">
-              <span class="circle circle-sm bg-primary justify-content-center">
+      <div class="card shadow h-100 d-flex align-items-center justify-content-center">
+        <div class="card-body w-100">
+          <div class="d-flex align-items-center">
+            <div class="text-center mr-3">
+              <span
+                class="circle circle-sm bg-primary d-flex justify-content-center align-items-center"
+              >
                 <i class="material-icons fe-16 text-white mb-0 notranslate">analytics</i>
               </span>
             </div>
-            <div class="col">
-              <p class="small text-muted mb-0">TOTAL</p>
-              <span v-if="totalMachines > 1" class="h3 mb-0"
-                >{{ totalMachines }} Machines</span
-              >
-              <span v-else class="h3 mb-0">{{ totalMachines }} Machine</span>
+            <div class="flex-grow-1 text-left">
+              <p class="small text-muted mb-1">TOTAL</p>
+              <span class="h4 mb-0 text-wrap d-inline-block">
+                {{ totalMachines }} {{ totalMachines > 1 ? "Équipements" : "Équipement" }}
+              </span>
             </div>
           </div>
         </div>
@@ -357,10 +364,10 @@ watch(selectedAtelier, (newAtelier) => {
             </div>
             <div class="col-5">
               <strong v-if="!selectedAtelierModal && !selectedChaineModal" class="mb-2"
-                >Déplacer un ou plusieurs machines ici</strong
+                >Déplacer un ou plusieurs équipements ici</strong
               >
               <strong v-else class="mb-2"
-                >Sélectionner en bas le(s) machine(s) à déplacer dans:
+                >Sélectionner en bas le(s) équipement(s) à déplacer dans:
               </strong>
               <p class="small mt-1 mb-1" v-if="selectedAtelierModal">
                 Atelier: {{ selectedAtelierModal.nom_atelier }}
@@ -387,13 +394,14 @@ watch(selectedAtelier, (newAtelier) => {
               Annuler
             </button>
             <button
-              :disabled="selectedMachines.length === 0"
+              :disabled="selectedMachines.length === 0 || loadingButton"
               type="button"
               class="btn mb-2 btn-outline-success"
               v-if="selectedAtelierModal || selectedChaineModal"
               @click="validerDeplacement"
             >
-              Valider le deplacement
+              <span v-if="loadingButton" class="spinner-border spinner-border-sm"></span>
+              Valider le déplacement
             </button>
           </div>
         </div>

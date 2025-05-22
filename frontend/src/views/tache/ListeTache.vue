@@ -23,7 +23,6 @@ const clearError = () => {
 
 const total = computed(() => tachesCrud.items.value.length);
 
-const showStatusFilters = ref(false);
 const selectedStatus = ref<number | null>(null);
 
 const filteredTaches = computed(() => {
@@ -46,10 +45,6 @@ const statusCounts = computed(() => {
   });
   return counts;
 });
-
-const toggleStatusFilters = () => {
-  showStatusFilters.value = !showStatusFilters.value;
-};
 
 const selectStatus = (statusId: number) => {
   if (selectedStatus.value === statusId) {

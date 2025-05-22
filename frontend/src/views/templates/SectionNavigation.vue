@@ -17,7 +17,7 @@ import { RouterLink } from "vue-router";
                 </span>
               </div>
               <div class="col">
-                <h3 class="h6 mb-0 text-uppercase">Machines</h3>
+                <h3 class="h6 mb-0 text-uppercase">équipements</h3>
               </div>
             </div>
           </div>

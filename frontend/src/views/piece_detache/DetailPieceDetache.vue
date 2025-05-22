@@ -276,38 +276,22 @@ onMounted(() => {
             </div>
           </div>
         </div>
-        <!-- <div class="col-md-3">
+        <div class="col-md-3">
           <div class="card shadow mb-4">
             <div class="card-body">
-              <h3 class="h5 mb-1">Integrations</h3>
-              <p class="text-muted mb-4">How to integrate the theme?</p>
+              <h3 class="h6 mb-1">Temps passé sur le groupe d'équipement</h3>
+              <p class="text-muted mb-4">
+                C'est le total des temp passés sur les équipement liées
+              </p>
               <ul class="list-unstyled">
-                <li class="my-1">
-                  <i class="fe fe-file-text mr-2 text-muted"></i>Lorem ipsum dolor sit
-                  amet
-                </li>
-                <li class="my-1">
-                  <i class="fe fe-file-text mr-2 text-muted"></i>Consectetur adipiscing
-                  elit
-                </li>
-                <li class="my-1">
-                  <i class="fe fe-file-text mr-2 text-muted"></i>Integer molestie lorem
-                </li>
-                <li class="my-1">
-                  <i class="fe fe-file-text mr-2 text-muted"></i>Facilisis in pretium
-                </li>
-                <li class="my-1">
-                  <i class="fe fe-file-text mr-2 text-muted"></i>Nulla volutpat aliquam
-                  velit
-                </li>
+                <li class="my-1"><i class="fe fe-clock mr-2"></i>0h 0mn</li>
               </ul>
             </div>
           </div>
-        </div> -->
+        </div>
       </div>
     </div>
   </div>
-  <div v-else><p>Erreur lors du recuperation des details!</p></div>
 
   <TableauDetailPiecedetache
     :machines="machines"

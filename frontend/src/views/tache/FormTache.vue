@@ -19,6 +19,7 @@ import "vue-multiselect/dist/vue-multiselect.css";
 import { MotifTache, Tache } from "@/types/TacheType";
 import { formatLocalDate, getNextHour } from "@/composables/useFonction";
 import { IdentifiantStatusTache } from "@/config/statusConfig";
+import { Responsable } from "@/types/AtelierType";
 
 const selectedMachine = ref<Machine>();
 
@@ -31,6 +32,9 @@ const machineId = ref(route.params.machineId); //insertion tache machine
 
 const isAllDay = ref(false);
 
+//gestion loading
+const loadingButton = ref(false);
+
 const now = new Date();
 const currentDate = ref(formatLocalDate(now));
 const currentTime = ref(
@@ -42,6 +46,7 @@ const currentTime = ref(
 const nextTime = ref(getNextHour());
 
 const form = reactive<Tache>({
+  nom_tache: "",
   description: "",
   date_debut: currentDate.value,
   heure_debut: currentTime.value,
@@ -71,6 +76,13 @@ onMounted(() => {
 });
 
 const validation = {
+  nom_tache: {
+    required: helpers.withMessage("Champ obligatoire. ", required),
+    minLength: helpers.withMessage(
+      "Le nom doit contenir minimum 2 caractères.",
+      minLength(2)
+    ),
+  },
   description: {
     required: helpers.withMessage("Champ obligatoire. ", required),
     minLength: helpers.withMessage(
@@ -154,6 +166,13 @@ const machines = useCrud<Machine>("machine/machines/", v$);
 const tacheCrud = useCrud<Tache>("tache/taches/", v$);
 const motifTacheCrud = useCrud<MotifTache>("tache/motif_taches/", v$);
 
+//Gestion responsable
+const responsables = useCrud<Responsable>("atelier/responsables/", v$);
+const selectedResponsables = ref<Responsable[]>([]);
+const responsablesOptions = ref<Responsable[]>([]);
+
+const envoyerEmail = ref(false);
+
 const errorMessage = machines.errorMessage;
 const error401Message = machines.error401Message;
 
@@ -168,8 +187,10 @@ const formError = ref<HTMLElement | null>(null);
 const submitForm = async () => {
   v$.value.$touch();
   if (!v$.value.$invalid) {
+    loadingButton.value = true;
     const formData = new FormData();
     formData.append("machine_id", String(selectedMachine?.value?.id));
+    formData.append("nom_tache", form.nom_tache);
     formData.append("description", form.description);
     formData.append("motif_tache_id", String(form.motif_tache_id || ""));
     formData.append("date_debut", String(form.date_debut));
@@ -199,6 +220,12 @@ const submitForm = async () => {
     formData.append("temps_arret_heure", String(form.temps_arret_heure || 0));
     formData.append("temps_arret_minute", String(form.temps_arret_minute || 0));
 
+    selectedResponsables.value.forEach((resp) => {
+      formData.append("responsable_ids", String(resp.id) || "");
+    });
+
+    formData.append("envoyer_email", envoyerEmail.value ? "t" : "f");
+
     if (tacheId) {
       // Si c'est une modification
       await tacheCrud.updateItem(Number(tacheId), formData);
@@ -207,11 +234,14 @@ const submitForm = async () => {
       }
     } else {
       // Si c'est un ajout
-      await tacheCrud.addItem(formData);
+      const createdTache = await tacheCrud.addItem(formData);
+      const newTacheId = Number(createdTache?.id);
       if (!errorMessage.value) {
-        router.push("/listeTache");
+        router.push("/detailTache/" + newTacheId);
       }
     }
+
+    loadingButton.value = false;
   } else {
     console.error("Formulaire invalide");
     formError.value?.scrollIntoView({ behavior: "smooth", inline: "nearest" });
@@ -231,6 +261,7 @@ onMounted(async () => {
       : currentTime.value;
     form.heure_fin = tache?.value.heure_fin ? tache?.value.heure_fin : nextTime.value;
     selectedMachine.value = tache?.value.machine;
+    selectedResponsables.value = tache?.value.responsables ?? [];
   }
 
   if (machineId.value) {
@@ -241,6 +272,8 @@ onMounted(async () => {
   await Promise.all([
     await machines.fetchItems(),
     (machinesOptions.value = machines.items.value),
+    await responsables.fetchItems(),
+    (responsablesOptions.value = responsables.items.value),
     await motifTacheCrud.fetchItems(),
   ]);
 });
@@ -277,7 +310,7 @@ onMounted(async () => {
           <form @submit.prevent="submitForm">
             <div class="card-body fils">
               <div class="form-group">
-                <label for="machine">Machine*:</label>
+                <label for="machine">Equipement*:</label>
                 <multiselect
                   v-model="selectedMachine"
                   :options="machinesOptions"
@@ -287,7 +320,7 @@ onMounted(async () => {
                   :class="{
                     'is-invalid': v$2.selectedMachine.$invalid,
                   }"
-                  placeholder="Sélectionnez un machine"
+                  placeholder="Sélectionnez un équipement"
                   label="nom_machine"
                   search-by="numero_de_serie"
                   track-by="id"
@@ -303,28 +336,49 @@ onMounted(async () => {
                 </multiselect>
 
                 <span v-if="v$2.selectedMachine.$invalid" class="error"
-                  >Selectionner un machine.</span
+                  >Selectionner un équipement.</span
                 >
               </div>
             </div>
 
-            <div class="form-group" style="margin-bottom: 2rem">
-              <label for="description">Description de la tache*</label>
-              <textarea
-                style="height: 107px"
-                class="form-control"
-                id="description"
-                v-model="form.description"
-                :class="{
-                  'is-invalid': v$.description.$invalid && v$.description.$dirty,
-                }"
-              ></textarea>
-              <span
-                v-for="error of v$.description.$errors"
-                :key="error.$uid"
-                class="error"
-                >{{ error.$message }}</span
-              >
+            <div class="card-body fils">
+              <h4 class="card-title mb-3">A propos de la tâche</h4>
+              <div class="form-group" style="margin-bottom: 2rem">
+                <label for="nom_tache">Nom de la tache*</label>
+                <input
+                  class="form-control"
+                  type="text"
+                  id="nom_tache"
+                  v-model="form.nom_tache"
+                  :class="{
+                    'is-invalid': v$.nom_tache.$invalid && v$.nom_tache.$dirty,
+                  }"
+                />
+                <span
+                  v-for="error of v$.nom_tache.$errors"
+                  :key="error.$uid"
+                  class="error"
+                  >{{ error.$message }}</span
+                >
+              </div>
+              <div class="form-group">
+                <label for="description">Description de la tache*</label>
+                <textarea
+                  style="height: 107px"
+                  class="form-control"
+                  id="description"
+                  v-model="form.description"
+                  :class="{
+                    'is-invalid': v$.description.$invalid && v$.description.$dirty,
+                  }"
+                ></textarea>
+                <span
+                  v-for="error of v$.description.$errors"
+                  :key="error.$uid"
+                  class="error"
+                  >{{ error.$message }}</span
+                >
+              </div>
             </div>
 
             <div class="card-body fils">
@@ -483,7 +537,7 @@ onMounted(async () => {
               </div>
             </div>
 
-            <div class="form-row">
+            <div class="form-row mb-4">
               <div class="form-group col-md-6">
                 <label for="temps_arret_heure">Temps d`arrêt planifié</label>
                 <div class="input-group">
@@ -540,6 +594,38 @@ onMounted(async () => {
               </div>
             </div>
 
+            <div class="card-body fils">
+              <div class="form-group">
+                <label for="responsable">Responsables assignés à la tâche:</label>
+                <multiselect
+                  v-model="selectedResponsables"
+                  :options="responsablesOptions"
+                  :multiple="true"
+                  :close-on-select="true"
+                  :clear-on-select="false"
+                  :preserve-search="true"
+                  placeholder="Sélectionnez les responsables"
+                  label="nom_responsable"
+                  search-by="nom_responsable"
+                  track-by="id"
+                  id="responsable"
+                >
+                  <template #option="{ option }">
+                    <div class="option-item">
+                      <img
+                        v-if="option.photo"
+                        :src="option.photo"
+                        alt="image"
+                        class="option-icon"
+                      />
+                      <i v-else class="fe fe-24 fe-user mr-4"></i>
+                      <span>{{ option.nom_responsable }}</span>
+                    </div>
+                  </template>
+                </multiselect>
+              </div>
+            </div>
+
             <div class="form-group">
               <label for="status">Motif de tache</label>
               <select
@@ -558,10 +644,38 @@ onMounted(async () => {
               </select>
             </div>
 
-            <button v-if="tacheId" type="submit" class="btn mb-2 mt-4 btn-primary">
+            <div class="mt-5 mb-3 d-flex align-items-center">
+              <i class="material-icons mr-3" style="font-size: 24px">email</i>
+
+              <div class="custom-control custom-switch">
+                <input
+                  type="checkbox"
+                  class="custom-control-input"
+                  v-model="envoyerEmail"
+                  id="customSwitchEmail"
+                />
+                <label class="custom-control-label" for="customSwitchEmail">
+                  Notifier les assignés de cette tâche par e-mail
+                </label>
+              </div>
+            </div>
+
+            <button
+              v-if="tacheId"
+              type="submit"
+              :disabled="loadingButton"
+              class="btn mb-2 mt-4 btn-primary"
+            >
+              <span v-if="loadingButton" class="spinner-border spinner-border-sm"></span>
               <span class="fe fe-edit-2 fe-16 mr-2"></span>Modifier la tâche
             </button>
-            <button v-else type="submit" class="btn mb-2 mt-4 btn-primary">
+            <button
+              v-else
+              type="submit"
+              :disabled="loadingButton"
+              class="btn mb-2 mt-4 btn-primary"
+            >
+              <span v-if="loadingButton" class="spinner-border spinner-border-sm"></span>
               <span class="fe fe-plus fe-16 mr-2"></span>Créer une tache
             </button>
           </form>

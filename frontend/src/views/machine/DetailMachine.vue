@@ -27,6 +27,9 @@ const historiqueDeplacementCrud = useCrud<HistoriqueDeplacementmachine>(
 const tacheCrud = useCrud<Tache>("tache/taches/");
 const activiteCrud = useCrud<ActiviteTache>("tache/activites_taches/");
 
+//gestion loading
+const loadingButton = ref(false);
+
 const errorMessage = machineCrud.errorMessage;
 const error401Message = machineCrud.error401Message;
 
@@ -125,15 +128,18 @@ watch(
       <div class="row align-items-center mb-4">
         <div class="col">
           <h2 class="h5 page-title">
-            <small class="text-muted text-uppercase">Detail machine</small><br />#MACHINE
+            <small class="text-muted text-uppercase">Détail équipement</small
+            ><br />#MACHINE
           </h2>
         </div>
         <div class="col-auto">
           <button
             @click="$router.push({ name: 'modifierMachine', params: { id: machine.id } })"
             type="button"
+            :disabled="loadingButton"
             class="btn btn-primary ml-3"
           >
+            <span v-if="loadingButton" class="spinner-border spinner-border-sm"></span>
             <span class="fe fe-edit-2 fe-16 mr-2"></span>Modifier le machine
           </button>
           <button
@@ -144,9 +150,11 @@ watch(
               })
             "
             type="button"
+            :disabled="loadingButton"
             class="btn btn-primary ml-3"
           >
-            <span class="fe fe-plus fe-16 mr-2"></span>Creer une tache
+            <span v-if="loadingButton" class="spinner-border spinner-border-sm"></span>
+            <span class="fe fe-plus fe-16 mr-2"></span>Créer une tâche
           </button>
           <button
             @click="deleteItem(machine.id)"
@@ -384,7 +392,6 @@ watch(
       </div>
     </div>
   </div>
-  <div v-else><p>Erreur lors du recuperation des details!</p></div>
 
   <TableauDetailMachine
     :machineRelations="machineRelations"

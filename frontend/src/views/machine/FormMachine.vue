@@ -24,6 +24,9 @@ import "vue-multiselect/dist/vue-multiselect.css";
 const selectedPieces = ref<PieceDetachee[]>([]);
 const machinesLiees = ref<MachineRelation[]>([]);
 
+//gestion loading
+const loadingButton = ref(false);
+
 const piecesOptions = ref<PieceDetachee[]>([]);
 const machinesOptions = ref<Machine[]>([]);
 
@@ -92,6 +95,7 @@ const formError = ref<HTMLElement | null>(null);
 const submitForm = async () => {
   v$.value.$touch();
   if (!v$.value.$invalid) {
+    loadingButton.value = true;
     const formData = new FormData();
     formData.append("nom_machine", form.nom_machine);
     formData.append("numero_machine", form.numero_machine);
@@ -156,6 +160,7 @@ const submitForm = async () => {
         router.push("/listeMachine");
       }
     }
+    loadingButton.value = false;
   } else {
     console.error("Formulaire invalide");
     formError.value?.scrollIntoView({
@@ -225,7 +230,7 @@ onMounted(async () => {
   <div class="row">
     <div class="col-md-8">
       <h2 class="page-title">
-        {{ machineId ? "Modification de machine" : "Créer un nouveau machine" }}
+        {{ machineId ? "Modification d'équipement" : "Créer un nouveau équipement" }}
       </h2>
     </div>
   </div>
@@ -254,7 +259,7 @@ onMounted(async () => {
           <form @submit.prevent="submitForm">
             <div class="d-flex justify-content-center">
               <div class="card shadow mb-4">
-                <div class="card-header"><strong>Image du machine</strong></div>
+                <div class="card-header"><strong>Image équipement</strong></div>
                 <div class="card-body">
                   <span
                     v-if="image"
@@ -291,7 +296,7 @@ onMounted(async () => {
 
             <div class="form-row">
               <div class="form-group col-md-7">
-                <label for="nom_machine">Nom du machine*</label>
+                <label for="nom_machine">Nom de l'équipement*</label>
                 <div class="input-group">
                   <input
                     type="text"
@@ -305,11 +310,11 @@ onMounted(async () => {
                   />
                 </div>
                 <span v-if="v$.nom_machine.$error" class="error"
-                  >Nom de machine requis.</span
+                  >Nom d'équipement requis.</span
                 >
               </div>
               <div class="form-group col-md-5">
-                <label for="numero_machine">Numéro de la machine*</label>
+                <label for="numero_machine">Numéro de l'équipement*</label>
                 <div class="input-group">
                   <input
                     type="text"
@@ -324,7 +329,7 @@ onMounted(async () => {
                   />
                 </div>
                 <span v-if="v$.numero_machine.$error" class="error"
-                  >Numéro de machine requis.</span
+                  >Numéro d'équipement requis.</span
                 >
               </div>
             </div>
@@ -586,7 +591,7 @@ onMounted(async () => {
               :key="index"
             >
               <div class="form-group col-md-8">
-                <label for="machine_liee">Machine liée</label>
+                <label for="machine_liee">Equipement lié</label>
                 <multiselect
                   v-model="machine.machine_liee"
                   :options="machinesOptions"
@@ -607,7 +612,7 @@ onMounted(async () => {
                 </multiselect>
               </div>
               <div class="form-group col-md-4">
-                <label for="quantite">Quantite</label>
+                <label for="quantite">Quantité</label>
                 <input
                   style="height: 40px"
                   type="number"
@@ -620,11 +625,23 @@ onMounted(async () => {
               </div>
             </div>
 
-            <button v-if="machineId" type="submit" class="btn mb-2 mt-4 btn-primary">
-              <span class="fe fe-edit-2 fe-16 mr-2"></span>Modifier le machine
+            <button
+              v-if="machineId"
+              type="submit"
+              :disabled="loadingButton"
+              class="btn mb-2 mt-4 btn-primary"
+            >
+              <span v-if="loadingButton" class="spinner-border spinner-border-sm"></span>
+              <span class="fe fe-edit-2 fe-16 mr-2"></span>Modifier l'équipement
             </button>
-            <button v-else type="submit" class="btn mb-2 mt-4 btn-primary">
-              <span class="fe fe-plus fe-16 mr-2"></span>Créer un machine
+            <button
+              v-else
+              type="submit"
+              :disabled="loadingButton"
+              class="btn mb-2 mt-4 btn-primary"
+            >
+              <span v-if="loadingButton" class="spinner-border spinner-border-sm"></span>
+              <span class="fe fe-plus fe-16 mr-2"></span>Créer un équipement
             </button>
           </form>
         </div>

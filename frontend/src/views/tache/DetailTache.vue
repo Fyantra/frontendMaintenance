@@ -17,9 +17,11 @@ import {
   getStatusForMachine,
   formatDateAndTimeInWords,
   formatDateTimeLocal,
+  getformatNumber,
 } from "@/composables/useFonction";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
 import ErrorMessage from "../templates_composant/ErrorMessage.vue";
+import DocumentManager from "../Documents/DocumentManager.vue";
 import {
   ActiviteTache,
   ActiviteTachePieceDetachee,
@@ -35,6 +37,7 @@ import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.css";
 import { Status } from "@/types/MachineType";
 import { useNotificationStore } from "@/stores/notificationStore";
+import { Responsable } from "@/types/AtelierType";
 
 const notificationStore = useNotificationStore();
 
@@ -42,11 +45,18 @@ const route = useRoute();
 const tachesCrud = useCrud<Tache>("tache/taches/");
 const statusTacheCrud = useCrud<StatusTache>("tache/status_taches/");
 const statusMachineCrud = useCrud<Status>("machine/status/"); //pour le status de machine
+const responsableCrud = useCrud<Responsable>("atelier/responsables/");
 
 const errorMessage = tachesCrud.errorMessage;
 const error401Message = tachesCrud.error401Message;
 
 const isOpen = ref(false); //pour le multiselect
+
+//gestion loading
+const loadingButton = ref(false);
+const imprimerButton = ref(false);
+const retablirButton = ref(false);
+const nonTerminerButton = ref(false);
 
 const clearError = () => {
   //reinitialiser le message d`erreur
@@ -56,6 +66,8 @@ const clearError = () => {
 const tache = ref<Tache | null>(null);
 const tacheStore = useTacheStore();
 
+const responsables = ref<Responsable[]>([]);
+
 // Recuperer l'ID de la piece depuis l'URL
 const tacheId = route.params.id;
 
@@ -64,6 +76,10 @@ const fetchTacheDetails = async () => {
     await tacheStore.fetchTaches(Number(tacheId));
     await tachesCrud.fetchItemsById(Number(tacheId));
     tache.value = tachesCrud.items.value[0];
+
+    if (tache.value.responsable_ids) {
+      responsables.value = tache.value.responsables;
+    }
   } catch (err) {
     console.error("Erreur lors du recuperation des details");
   }
@@ -95,17 +111,21 @@ const annulerTache = async () => {
 };
 
 const nonTerminerTache = async () => {
+  nonTerminerButton.value = true;
   await tachesCrud.updateItemPatch(tache.value.id, {
     identifiant_status_tache: IdentifiantStatusTache.planifiee,
   });
   fetchTacheDetails();
+  nonTerminerButton.value = false;
 };
 
 const retablirTache = async () => {
+  retablirButton.value = true;
   await tachesCrud.updateItemPatch(tache.value.id, {
     identifiant_status_tache: IdentifiantStatusTache.planifiee,
   });
   fetchTacheDetails();
+  retablirButton.value = false;
 };
 
 const now = new Date();
@@ -228,7 +248,7 @@ const formError = ref<HTMLElement | null>(null);
 
 const refreshKey = ref(0); //pour recharger le composant fils
 
-const submitForm = async (isTerminee: boolean) => {
+const submitFormActivite = async (isTerminee: boolean) => {
   let isValid = true;
 
   validationsPiece.value.forEach((validation) => {
@@ -239,7 +259,9 @@ const submitForm = async (isTerminee: boolean) => {
   });
 
   v$.value.$touch();
+
   if (!v$.value.$invalid && isValid === true) {
+    loadingButton.value = true;
     const formData = new FormData();
     formData.append("description", form.description);
     formData.append("date_realisation", String(form.date_realisation || ""));
@@ -278,6 +300,7 @@ const submitForm = async (isTerminee: boolean) => {
     refreshKey.value++;
     fetchTacheDetails();
     notificationStore.fetchUnreadNotifications();
+    loadingButton.value = false;
   } else {
     console.error("Formulaire invalide");
     formError.value?.scrollIntoView({
@@ -301,8 +324,17 @@ const resetForm = () => {
 //export
 const { exportTache } = useCrud("");
 const handleExport = async (format: "pdf") => {
-  await exportTache(format, Number(tacheId));
+  try {
+    imprimerButton.value = true;
+    await exportTache(format, Number(tacheId));
+  } catch (error) {
+    console.error("Erreur lors de l`export de tache:" + error);
+  } finally {
+    imprimerButton.value = false;
+  }
 };
+
+const { formatNumber } = getformatNumber();
 
 onMounted(async () => {
   await statusTacheCrud.fetchItems();
@@ -325,7 +357,8 @@ onMounted(async () => {
       <div class="row align-items-center mb-4">
         <div class="col md-4">
           <h2 class="h5 page-title">
-            <br /><i class="material-icons layers notranslate mr-2">assignment</i>TACHE
+            <br /><i class="material-icons layers notranslate mr-2">assignment</i>
+            <text class="text-uppercase">tâche</text>
             <span
               class="ml-4 badge-status badge btn btn-outline"
               :style="{
@@ -369,16 +402,23 @@ onMounted(async () => {
           <button
             @click.prevent="handleExport('pdf')"
             type="button"
+            :disabled="imprimerButton"
             class="btn btn-primary ml-3"
           >
+            <span v-if="imprimerButton" class="spinner-border spinner-border-sm"></span>
             <span class="fe fe-printer fe-16 mr-2 icon"></span>Imprimer
           </button>
           <button
             v-if="isTacheTerminee"
             @click="nonTerminerTache"
             type="button"
+            :disabled="nonTerminerButton"
             class="btn btn-primary ml-3"
           >
+            <span
+              v-if="nonTerminerButton"
+              class="spinner-border spinner-border-sm"
+            ></span>
             <span class="fe fe-rotate-ccw fe-16 mr-2 icon"></span>Marquer comme non
             terminée
           </button>
@@ -386,8 +426,10 @@ onMounted(async () => {
             v-if="isTacheAnnulee"
             @click="retablirTache"
             type="button"
+            :disabled="retablirButton"
             class="btn btn-primary ml-3 icon"
           >
+            <span v-if="retablirButton" class="spinner-border spinner-border-sm"></span>
             Rétablir
           </button>
         </div>
@@ -413,7 +455,19 @@ onMounted(async () => {
               <div class="row">
                 <div class="col-md-12">
                   <div class="row">
-                    <div class="col-12 mb-5">
+                    <div class="col-5 mb-5">
+                      <div class="d-flex align-items-start">
+                        <i class="material-icons mr-4">title</i>
+                        <div>
+                          <div class="text-muted">Nom de la tâche</div>
+                          <div>
+                            {{ tache.nom_tache }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-7 mb-5">
                       <div class="d-flex align-items-start">
                         <i class="material-icons mr-4">description</i>
                         <div>
@@ -445,6 +499,37 @@ onMounted(async () => {
                       </div>
                     </div>
 
+                    <div class="col-sm-12 mb-5">
+                      <div class="d-flex align-items-start">
+                        <i class="material-icons mr-4">assignment_ind</i>
+                        <div>
+                          <div class="text-muted">Les responsables assignés :</div>
+                          <div v-if="responsables.length > 0">
+                            <div
+                              v-for="resp in responsables"
+                              :key="resp.id"
+                              class="card d-inline-flex mt-2 mr-2"
+                            >
+                              <div
+                                class="card-body bg-light py-2 px-3"
+                                style="border-radius: 25px"
+                              >
+                                <img
+                                  v-if="resp.photo"
+                                  :src="resp.photo"
+                                  alt="image"
+                                  class="option-image mr-2"
+                                />
+                                <i v-else class="fe fe-user option-image mr-2"></i>
+                                {{ resp.nom_responsable }}
+                              </div>
+                            </div>
+                          </div>
+                          <div v-else>Aucun responsable assigné</div>
+                        </div>
+                      </div>
+                    </div>
+
                     <div class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
                         <i class="material-icons mr-4">label</i>
@@ -459,52 +544,12 @@ onMounted(async () => {
                         </div>
                       </div>
                     </div>
-
-                    <div class="col-sm-6 mb-5">
+                    <div class="col-sm-6 mb-4">
                       <div class="d-flex align-items-start">
-                        <i class="material-icons mr-4">access_time</i>
+                        <i class="material-icons mr-4">payments</i>
                         <div>
-                          <div class="text-muted">Temps passé</div>
-                          <div>{{ tache.total_duree_tache }}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="col-sm-6 mb-5">
-                      <div class="d-flex align-items-start">
-                        <i class="material-icons mr-4">date_range</i>
-                        <div>
-                          <div class="text-muted">Temps de maintenance planifié</div>
-                          <div
-                            v-if="
-                              tache.temps_maintenance_heure ||
-                              tache.temps_maintenance_minute
-                            "
-                          >
-                            <span v-if="tache.temps_maintenance_heure"
-                              >{{ tache.temps_maintenance_heure }}h</span
-                            >
-                            <span class="ml-1"
-                              >{{ tache.temps_maintenance_minute }}mn</span
-                            >
-                          </div>
-                          <div v-else>Aucun temps de maintenance planifié défini.</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="col-sm-6 mb-5">
-                      <div class="d-flex align-items-start">
-                        <i class="material-icons mr-4">date_range</i>
-                        <div>
-                          <div class="text-muted">Temps d'arrêt planifié</div>
-                          <div v-if="tache.temps_arret_heure || tache.temps_arret_minute">
-                            <span v-if="tache.temps_arret_heure"
-                              >{{ tache.temps_arret_heure }}h</span
-                            >
-                            <span class="ml-1">{{ tache.temps_arret_minute }}mn</span>
-                          </div>
-                          <div v-else>Aucun temps d'arrêt planifié défini.</div>
+                          <div class="text-muted">Coût total des activités</div>
+                          <div>{{ formatNumber(tache.cout_total_activites) }} Ar</div>
                         </div>
                       </div>
                     </div>
@@ -513,11 +558,292 @@ onMounted(async () => {
               </div>
             </div>
           </div>
+
+          <!--ACTIVITE-->
+          <div class="activite-wrapper position-relative">
+            <div class="card shadow mb-4 ajout-card">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-2">
+                    <span class="circle circle-md bg-primary justify-content-center">
+                      <i class="material-icons fe-18 text-white mb-0 notranslate"
+                        >list_alt</i
+                      >
+                    </span>
+                  </div>
+                  <div class="col">
+                    <strong class="mb-1">Activités </strong>
+                    <p class="small text-muted mb-1">
+                      C`est la liste de toutes les activités dans ce tâche
+                    </p>
+                  </div>
+                  <div
+                    v-if="!isTacheTerminee && !isTacheAnnulee"
+                    class="col-4 col-md-auto offset-4 offset-md-0 my-2"
+                  >
+                    <a
+                      href="#collapseactivite"
+                      data-toggle="collapse"
+                      data-target="#collapseactivite"
+                      aria-expanded="false"
+                      aria-controls="collapseactivite"
+                    >
+                      <button type="button" class="btn mb-2 btn-outline-warning">
+                        <span class="fe fe-arrow-right fe-16 mr-2"></span>Ajouter une
+                        nouvelle activité
+                      </button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <!--Formulaire d`insertion d`activite dans ce tache-->
+              <div
+                v-if="!isTacheTerminee && !isTacheAnnulee"
+                class="container collapse"
+                id="collapseactivite"
+                ref="activityFormContainer"
+              >
+                <div class="activity-form mb-3" ref="formError">
+                  <h4 class="mb-4">Ajouter une activité</h4>
+
+                  <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea
+                      class="form-control"
+                      id="description"
+                      v-model="form.description"
+                      :class="{
+                        'is-invalid': v$.description.$invalid && v$.description.$dirty,
+                      }"
+                    ></textarea>
+                    <span
+                      v-for="error of v$.description.$errors"
+                      :key="error.$uid"
+                      class="error"
+                      >{{ error.$message }}</span
+                    >
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="date" class="form-label"
+                      >Date et heure de réalisation</label
+                    >
+                    <input
+                      type="datetime-local"
+                      id="date"
+                      v-model="form.date_realisation"
+                      class="form-control"
+                      :class="{
+                        'is-invalid':
+                          v$.date_realisation.$invalid && v$.date_realisation.$dirty,
+                      }"
+                    />
+                    <span
+                      v-for="error of v$.date_realisation.$errors"
+                      :key="error.$uid"
+                      class="error"
+                      >{{ error.$message }}</span
+                    >
+                  </div>
+
+                  <div class="form-row mb-3">
+                    <div class="form-group col-md-6">
+                      <label for="heure" class="form-label">Temps passé</label>
+                      <div class="input-group">
+                        <input
+                          v-model="form.temps_passe_heure"
+                          type="number"
+                          min="0"
+                          id="heure"
+                          class="form-control"
+                          :class="{
+                            'is-invalid':
+                              v$.temps_passe_heure.$invalid &&
+                              v$.temps_passe_heure.$dirty,
+                          }"
+                        />
+                        <div class="input-group-append">
+                          <span class="input-group-text text-muted">heure(s)</span>
+                        </div>
+                      </div>
+                      <span
+                        v-for="error of v$.temps_passe_heure.$errors"
+                        :key="error.$uid"
+                        class="error"
+                        >{{ error.$message }}</span
+                      >
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label for="minutes">&nbsp;</label>
+                      <div class="input-group">
+                        <input
+                          v-model="form.temps_passe_minute"
+                          type="number"
+                          min="0"
+                          id="minutes"
+                          class="form-control"
+                          :class="{
+                            'is-invalid':
+                              v$.temps_passe_minute.$invalid &&
+                              v$.temps_passe_minute.$dirty,
+                          }"
+                        />
+                        <div class="input-group-append">
+                          <span class="input-group-text text-muted">minute(s)</span>
+                        </div>
+                      </div>
+                      <span
+                        v-for="error of v$.temps_passe_minute.$errors"
+                        :key="error.$uid"
+                        class="error"
+                        >{{ error.$message }}</span
+                      >
+                    </div>
+                  </div>
+
+                  <div class="d-flex flex-wrap gap-4 mb-3">
+                    <button
+                      type="button"
+                      class="btn btn-outline-info"
+                      @click="addPieceDetachee"
+                    >
+                      <span class="fe fe-plus fe-16 mr-2"></span>PIÈCE DÉTACHÉE
+                    </button>
+                    <button
+                      data-toggle="modal"
+                      data-target="#statusMachineModal"
+                      type="button"
+                      class="btn btn-outline-info ml-2"
+                    >
+                      <span class="fe fe-edit fe-16 mr-2"></span>Changer statut de machine
+                    </button>
+                  </div>
+                  <div
+                    class="form-row mb-3"
+                    v-for="(piece, index) in activitePieceDetachee"
+                    :key="index"
+                  >
+                    <div class="form-group col-md-6" :class="{ 'col-md-10': isOpen }">
+                      <label for="piece" class="form-label">Pièce détachée</label>
+                      <multiselect
+                        v-model="piece.pieces_detachees"
+                        :options="availablePieces"
+                        :close-on-select="true"
+                        :clear-on-select="false"
+                        :preserve-search="false"
+                        placeholder="Sélectionnez un pièce détachée"
+                        label="nom_piecedetache"
+                        track-by="id"
+                        id="piece"
+                        @open="isOpen = true"
+                        @close="isOpen = false"
+                        :class="{
+                          'is-invalid-multiselect':
+                            validationsPiece[index]?.value.pieces_detachees?.$error,
+                        }"
+                      >
+                        <template #option="{ option }">
+                          <div class="option-item">
+                            <img :src="option.image" alt="image" class="option-icon" />
+                            <span>{{ option.nom_piecedetache }}</span>
+                            <span class="ml-2 text-muted"
+                              >Stock actuel: {{ option.quantite }}</span
+                            >
+                          </div>
+                        </template>
+                      </multiselect>
+                      <span
+                        v-if="
+                          validationsPiece[index]?.value.pieces_detachees?.$errors.length
+                        "
+                        class="error"
+                      >
+                        {{
+                          validationsPiece[index]?.value.pieces_detachees?.$errors[0]
+                            ?.$message
+                        }}
+                      </span>
+                    </div>
+                    <div class="form-group" :class="{ 'col-md-2': isOpen }">
+                      <label for="quantite">Quantite</label>
+                      <input
+                        style="height: 40px"
+                        type="number"
+                        min="0"
+                        class="form-control"
+                        id="quantite"
+                        v-model="piece.quantite"
+                        :class="{
+                          'is-invalid': validationsPiece[index]?.value.quantite?.$error,
+                        }"
+                      />
+                      <span
+                        v-if="validationsPiece[index]?.value.quantite?.$errors.length"
+                        class="error"
+                      >
+                        {{
+                          validationsPiece[index]?.value.quantite?.$errors[0]?.$message
+                        }}
+                      </span>
+                      <span v-else class="text-muted stock"
+                        >Stock actuel: {{ piece.pieces_detachees?.quantite }}</span
+                      >
+                    </div>
+                    <span
+                      class="circle circle-sm bg-danger justify-content-center text-white"
+                      @click="removePiece(index)"
+                      >x</span
+                    >
+                  </div>
+                  <div class="footer-btns">
+                    <button
+                      @click="submitFormActivite(false)"
+                      :disabled="loadingButton"
+                      class="btn btn-primary w-100"
+                    >
+                      <span
+                        v-if="loadingButton"
+                        class="spinner-border spinner-border-sm"
+                      ></span>
+                      Ajouter une activité
+                    </button>
+                    <button
+                      @click="submitFormActivite(true)"
+                      :disabled="loadingButton"
+                      class="btn btn-success w-100"
+                    >
+                      <span
+                        v-if="loadingButton"
+                        class="spinner-border spinner-border-sm"
+                      ></span>
+                      Ajouter une activité et terminer la tâche
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <!--FIN formulaire d`insertion d`activite-->
+            </div>
+
+            <!--Liste des activites dans ce tache-->
+            <div class="liste-lignee">
+              <div v-if="loadingButton" style="text-align: center">
+                <span class="spinner-border text-primary"></span>
+              </div>
+              <ListeActiviteTache
+                :tacheProps="tache"
+                :key="refreshKey"
+                @refreshTache="fetchTacheDetails"
+              />
+            </div>
+          </div>
+
+          <!--Modal de modification de status machine-->
+          <ModificationStatusModal :machine="tache?.machine" />
         </div>
         <div class="col-md-4">
           <div class="card shadow mb-4">
             <div class="card-body">
-              <h3 class="h5 mb-1">Détails machine</h3>
+              <h3 class="h5 mb-1">Détails équipement</h3>
               <RouterLink
                 class="routerlink_piece"
                 :to="{ name: 'detailMachine', params: { id: tache.machine?.id } }"
@@ -580,269 +906,69 @@ onMounted(async () => {
               </div>
             </div>
           </div>
-          <!-- <div class="card shadow mb-4">
+          <div class="card shadow mb-4">
             <div class="card-body">
-              <h3 class="h5 mb-1">Historiques</h3>
-              <p class="text-muted mb-4">How to integrate the theme?</p>
-              <ul class="list-unstyled">
-                <li class="my-1">
-                  <i class="fe fe-file-text mr-2 text-muted"></i>Lorem ipsum dolor sit
-                  amet
-                </li>
-              </ul>
-            </div>
-          </div> -->
-        </div>
-      </div>
+              <div class="col-12 mb-4">
+                <div class="d-flex align-items-start">
+                  <i class="material-icons mr-4">access_time</i>
+                  <div>
+                    <div class="text-muted">Temps passé</div>
+                    <div>{{ tache.total_duree_tache }}</div>
+                  </div>
+                </div>
+              </div>
 
-      <!--ACTIVITE-->
-      <div class="col-md-8">
-        <div class="card shadow mb-4">
-          <div class="card-body">
-            <div class="row align-items-center">
-              <div class="col-2">
-                <span class="circle circle-md bg-primary justify-content-center">
-                  <i class="material-icons fe-18 text-white mb-0 notranslate">list_alt</i>
-                </span>
+              <div class="col-12 mb-4">
+                <div class="d-flex align-items-start">
+                  <i class="material-icons mr-4">date_range</i>
+                  <div>
+                    <div class="text-muted">Temps de maintenance planifié</div>
+                    <div
+                      v-if="
+                        tache.temps_maintenance_heure || tache.temps_maintenance_minute
+                      "
+                    >
+                      <span v-if="tache.temps_maintenance_heure"
+                        >{{ tache.temps_maintenance_heure }}h</span
+                      >
+                      <span class="ml-1">{{ tache.temps_maintenance_minute }}mn</span>
+                    </div>
+                    <div v-else>Aucun temps de maintenance planifié défini.</div>
+                  </div>
+                </div>
               </div>
-              <div class="col">
-                <strong class="mb-1">Activités </strong>
-                <p class="small text-muted mb-1">
-                  C`est la liste de toutes les activités dans ce tâche
-                </p>
-              </div>
-              <div
-                v-if="!isTacheTerminee && !isTacheAnnulee"
-                class="col-4 col-md-auto offset-4 offset-md-0 my-2"
-              >
-                <a
-                  href="#collapseactivite"
-                  data-toggle="collapse"
-                  data-target="#collapseactivite"
-                  aria-expanded="false"
-                  aria-controls="collapseactivite"
-                >
-                  <button type="button" class="btn mb-2 btn-outline-warning">
-                    <span class="fe fe-arrow-right fe-16 mr-2"></span>Ajouter une nouvelle
-                    activité
-                  </button>
-                </a>
+              <div class="col-12 mb-4">
+                <div class="d-flex align-items-start">
+                  <i class="material-icons mr-4">date_range</i>
+                  <div>
+                    <div class="text-muted">Temps d'arrêt planifié</div>
+                    <div v-if="tache.temps_arret_heure || tache.temps_arret_minute">
+                      <span v-if="tache.temps_arret_heure"
+                        >{{ tache.temps_arret_heure }}h</span
+                      >
+                      <span class="ml-1">{{ tache.temps_arret_minute }}mn</span>
+                    </div>
+                    <div v-else>Aucun temps d'arrêt planifié défini.</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <!--Formulaire d`insertion d`activite dans ce tache-->
-          <div
-            v-if="!isTacheTerminee && !isTacheAnnulee"
-            class="container collapse"
-            id="collapseactivite"
-            ref="activityFormContainer"
-          >
-            <div class="activity-form mb-3" ref="formError">
-              <h4 class="mb-4">Ajouter une activité</h4>
-
-              <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                <textarea
-                  class="form-control"
-                  id="description"
-                  v-model="form.description"
-                  :class="{
-                    'is-invalid': v$.description.$invalid && v$.description.$dirty,
-                  }"
-                ></textarea>
-                <span
-                  v-for="error of v$.description.$errors"
-                  :key="error.$uid"
-                  class="error"
-                  >{{ error.$message }}</span
-                >
-              </div>
-
-              <div class="mb-3">
-                <label for="date" class="form-label">Date et heure de réalisation</label>
-                <input
-                  type="datetime-local"
-                  id="date"
-                  v-model="form.date_realisation"
-                  class="form-control"
-                  :class="{
-                    'is-invalid':
-                      v$.date_realisation.$invalid && v$.date_realisation.$dirty,
-                  }"
-                />
-                <span
-                  v-for="error of v$.date_realisation.$errors"
-                  :key="error.$uid"
-                  class="error"
-                  >{{ error.$message }}</span
-                >
-              </div>
-
-              <div class="form-row mb-3">
-                <div class="form-group col-md-6">
-                  <label for="heure" class="form-label">Temps passé</label>
-                  <div class="input-group">
-                    <input
-                      v-model="form.temps_passe_heure"
-                      type="number"
-                      min="0"
-                      id="heure"
-                      class="form-control"
-                      :class="{
-                        'is-invalid':
-                          v$.temps_passe_heure.$invalid && v$.temps_passe_heure.$dirty,
-                      }"
-                    />
-                    <div class="input-group-append">
-                      <span class="input-group-text text-muted">heure(s)</span>
-                    </div>
-                  </div>
-                  <span
-                    v-for="error of v$.temps_passe_heure.$errors"
-                    :key="error.$uid"
-                    class="error"
-                    >{{ error.$message }}</span
-                  >
-                </div>
-                <div class="form-group col-md-6">
-                  <label for="minutes">&nbsp;</label>
-                  <div class="input-group">
-                    <input
-                      v-model="form.temps_passe_minute"
-                      type="number"
-                      min="0"
-                      id="minutes"
-                      class="form-control"
-                      :class="{
-                        'is-invalid':
-                          v$.temps_passe_minute.$invalid && v$.temps_passe_minute.$dirty,
-                      }"
-                    />
-                    <div class="input-group-append">
-                      <span class="input-group-text text-muted">minute(s)</span>
-                    </div>
-                  </div>
-                  <span
-                    v-for="error of v$.temps_passe_minute.$errors"
-                    :key="error.$uid"
-                    class="error"
-                    >{{ error.$message }}</span
-                  >
+          <div class="card shadow mb-4">
+            <div class="card-body">
+              <div class="col-12 mb-4">
+                <div class="d-flex align-items-start">
+                  <i class="fe fe-file mr-4" style="font-size: x-large"></i>
+                  <div><h5>Documents</h5></div>
                 </div>
               </div>
-
-              <div class="d-flex flex-wrap gap-4 mb-3">
-                <button
-                  type="button"
-                  class="btn btn-outline-info"
-                  @click="addPieceDetachee"
-                >
-                  <span class="fe fe-plus fe-16 mr-2"></span>PIÈCE DÉTACHÉE
-                </button>
-                <button
-                  data-toggle="modal"
-                  data-target="#statusMachineModal"
-                  type="button"
-                  class="btn btn-outline-info ml-2"
-                >
-                  <span class="fe fe-edit fe-16 mr-2"></span>Changer statut de machine
-                </button>
-              </div>
-              <div
-                class="form-row mb-3"
-                v-for="(piece, index) in activitePieceDetachee"
-                :key="index"
-              >
-                <div class="form-group col-md-6" :class="{ 'col-md-10': isOpen }">
-                  <label for="piece" class="form-label">Pièce détachée</label>
-                  <multiselect
-                    v-model="piece.pieces_detachees"
-                    :options="availablePieces"
-                    :close-on-select="true"
-                    :clear-on-select="false"
-                    :preserve-search="false"
-                    placeholder="Sélectionnez un pièce détachée"
-                    label="nom_piecedetache"
-                    track-by="id"
-                    id="piece"
-                    @open="isOpen = true"
-                    @close="isOpen = false"
-                    :class="{
-                      'is-invalid-multiselect':
-                        validationsPiece[index]?.value.pieces_detachees?.$error,
-                    }"
-                  >
-                    <template #option="{ option }">
-                      <div class="option-item">
-                        <img :src="option.image" alt="image" class="option-icon" />
-                        <span>{{ option.nom_piecedetache }}</span>
-                        <span class="ml-2 text-muted"
-                          >Stock actuel: {{ option.quantite }}</span
-                        >
-                      </div>
-                    </template>
-                  </multiselect>
-                  <span
-                    v-if="validationsPiece[index]?.value.pieces_detachees?.$errors.length"
-                    class="error"
-                  >
-                    {{
-                      validationsPiece[index]?.value.pieces_detachees?.$errors[0]
-                        ?.$message
-                    }}
-                  </span>
-                </div>
-                <div class="form-group" :class="{ 'col-md-2': isOpen }">
-                  <label for="quantite">Quantite</label>
-                  <input
-                    style="height: 40px"
-                    type="number"
-                    min="0"
-                    class="form-control"
-                    id="quantite"
-                    v-model="piece.quantite"
-                    :class="{
-                      'is-invalid': validationsPiece[index]?.value.quantite?.$error,
-                    }"
-                  />
-                  <span
-                    v-if="validationsPiece[index]?.value.quantite?.$errors.length"
-                    class="error"
-                  >
-                    {{ validationsPiece[index]?.value.quantite?.$errors[0]?.$message }}
-                  </span>
-                  <span v-else class="text-muted stock"
-                    >Stock actuel: {{ piece.pieces_detachees?.quantite }}</span
-                  >
-                </div>
-                <span
-                  class="circle circle-sm bg-danger justify-content-center text-white"
-                  @click="removePiece(index)"
-                  >x</span
-                >
-              </div>
-              <div class="footer-btns">
-                <button @click="submitForm(false)" class="btn btn-primary w-100">
-                  Ajouter une activité
-                </button>
-                <button @click="submitForm(true)" class="btn btn-success w-100">
-                  Ajouter une activité et terminer la tâche
-                </button>
-              </div>
+              <DocumentManager model-type="tache" :model-id="Number($route.params.id)" />
             </div>
           </div>
-          <!--FIN formulaire d`insertion d`activite-->
         </div>
-
-        <!--Liste des activites dans ce tache-->
-        <ListeActiviteTache :tacheProps="tache" :key="refreshKey" />
-
-        <!--Modal de modification de status machine-->
-        <ModificationStatusModal :machine="tache?.machine" />
       </div>
     </div>
   </div>
-  <div v-else><p>Erreur lors du recuperation des details!</p></div>
 </template>
 
 <style scoped>
@@ -909,9 +1035,71 @@ img:hover {
   border-radius: 18px;
 }
 
+.option-image {
+  width: 30px;
+  height: 30px;
+  border-radius: 20px;
+}
+
 .icon {
   font-size: 15px;
   vertical-align: middle;
+}
+
+.activite-wrapper {
+  position: relative;
+}
+
+.liste-lignee {
+  position: relative;
+}
+
+/* Lignes verticales */
+.liste-lignee::before,
+.liste-lignee::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background: linear-gradient(to bottom, #888, #444);
+  opacity: 0.5;
+  border-radius: 1px;
+}
+
+/* Crochet gauche */
+.liste-lignee::before {
+  left: -20px;
+}
+
+/* Crochet droit */
+.liste-lignee::after {
+  right: -20px;
+}
+
+/* Crochets accrochés à la card */
+.ajout-card::before,
+.ajout-card::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #888;
+  border-top: none;
+  border-left: none;
+  opacity: 0.5;
+  border-radius: 0 0 8px 0;
+  z-index: 1;
+}
+
+.ajout-card::before {
+  left: -20px;
+  transform: rotate(180deg); /* pour le crochet gauche */
+}
+
+.ajout-card::after {
+  right: -20px;
 }
 </style>
 
