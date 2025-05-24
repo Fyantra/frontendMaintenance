@@ -45,7 +45,6 @@ const route = useRoute();
 const tachesCrud = useCrud<Tache>("tache/taches/");
 const statusTacheCrud = useCrud<StatusTache>("tache/status_taches/");
 const statusMachineCrud = useCrud<Status>("machine/status/"); //pour le status de machine
-const responsableCrud = useCrud<Responsable>("atelier/responsables/");
 
 const errorMessage = tachesCrud.errorMessage;
 const error401Message = tachesCrud.error401Message;
