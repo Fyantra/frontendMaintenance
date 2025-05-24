@@ -43,7 +43,7 @@ const confirmeDeplacement = () => {
   emit("selectedAtelier", selectedAtelier.value);
   emit("selectedChaine", selectedChaine.value);
   emit("date_deplacement", date_deplacement.value);
-  $("#deplacementModal").modal("hide");
+  ($("#deplacementModal") as any).modal("hide");
 };
 
 const closeModal = () => {

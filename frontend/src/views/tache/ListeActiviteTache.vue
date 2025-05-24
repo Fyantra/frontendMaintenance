@@ -285,7 +285,7 @@ const submitUpdateModal = async () => {
   if (isValid && updatingActivite.value) {
     await activiteCrud.updateItem(updatingActivite.value.id!, modalData);
     fetchActivites();
-    $("#updateActivite").modal("hide");
+    ($("#updateActivite") as any).modal("hide");
   }
 };
 
