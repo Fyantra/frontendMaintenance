@@ -6,7 +6,7 @@ import { useNotificationStore } from "@/stores/notificationStore";
 
 const notificationStore = useNotificationStore();
 
-notificationStore.fetchUnreadNotifications();
+notificationStore.fetchNotifications();
 </script>
 
 <template>
@@ -55,9 +55,9 @@ notificationStore.fetchUnreadNotifications();
                 >notifications_active</i
               >
               <span
-                v-if="notificationStore.unreadCount > 0"
+                v-if="notificationStore.unreadCounts.total > 0"
                 class="badge badge-danger notification-badge"
-                >{{ notificationStore.unreadCount }}</span
+                >{{ notificationStore.unreadCounts.total }}</span
               >
               <span class="ml-3 item-text">Notification</span>
             </RouterLink>

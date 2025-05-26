@@ -48,7 +48,7 @@ const submitForm = async () => {
     await addItem({ nom_motif_tache: form.nom_motif_tache });
     initializeDataTable();
     nom_motif_tache.value = ""; // Réinitialiser le formulaire
-    $("#addModal").modal("hide");
+    ($("#addModal") as any).modal("hide");
   } else {
     console.error("Formulaire invalide");
   }
@@ -62,7 +62,7 @@ const submitUpdateForm = async () => {
     initializeDataTable();
     selectedItem.value = null; // Réinitialiser après la mise à jour
     nom_motif_tache.value = "";
-    $("#updateModal").modal("hide");
+    ($("#updateModal") as any).modal("hide");
   } else {
     console.error("Formulaire de mise à jour invalide");
   }
@@ -178,7 +178,9 @@ onBeforeUnmount(() => {
             <tr v-for="item in items" :key="item.id">
               <td>{{ item.id }}</td>
               <td>{{ item.nom_motif_tache }}</td>
-              <td :data-order="item.date_creation">{{ new Date(item.date_creation).toLocaleDateString() }}</td>
+              <td :data-order="item.date_creation">
+                {{ new Date(item.date_creation).toLocaleDateString() }}
+              </td>
               <td>
                 <div class="dropdown">
                   <button

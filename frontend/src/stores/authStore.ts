@@ -20,26 +20,27 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: (state) => !!state.accessToken,  // Authentification basée sur la présence du token
   },
   actions: {
-    login(userData: any, accessToken: string) {
+    login(userData: any, accessToken: string) {       
       this.user = userData;
       this.accessToken = accessToken;
       // this.refreshToken = refreshToken;
 
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('accessToken', accessToken);
+
       const notificationStore = useNotificationStore();
-      notificationStore.fetchUnreadNotifications();
+      notificationStore.fetchNotifications();
       // localStorage.setItem('refreshToken', refreshToken);
     },
     logout() {
+      // useNotificationStore();
+      // notificationStore.$dispose();
       this.user = null;
       this.accessToken = null;
       // this.refreshToken = null;
       localStorage.removeItem('user');
       localStorage.removeItem('accessToken');
-      const notificationStore = useNotificationStore();
       // localStorage.removeItem('refreshToken');
-      notificationStore.$dispose(); 
     },
 
     async refreshToken() {

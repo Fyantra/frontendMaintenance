@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import {
   HistoriqueDeplacementmachine,
   MachineRelation,
@@ -23,6 +23,12 @@ const statusTacheCrud = useCrud<StatusTache>("tache/status_taches/");
 
 const { formatNumber } = getformatNumber();
 
+// Configuration des tris
+const SORT_OPTIONS = {
+  DATE_DESC: "date_desc",
+  DATE_ASC: "date_asc",
+};
+
 const props = defineProps<{
   machineRelations: MachineRelation[];
   piecesDetachees: PieceDetachee[];
@@ -30,6 +36,52 @@ const props = defineProps<{
   taches: Tache[];
   activites: ActiviteTache[];
 }>();
+
+// Références pour le tri et le filtre
+const currentSort = ref<string>(SORT_OPTIONS.DATE_DESC);
+const selectedStatus = ref<number | null>(null);
+
+// Tâches filtrées et triées
+const filteredAndSortedTaches = computed(() => {
+  let filteredTaches = [...props.taches];
+
+  // Filtrage par statut
+  if (selectedStatus.value !== null) {
+    filteredTaches = filteredTaches.filter(
+      (tache) => tache.identifiant_status_tache === selectedStatus.value
+    );
+  }
+
+  // Tri par date
+  filteredTaches.sort((a, b) => {
+    const dateA = new Date(a.date_debut);
+    const dateB = new Date(b.date_debut);
+
+    // Si les dates sont égales, comparer les heures
+    if (dateA.getTime() === dateB.getTime()) {
+      const timeA = a.heure_debut ? new Date(`1970-01-01T${a.heure_debut}`).getTime() : 0;
+      const timeB = b.heure_debut ? new Date(`1970-01-01T${b.heure_debut}`).getTime() : 0;
+
+      return currentSort.value === SORT_OPTIONS.DATE_DESC ? timeB - timeA : timeA - timeB;
+    }
+
+    return currentSort.value === SORT_OPTIONS.DATE_DESC
+      ? dateB.getTime() - dateA.getTime()
+      : dateA.getTime() - dateB.getTime();
+  });
+
+  return filteredTaches;
+});
+
+// Fonctions de tri
+const sortByDate = (order: string) => {
+  currentSort.value = order;
+};
+
+// Fonctions de filtrage
+const filterByStatus = (statusId: number | null) => {
+  selectedStatus.value = statusId;
+};
 
 const getActivitesForTache = (tacheId: number) => {
   return props.activites.filter((activite) => activite.tache === tacheId);
@@ -298,8 +350,89 @@ const activeTab = ref("machines");
         >
           <div class="card shadow mb-4">
             <div class="card-body">
+              <div class="d-flex flex-wrap align-items-start">
+                <div class="dropdown">
+                  <!--Triage par date-->
+                  <button
+                    class="btn btn-info mb-3 mr-3 dropdown-toggle"
+                    type="button"
+                    id="actionMenuButton"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    <i class="material-icons assignment mr-2 notranslate">sort</i>
+                    Trier par Date
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="actionMenuButton">
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      @click.prevent="sortByDate(SORT_OPTIONS.DATE_DESC)"
+                    >
+                      <i class="material-icons assignment mr-2 notranslate"
+                        >arrow_downward</i
+                      >
+                      Par date de début planifiée décroissante
+                    </a>
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      @click.prevent="sortByDate(SORT_OPTIONS.DATE_ASC)"
+                    >
+                      <i class="material-icons assignment mr-2 notranslate"
+                        >arrow_upward</i
+                      >
+                      Par date de début planifiée croissante
+                    </a>
+                  </div>
+                </div>
+
+                <!--Triage par statut-->
+                <div class="dropdown">
+                  <button
+                    class="btn btn-info mb-3 dropdown-toggle"
+                    type="button"
+                    id="actionStatutButton"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    <i class="material-icons assignment mr-2 notranslate">filter_list</i>
+                    Filtre par Statut
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="actionStatutButton">
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      @click.prevent="filterByStatus(null)"
+                    >
+                      <i class="material-icons assignment mr-2 notranslate">list</i>
+                      Tous les statuts
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <template
+                      v-for="status in statusTacheCrud.items.value"
+                      :key="status.id"
+                    >
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        @click.prevent="filterByStatus(status.identifiant)"
+                      >
+                        <i
+                          class="material-icons assignment mr-2 notranslate"
+                          :style="{ color: status.couleur }"
+                          >lens</i
+                        >
+                        {{ status.nom_status_tache }}
+                      </a>
+                    </template>
+                  </div>
+                </div>
+              </div>
               <table
-                v-if="taches.length > 0"
+                v-if="filteredAndSortedTaches.length > 0"
                 class="table table-hover table-border border-v"
               >
                 <thead class="thead-dark">
@@ -312,7 +445,7 @@ const activeTab = ref("machines");
                   </tr>
                 </thead>
                 <tbody>
-                  <template v-for="tache in props.taches" :key="tache.id">
+                  <template v-for="tache in filteredAndSortedTaches" :key="tache.id">
                     <tr class="accordion-toggle" @click="toggleActivite(tache.id)">
                       <td>{{ tache.id }}</td>
                       <td>
@@ -387,7 +520,7 @@ const activeTab = ref("machines");
                   </template>
                 </tbody>
               </table>
-              <div v-else>Aucune tâche dans ce équipement</div>
+              <div style="text-align: center" v-else>Aucune tâche correspondant</div>
             </div>
           </div>
         </div>
@@ -441,6 +574,11 @@ const activeTab = ref("machines");
 
 .routerlink_piece {
   color: #5ec0d8;
+}
+
+.assignment {
+  font-size: 15px;
+  vertical-align: middle;
 }
 
 .slide-fade-enter-active,

@@ -26,7 +26,7 @@ const selectedPiece = ref<PieceDetachee>(null);
 
 const openReapproModal = (piece: PieceDetachee) => {
   selectedPiece.value = piece;
-  $("#reapproModal").modal("show");
+  ($("#reapproModal") as any).modal("show");
 };
 
 const formFilters = ref({
@@ -131,7 +131,7 @@ const applyFormFilter = () => {
     prix_min: formFilters.value.prix_min,
     prix_max: formFilters.value.prix_max,
   };
-  $("#filtreModal").modal("hide");
+  ($("#filtreModal") as any).modal("hide");
   refreshData();
 };
 

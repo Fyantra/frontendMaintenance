@@ -93,7 +93,7 @@ const addLink = async () => {
 
   await addDocument(linkData);
   resetLinkForm();
-  $("#addLinkModal").modal("hide");
+  ($("#addLinkModal") as any).modal("hide");
 };
 
 // Ajouter un fichier
@@ -111,7 +111,7 @@ const addFile = async () => {
 
   await addDocument(formData);
   resetFileForm();
-  $("#addFileModal").modal("hide");
+  ($("#addFileModal") as any).modal("hide");
 };
 
 // Supprimer un document

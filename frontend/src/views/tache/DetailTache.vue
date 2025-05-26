@@ -97,6 +97,7 @@ const terminerTache = async () => {
       identifiant_status_tache: IdentifiantStatusTache.termine,
     });
     fetchTacheDetails();
+    notificationStore.fetchNotifications();
   }
 };
 
@@ -106,6 +107,7 @@ const annulerTache = async () => {
       identifiant_status_tache: IdentifiantStatusTache.annulee,
     });
     fetchTacheDetails();
+    notificationStore.fetchNotifications();
   }
 };
 
@@ -115,6 +117,7 @@ const nonTerminerTache = async () => {
     identifiant_status_tache: IdentifiantStatusTache.planifiee,
   });
   fetchTacheDetails();
+  notificationStore.fetchNotifications();
   nonTerminerButton.value = false;
 };
 
@@ -125,6 +128,7 @@ const retablirTache = async () => {
   });
   fetchTacheDetails();
   retablirButton.value = false;
+  notificationStore.fetchNotifications();
 };
 
 const now = new Date();
@@ -298,7 +302,7 @@ const submitFormActivite = async (isTerminee: boolean) => {
 
     refreshKey.value++;
     fetchTacheDetails();
-    notificationStore.fetchUnreadNotifications();
+    notificationStore.fetchNotifications();
     loadingButton.value = false;
   } else {
     console.error("Formulaire invalide");

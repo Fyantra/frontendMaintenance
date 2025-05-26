@@ -186,7 +186,7 @@ const savePieceForActivite = async (activiteId: number, index: number) => {
 
       await fetchActivites();
       removePieceFromActivite(activiteId, index);
-      notificationStore.fetchUnreadNotifications();
+      notificationStore.fetchNotifications();
     } catch (error) {
       console.error("Erreur lors de l'enregistrement :", error);
     } finally {
@@ -205,7 +205,7 @@ const deletePieceFromActivite = async (activitePieceId: number) => {
     }
 
     await fetchActivites();
-    notificationStore.fetchUnreadNotifications();
+    notificationStore.fetchNotifications();
   } catch (error) {
     console.error("Erreur lors de la suppression :", error);
     alert("Une erreur est survenue lors de la suppression de la pièce détachée.");
@@ -260,7 +260,7 @@ const deleteActivite = async (id: number) => {
     await activiteCrud.deleteItemWithoutInitialize(id);
   }
   fetchActivites();
-  notificationStore.fetchUnreadNotifications();
+  notificationStore.fetchNotifications();
 };
 
 // Ouvrir le modal de modification d`activite

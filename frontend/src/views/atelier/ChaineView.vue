@@ -49,7 +49,7 @@ const submitForm = async () => {
       atelier_id: form.atelier_id,
     });
     chaines.initializeDataTable();
-    $("#addModal").modal("hide");
+    ($("#addModal") as any).modal("hide");
   } else {
     console.error("Formulaire invalide");
   }
@@ -65,7 +65,7 @@ const submitUpdateForm = async () => {
     });
     chaines.initializeDataTable();
     selectedItem.value = null; // Réinitialiser après la mise à jour
-    $("#updateModal").modal("hide");
+    ($("#updateModal") as any).modal("hide");
   } else {
     console.error("Formulaire de mise à jour invalide");
   }
@@ -204,7 +204,9 @@ onBeforeUnmount(() => {
               <td>
                 <ForeignKeyDisplay :description="item.atelier?.nom_atelier" />
               </td>
-              <td :data-order="item.date_creation">{{ new Date(item.date_creation).toLocaleDateString() }}</td>
+              <td :data-order="item.date_creation">
+                {{ new Date(item.date_creation).toLocaleDateString() }}
+              </td>
               <td>
                 <div class="dropdown">
                   <button

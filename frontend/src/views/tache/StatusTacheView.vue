@@ -58,7 +58,7 @@ const submitForm = async () => {
     });
     initializeDataTable();
     nom_status_tache.value = ""; // Réinitialiser le formulaire
-    $("#addModal").modal("hide");
+    ($("#addModal") as any).modal("hide");
   } else {
     console.error("Formulaire invalide");
   }
@@ -76,7 +76,7 @@ const submitUpdateForm = async () => {
     initializeDataTable();
     selectedItem.value = null; // Réinitialiser après la mise à jour
     nom_status_tache.value = "";
-    $("#updateModal").modal("hide");
+    ($("#updateModal") as any).modal("hide");
   } else {
     console.error("Formulaire de mise à jour invalide");
   }
@@ -233,7 +233,9 @@ onBeforeUnmount(() => {
                 ></span>
               </td>
               <td>{{ item.identifiant }}</td>
-              <td :data-order="item.date_creation">{{ new Date(item.date_creation).toLocaleDateString() }}</td>
+              <td :data-order="item.date_creation">
+                {{ new Date(item.date_creation).toLocaleDateString() }}
+              </td>
               <td>
                 <div class="dropdown">
                   <button

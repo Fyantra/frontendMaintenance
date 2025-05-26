@@ -52,7 +52,7 @@ const submitForm = async () => {
       telephone: form.telephone,
     });
     initializeDataTable();
-    $("#addModal").modal("hide");
+    ($("#addModal") as any).modal("hide");
   } else {
     console.error("Formulaire invalide");
   }
@@ -69,7 +69,7 @@ const submitUpdateForm = async () => {
     });
     initializeDataTable();
     selectedItem.value = null; // Réinitialiser après la mise à jour
-    $("#updateModal").modal("hide");
+    ($("#updateModal") as any).modal("hide");
   } else {
     console.error("Formulaire de mise à jour invalide");
   }
@@ -214,7 +214,9 @@ onBeforeUnmount(() => {
               <td>{{ item.nom_fournisseur }}</td>
               <td>{{ item.email }}</td>
               <td>{{ item.telephone }}</td>
-              <td :data-order="item.date_creation">{{ new Date(item.date_creation).toLocaleDateString() }}</td>
+              <td :data-order="item.date_creation">
+                {{ new Date(item.date_creation).toLocaleDateString() }}
+              </td>
               <td>
                 <div class="dropdown">
                   <button

@@ -20,6 +20,9 @@ import { MotifTache, Tache } from "@/types/TacheType";
 import { formatLocalDate, getNextHour } from "@/composables/useFonction";
 import { IdentifiantStatusTache } from "@/config/statusConfig";
 import { Responsable } from "@/types/AtelierType";
+import { useNotificationStore } from "@/stores/notificationStore";
+
+const notificationStore = useNotificationStore();
 
 const selectedMachine = ref<Machine>();
 
@@ -242,6 +245,7 @@ const submitForm = async () => {
     }
 
     loadingButton.value = false;
+    notificationStore.fetchNotifications();
   } else {
     console.error("Formulaire invalide");
     formError.value?.scrollIntoView({ behavior: "smooth", inline: "nearest" });

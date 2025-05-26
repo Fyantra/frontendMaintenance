@@ -16,7 +16,8 @@ const machinesCrud = useCrud<Machine>("machine/machines/");
 
 // Méthodes
 const validateStatusChange = async () => {
-  if (selectedStatus.value === null) return $("#statusMachineModal").modal("hide");
+  if (selectedStatus.value === null)
+    return ($("#statusMachineModal") as any).modal("hide");
 
   const updatedData: Partial<Machine> = {
     identifiant_status_machine: selectedStatus.value,
@@ -38,7 +39,7 @@ const validateStatusChange = async () => {
   } catch (error) {
     console.error("Erreur lors de la mise à jour du statut :", error);
   }
-  $("#statusMachineModal").modal("hide");
+  ($("#statusMachineModal") as any).modal("hide");
 };
 
 onMounted(async () => {
