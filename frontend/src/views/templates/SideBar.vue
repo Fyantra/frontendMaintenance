@@ -44,9 +44,25 @@ notificationStore.fetchNotifications();
               class="dropdown-toggle nav-link"
             >
               <ChartBarIcon class="heroicons" />
-              <span class="ml-3 item-text">Tableau de bord</span>
+              <span class="ml-3 item-text">Statistiques</span>
             </a>
-            <ul class="collapse list-unstyled pl-4 w-100" id="dashboard"></ul>
+            <ul class="collapse list-unstyled pl-4 w-100" id="dashboard">
+              <li class="nav-item active">
+                <RouterLink class="nav-link pl-3" to="/statPieceDetachee"
+                  ><span class="ml-1 item-text">Pièce détachées</span></RouterLink
+                >
+              </li>
+              <li class="nav-item">
+                <RouterLink class="nav-link pl-3" to="/statEquipement"
+                  ><span class="ml-1 item-text">Equipements</span></RouterLink
+                >
+              </li>
+              <li class="nav-item">
+                <RouterLink class="nav-link pl-3" to="/statTache"
+                  ><span class="ml-1 item-text">Analyse des tâches</span></RouterLink
+                >
+              </li>
+            </ul>
           </li>
 
           <li class="nav-item w-100 position-relative">

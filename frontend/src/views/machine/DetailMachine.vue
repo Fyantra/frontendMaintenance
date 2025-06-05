@@ -11,6 +11,7 @@ import {
   Machine,
   Status,
   MachineRelation,
+  HistoriqueStatutMachine,
 } from "@/types/MachineType";
 import { PieceDetachee } from "@/types/PieceDetacheType";
 import { Tache, ActiviteTache } from "@/types/TacheType";
@@ -23,6 +24,9 @@ const relationCrud = useCrud<MachineRelation>("machine/machine_relation/");
 const pieceCrud = useCrud<PieceDetachee>("piece/piecedetachees/");
 const historiqueDeplacementCrud = useCrud<HistoriqueDeplacementmachine>(
   "machine/historique_machine/"
+);
+const historiqueStatutCrud = useCrud<HistoriqueStatutMachine>(
+  "machine/historique_statut_machine/"
 );
 const tacheCrud = useCrud<Tache>("tache/taches/");
 const activiteCrud = useCrud<ActiviteTache>("tache/activites_taches/");
@@ -42,6 +46,7 @@ const machine = ref<Machine | null>(null);
 const machineRelations = ref<MachineRelation[]>([]);
 const piecesDetachees = ref<PieceDetachee[]>([]);
 const historiqueDeplacement = ref<HistoriqueDeplacementmachine[]>([]);
+const historiqueStatut = ref<HistoriqueStatutMachine[]>([]);
 const taches = ref<Tache[]>([]);
 const activites = ref<ActiviteTache[]>([]);
 
@@ -59,6 +64,11 @@ const fetchMachineDetails = async (machineId: number) => {
     await historiqueDeplacementCrud.fetchItems();
     historiqueDeplacement.value = historiqueDeplacementCrud.items.value.filter(
       (historique) => historique.machine?.id === machine.value.id
+    );
+
+    await historiqueStatutCrud.fetchItems();
+    historiqueStatut.value = historiqueStatutCrud.items.value.filter(
+      (historiqueStatut) => historiqueStatut?.machine === machine.value.id
     );
 
     if (machine.value.pieces_detachees_id) {
@@ -97,6 +107,7 @@ const refreshData = async () => {
   await relationCrud.initializeDataTableWithId("datatable-machines");
   await pieceCrud.initializeDataTableWithId("datatable-pieces");
   await historiqueDeplacementCrud.initializeDataTableWithId("datatable-deplacement");
+  await historiqueStatutCrud.initializeDataTableWithId("datatable-historique_statut");
 };
 
 // Recuperer l'ID de la machine depuis l'URL
@@ -399,6 +410,7 @@ watch(
     :historique-deplacement="historiqueDeplacement"
     :taches="taches"
     :activites="activites"
+    :historique-statut="historiqueStatut"
   />
 </template>
 

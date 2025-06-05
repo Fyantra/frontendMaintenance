@@ -190,11 +190,11 @@ onMounted(async () => {
                     <th style="width: 9%">
                       <strong>Marque</strong>
                     </th>
-                    <th style="width: 17%">
+                    <th style="width: 18%">
                       <strong>Numéro de série </strong>
                     </th>
                     <th style="width: 17%">
-                      <strong>Date d'acquisition</strong>
+                      <strong>Date acquisition</strong>
                     </th>
                     <th style="width: 10%">
                       <strong>Statut</strong>

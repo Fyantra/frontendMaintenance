@@ -111,6 +111,12 @@ const router = createRouter({
 
     ////////////ROUTER NOTIFICATION/////////////
     { path: '/notification', component: () => import('@/views/templates_composant/NotificationView.vue'), meta: { requiresAuth: true }, },
+
+    ////////////ROUTER STATISTIQUE/////////////
+    { path: '/statPieceDetachee', component: () => import('@/views/statistique/StatPieceDetachee.vue'), meta: { requiresAuth: true }, },
+    { path: '/statTache', component: () => import('@/views/statistique/StatTache_total.vue'), meta: { requiresAuth: true }, },
+    { path: '/statEquipement', component: () => import('@/views/statistique/StatEquipement.vue'), meta: { requiresAuth: true }, },
+
   ],
 
   scrollBehavior(to, from, savedPosition) {

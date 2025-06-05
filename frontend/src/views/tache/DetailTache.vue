@@ -463,7 +463,7 @@ onMounted(async () => {
                         <i class="material-icons mr-4">title</i>
                         <div>
                           <div class="text-muted">Nom de la tâche</div>
-                          <div>
+                          <div class="text-white">
                             {{ tache.nom_tache }}
                           </div>
                         </div>
@@ -726,7 +726,7 @@ onMounted(async () => {
                     v-for="(piece, index) in activitePieceDetachee"
                     :key="index"
                   >
-                    <div class="form-group col-md-6" :class="{ 'col-md-10': isOpen }">
+                    <div class="form-group col-md-6" :class="{ 'col-md-8': isOpen }">
                       <label for="piece" class="form-label">Pièce détachée</label>
                       <multiselect
                         v-model="piece.pieces_detachees"
@@ -966,6 +966,33 @@ onMounted(async () => {
                 </div>
               </div>
               <DocumentManager model-type="tache" :model-id="Number($route.params.id)" />
+            </div>
+          </div>
+          <!--Historique changement de statut-->
+          <div class="card timeline shadow mb-4">
+            <div class="card-header">
+              <div class="d-flex align-items-center">
+                <i class="material-icons notranslate mr-4" style="font-size: 30px"
+                  >history</i
+                >
+                <h5>Historiques</h5>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="col-12 mb-4">
+                <div class="pb-3 timeline-item item-success">
+                  <div class="pl-5">
+                    <div class="mb-1 text-white">La tache a été planifiée</div>
+                    <span class="badge badge-light">14/05/2025 09:00</span>
+                  </div>
+                </div>
+                <div class="pb-3 timeline-item item-success">
+                  <div class="pl-5">
+                    <div class="mb-1 text-white">La tache a été annulée</div>
+                    <span class="badge badge-light">22/05/2025 18:29</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

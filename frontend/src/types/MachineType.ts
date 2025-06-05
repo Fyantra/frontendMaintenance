@@ -83,5 +83,11 @@ export interface HistoriqueDeplacementmachine{
   date_creation?: Date | string;
 }
 
+export interface HistoriqueStatutMachine{
+  id: number;
+  machine: number; //fk Machine
+  description: string;
+  date_creation?: Date | string;
+}
  // status?: Status;
   // status_id: number;

@@ -81,212 +81,254 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="wrapper vh-100">
-    <div class="row align-items-center h-100">
-      <form class="col-lg-6 col-md-8 col-10 mx-auto" @submit.prevent="handleSubmit">
-        <div class="mx-auto text-center my-4">
-          <div class="w-100 mb-4 d-flex logo-container">
-            <a class="navbar-brand mx-auto mt-2 flex-fill text-center logo-link" href="#">
-              AKANJO MAINTENANCE
-            </a>
-          </div>
-          <h2 class="my-3">Inscription</h2>
-        </div>
-
-        <div class="form-group">
-          <label for="firstName">Votre nom*</label>
-          <input
-            type="text"
-            v-model="firstName"
-            id="firstName"
-            class="form-control"
-            required
-          />
-          <small v-if="errorMessages.firstName" class="text-danger">
-            {{ errorMessages.firstName }}
-          </small>
-        </div>
-
-        <div class="form-group">
-          <label for="username">Votre nom d'utilisateur*</label>
-          <input
-            type="text"
-            v-model="username"
-            id="username"
-            class="form-control"
-            required
-          />
-          <small v-if="errorMessages.username" class="text-danger">
-            {{ errorMessages.username }}
-          </small>
-        </div>
-
-        <div class="form-group">
-          <label for="inputEmail4">Email</label>
-          <input type="email" v-model="email" class="form-control" id="inputEmail4" />
-        </div>
-
-        <hr class="my-4" />
-        <div class="row mb-4">
-          <div class="col-md-6">
-            <div class="form-group">
-              <label for="inputPassword5">Votre mot de passe*</label>
-              <input
-                type="password"
-                v-model="password"
-                class="form-control"
-                id="inputPassword5"
-                required
-              />
-              <small v-if="errorMessages.password" class="text-danger">
-                {{ errorMessages.password }}
-              </small>
+  <div class="wrapper bg-gradient-primary d-flex align-items-center">
+    <div class="container">
+      <div class="registration-card mx-auto p-4 p-md-5 shadow-lg bg-white rounded-4">
+        <form @submit.prevent="handleSubmit">
+          <div class="text-center mb-4">
+            <div class="logo-container mb-3">
+              <a class="navbar-brand logo-link" href="#"> AKANJO MAINTENANCE </a>
             </div>
-            <div class="form-group">
-              <label for="inputPassword6">Confirmer votre mot de passe*</label>
-              <input
-                type="password"
-                v-model="confirmPassword"
-                class="form-control"
-                id="inputPassword6"
-                required
-              />
-              <small v-if="errorMessages.confirmPassword" class="text-danger">
-                {{ errorMessages.confirmPassword }}
-              </small>
-            </div>
+            <h2 class="form-title">Inscription</h2>
           </div>
 
-          <div class="col-md-6 mb-20 role">
-            <div class="card shadow">
-              <div class="card-body">
-                <p class="mb-2"><strong>Votre role*</strong></p>
-                <div class="custom-control custom-radio">
-                  <input
-                    type="radio"
-                    id="customRadio1"
-                    name="customRadio"
-                    class="custom-control-input"
-                    checked
-                    value="responsable"
-                    v-model="role"
-                  />
-                  <label class="custom-control-label" for="customRadio1"
-                    >Responsable</label
-                  >
-                </div>
-                <div class="custom-control custom-radio">
-                  <input
-                    type="radio"
-                    id="customRadio2"
-                    name="customRadio"
-                    class="custom-control-input"
-                    value="technicien"
-                    v-model="role"
-                  />
-                  <label class="custom-control-label" for="customRadio2"
-                    >Technicien</label
-                  >
-                </div>
-                <div class="custom-control custom-radio">
-                  <input
-                    type="radio"
-                    name="customRadio"
-                    id="customRadio3"
-                    class="custom-control-input"
-                    value="chef"
-                    v-model="role"
-                  />
-                  <label class="custom-control-label" for="customRadio3">Chef</label>
-                </div>
+          <div class="form-group">
+            <label for="firstName">Votre nom*</label>
+            <input
+              type="text"
+              v-model="firstName"
+              id="firstName"
+              class="form-control input-field"
+              required
+            />
+            <small v-if="errorMessages.firstName" class="text-danger">{{
+              errorMessages.firstName
+            }}</small>
+          </div>
+
+          <div class="form-group">
+            <label for="firstName">Votre prénom*</label>
+            <input
+              type="text"
+              v-model="firstName"
+              id="firstName"
+              class="form-control input-field"
+              required
+            />
+            <small v-if="errorMessages.firstName" class="text-danger">{{
+              errorMessages.firstName
+            }}</small>
+          </div>
+
+          <div class="form-group">
+            <label for="username">Nom d'utilisateur*</label>
+            <input
+              type="text"
+              v-model="username"
+              id="username"
+              class="form-control input-field"
+              required
+            />
+            <small v-if="errorMessages.username" class="text-danger">{{
+              errorMessages.username
+            }}</small>
+          </div>
+
+          <div class="form-group">
+            <label for="inputEmail4">Email</label>
+            <input
+              type="email"
+              v-model="email"
+              class="form-control input-field"
+              id="inputEmail4"
+            />
+          </div>
+
+          <hr class="my-4" />
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="inputPassword5">Mot de passe*</label>
+                <input
+                  type="password"
+                  v-model="password"
+                  class="form-control input-field"
+                  id="inputPassword5"
+                  required
+                />
+                <small v-if="errorMessages.password" class="text-danger">{{
+                  errorMessages.password
+                }}</small>
+              </div>
+              <div class="form-group">
+                <label for="inputPassword6">Confirmer le mot de passe*</label>
+                <input
+                  type="password"
+                  v-model="confirmPassword"
+                  class="form-control input-field"
+                  id="inputPassword6"
+                  required
+                />
+                <small v-if="errorMessages.confirmPassword" class="text-danger">{{
+                  errorMessages.confirmPassword
+                }}</small>
+              </div>
+            </div>
+
+            <div class="form-group ml-5">
+              <p class="fw-semibold mb-2">Votre rôle*</p>
+              <div class="role-options">
+                <label class="role-option">
+                  <input type="radio" value="responsable" v-model="role" />
+                  <span>Responsable</span>
+                </label>
+                <label class="role-option">
+                  <input type="radio" value="technicien" v-model="role" />
+                  <span>Technicien</span>
+                </label>
+                <label class="role-option">
+                  <input type="radio" value="chef" v-model="role" />
+                  <span>Chef</span>
+                </label>
               </div>
             </div>
           </div>
-        </div>
 
-        <div v-if="errorMessages.global" class="alert alert-danger" role="alert">
-          {{ errorMessages.global }}
-        </div>
-        <div v-if="successMessage" class="alert alert-success mt-2" role="alert">
-          {{ successMessage }}
-        </div>
+          <div v-if="errorMessages.global" class="alert alert-danger" role="alert">
+            {{ errorMessages.global }}
+          </div>
+          <div v-if="successMessage" class="alert alert-success mt-2" role="alert">
+            {{ successMessage }}
+          </div>
 
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Valider</button>
+          <button class="btn btn-lg btn-primary w-100 mt-3 shadow" type="submit">
+            Créer mon compte
+          </button>
 
-        <p class="mt-5 mb-3 text-muted">
-          Vous avez déjà un compte?
-          <RouterLink to="/login" class="text-info">Se connecter ici</RouterLink>
-        </p>
-
-        <p class="mt-5 mb-3 text-muted text-center">© {{ new Date().getFullYear() }}</p>
-      </form>
+          <p class="mt-4 text-center text-muted">
+            Vous avez déjà un compte ?
+            <RouterLink to="/login" class="text-primary fw-bold"
+              >Se connecter ici</RouterLink
+            >
+          </p>
+          <p class="mt-2 text-muted text-center">© {{ new Date().getFullYear() }}</p>
+        </form>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.logo-container {
-  /* display: flex; */
-  justify-content: center;
-  align-items: center;
-  height: 70px;
-  background: linear-gradient(135deg, #1b68ff, #17a2b8);
-  border-radius: 30px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease-in-out;
-}
-
-.logo-container:hover {
-  transform: scale(1.05); /* Agrandir légèrement au survol */
-}
-
-/* Lien du logo */
-.logo-link {
+.wrapper {
   font-family: "Poppins", sans-serif;
-  font-size: 14.5px;
-  font-weight: 700;
-  color: white;
-  text-transform: uppercase;
-  letter-spacing: 4px;
-  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
-  position: relative;
-  transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out;
+  background: linear-gradient(to right, #1e3c72, #2a5298);
+  padding: 30px 0;
 }
 
-.logo-link::before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 3px;
-  bottom: -5px;
-  left: 0;
-  background-color: #fff;
-  visibility: hidden;
-  transform: scaleX(0);
-  transition: all 0.3s ease-in-out;
+.registration-card {
+  max-width: 800px;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.form-title {
+  font-weight: 700;
+  font-size: 28px;
+}
+
+.input-field {
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-field:focus {
+  border-color: #17a2b8;
+  box-shadow: 0 0 5px rgba(23, 162, 184, 0.5);
+}
+
+.logo-container {
+  background: linear-gradient(135deg, #1b68ff, #17a2b8);
+  border-radius: 20px;
+  padding: 15px;
+  text-align: center;
+}
+
+.logo-link {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .logo-link:hover {
   color: #ffc107;
-  text-shadow: 2px 2px 15px rgba(255, 193, 7, 0.7);
+  text-shadow: 0 3px 12px rgba(255, 193, 7, 0.6);
 }
 
-.logo-link:hover::before {
-  visibility: visible;
-  transform: scaleX(1);
+.role .form-check-input {
+  margin-top: 0.3rem;
 }
 
-.role {
-  margin-top: 3%;
+.role .form-check-label {
+  margin-left: 0.5rem;
 }
 
-.text-info {
-  color: #17a2b8 !important;
-  text-decoration: underline;
+.btn-primary {
+  background-color: #1b68ff;
+  border-color: #1b68ff;
+  border-radius: 0.6rem;
+  font-weight: 600;
 }
 
-/* Texte sous le bouton */
-.text-muted {
-  color: rgba(255, 255, 255, 0.8);
+.btn-primary:hover {
+  background-color: #155edb;
+  border-color: #155edb;
+}
+
+.text-primary {
+  color: #1b68ff !important;
+}
+
+.fw-bold {
+  font-weight: 600;
+}
+
+.role-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background-color: #f1f1f1;
+  transition: background 0.3s, border 0.3s;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.role-option:hover {
+  background-color: #e7f3ff;
+}
+
+.role-option input[type="radio"] {
+  display: none;
+}
+
+.role-option input[type="radio"]:checked + span {
+  color: #1b68ff;
+  font-weight: 600;
+}
+
+.role-option input[type="radio"]:checked ~ .role-option {
+  border-color: #1b68ff;
 }
 </style>

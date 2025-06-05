@@ -91,6 +91,7 @@ watch(filteredChaines, (newChaines) => {
               id="date_deplacement"
               type="datetime-local"
               v-model="date_deplacement"
+              style="height: 45px"
             />
           </div>
           <div class="form-group">

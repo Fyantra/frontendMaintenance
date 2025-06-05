@@ -69,3 +69,10 @@ export interface ActiviteTachePieceDetachee{
     total?: number | 0;
     somme_totale?: number | 0;
 }
+
+export interface HistoriqueStatutTache{
+  id: number;
+  tache: number; //fk Tache
+  description: string;
+  date_creation?: Date | string;
+}

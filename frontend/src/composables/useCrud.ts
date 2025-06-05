@@ -66,6 +66,19 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
     }
   };
 
+  const getWithParams = async (params: Record<string, any> = {}) => {
+  try {
+    const response = await axios.get(apiUrl, {
+      params,
+      ...authHeader
+    });
+    return response.data;
+  } catch (error) {
+    handleError(error);
+    return null;
+  }
+};
+
   const initializeDataTable = async () => {
     // Vérifiez si le DataTable existe déjà, puis détruisez-le avant de le recréer
     if ($.fn.DataTable.isDataTable("#datatable-1")) {
@@ -269,6 +282,7 @@ export function useCrud<T>(endpoint: string, v$?: ReturnType<typeof useVuelidate
     actionItemApi,
     exportData,
     exportTache,
+    getWithParams,
     v$,
   };
 }

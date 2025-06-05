@@ -251,6 +251,18 @@ onMounted(() => {
                       </div>
                     </div>
 
+                    <div v-if="piece.code_article" class="col-sm-6 mb-5">
+                      <div class="d-flex align-items-start">
+                        <i class="material-icons mr-4">sell</i>
+                        <div>
+                          <div class="text-muted">Code article</div>
+                          <div>
+                            {{ piece.code_article }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     <div v-if="piece.date_achat" class="col-sm-6 mb-5">
                       <div class="d-flex align-items-start">
                         <i class="material-icons mr-4">event</i>

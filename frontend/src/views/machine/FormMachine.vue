@@ -495,7 +495,7 @@ onMounted(async () => {
             </div>
 
             <div class="form-row">
-              <div class="form-group col-md-6">
+              <div class="form-group col-md-12">
                 <label for="status">Statut*</label>
                 <select
                   id="status"
@@ -512,7 +512,7 @@ onMounted(async () => {
                   </option>
                 </select>
               </div>
-              <div class="form-group col-md-6">
+              <!-- <div class="form-group col-md-6">
                 <label for="date_hors_service">Date hors service</label>
                 <input
                   class="form-control"
@@ -520,7 +520,7 @@ onMounted(async () => {
                   type="date"
                   v-model="form.date_hors_service"
                 />
-              </div>
+              </div> -->
             </div>
 
             <div class="form-row">

@@ -72,7 +72,7 @@ const submitReapprovisionnement = async () => {
     form.value.pieces_detachees = props.piece.id;
     await reapprovisionnementCrud.addItem(form.value);
     notificationStore.fetchNotifications();
-    $("#reapproModal").modal("hide");
+    ($("#reapproModal") as any).modal("hide");
     emit("refreshPiece"); // Rafraîchit la liste des pièces détachées
   } else {
     console.error("Formulaire de reapprovisionnement invalide");

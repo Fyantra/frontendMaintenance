@@ -5,6 +5,7 @@ import { Modele } from "./MachineType";
 export interface PieceDetachee{
     id: number;
     nom_piecedetache: string;
+    code_article?: string | null;
     description?: string | null;
     modele?: Modele | null;  
     modele_id?: number | null;
@@ -29,6 +30,7 @@ export interface ActiveFilters {
     quantite_max: number | null;
     prix_min: number | null;
     prix_max: number | null;
+    emplacement_id: number | null;
   }
   
 export interface ReapprovisionnementPieceDetachee{

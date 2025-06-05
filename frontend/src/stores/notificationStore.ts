@@ -8,11 +8,6 @@ export const useNotificationStore = defineStore("notifications", () => {
   const notifications = ref<Notification[]>([]);
   const activeTab = ref<'pieces' | 'taches'>('pieces');
 
-  // Réinitialiser le store
-  const reset = () => {
-    notifications.value = [];
-  };
-  
   // Compteurs de notifications non lues
   const unreadCounts = computed(() => {
     return {
@@ -49,6 +44,5 @@ export const useNotificationStore = defineStore("notifications", () => {
     activeTab,
     fetchNotifications,
     markAsRead,
-    reset
   };
 });

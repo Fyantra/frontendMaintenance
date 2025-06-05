@@ -105,6 +105,18 @@ export function getformatNumber() {    //formater un nombre
   };
 }
 
+// Formater la devise en Ariary (Ar)
+export const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "MGA",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
+    .format(value)
+    .replace("MGA", "Ar");
+};
+
 export const dotColor = (quantite: number, stock_min: number, stock_max: number | null) => {
   if (quantite < stock_min) return "bg-danger";
   if (stock_max !== null && quantite > stock_max) return "bg-warning";

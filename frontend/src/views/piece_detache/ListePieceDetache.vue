@@ -8,9 +8,12 @@ import ErrorMessage from "../templates_composant/ErrorMessage.vue";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
 import ReapproModal from "./ReapproModal.vue";
 import ExportButtons from "../templates_composant/ExportButtons.vue";
+import { Atelier } from "@/types/AtelierType";
 
 // Récupérer les données des pièces détachées
 const pieceDetacheCrud = useCrud<PieceDetachee>("piece/piecedetachees/");
+const emplacementCrud = useCrud<Atelier>("atelier/ateliers/");
+const emplacementOptions = computed(() => emplacementCrud.items.value);
 
 const errorMessage = pieceDetacheCrud.errorMessage;
 const error401Message = pieceDetacheCrud.error401Message;
@@ -29,11 +32,17 @@ const openReapproModal = (piece: PieceDetachee) => {
   ($("#reapproModal") as any).modal("show");
 };
 
+const getNomEmplacement = (id: number | null) => {
+  const emp = emplacementOptions.value.find((e) => e.id === id);
+  return emp ? emp.nom_atelier : id;
+};
+
 const formFilters = ref({
   quantite_min: null as number,
   quantite_max: null as number,
   prix_min: null as number,
   prix_max: null as number,
+  emplacement_id: null as number,
 });
 
 const activeFilters = ref<ActiveFilters>({
@@ -41,6 +50,7 @@ const activeFilters = ref<ActiveFilters>({
   quantite_max: null,
   prix_min: null,
   prix_max: null,
+  emplacement_id: null as number,
 });
 
 const selectedFilter = ref("all"); //par defaut 'all'
@@ -79,6 +89,13 @@ const filteredPieces = computed(() => {
       (piece) => piece.prix_unitaire <= activeFilters.value.prix_max
     );
   }
+
+  if (activeFilters.value.emplacement_id !== null) {
+    filtered = filtered.filter(
+      (piece) => piece.emplacement_id === activeFilters.value.emplacement_id
+    );
+  }
+
   return filtered;
 });
 
@@ -130,6 +147,7 @@ const applyFormFilter = () => {
     quantite_max: formFilters.value.quantite_max,
     prix_min: formFilters.value.prix_min,
     prix_max: formFilters.value.prix_max,
+    emplacement_id: formFilters.value.emplacement_id,
   };
   ($("#filtreModal") as any).modal("hide");
   refreshData();
@@ -148,6 +166,7 @@ const refreshData = async () => {
 };
 
 onMounted(async () => {
+  await emplacementCrud.fetchItems();
   refreshData();
 });
 </script>
@@ -257,6 +276,23 @@ onMounted(async () => {
               <div class="modal-body">
                 <form @submit.prevent="applyFormFilter">
                   <div class="form-group">
+                    <label for="emplacement" class="col-form-label">Emplacement</label>
+                    <select
+                      id="emplacement"
+                      class="custom-select"
+                      v-model.number="formFilters.emplacement_id"
+                    >
+                      <option :value="null">-- Tous --</option>
+                      <option
+                        v-for="emp in emplacementOptions"
+                        :key="emp.id"
+                        :value="emp.id"
+                      >
+                        {{ emp.nom_atelier }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="form-group">
                     <label for="quantite_min" class="col-form-label"
                       >Quantité minimum</label
                     >
@@ -319,7 +355,10 @@ onMounted(async () => {
               <a href="#" class="text-muted" @click.prevent="removeFilter(key)"
                 ><i class="fe fe-x mx-1"></i
               ></a>
-              <span>{{ key }}: {{ value }}</span>
+              <span>
+                {{ key === "emplacement_id" ? "emplacement" : key }}:
+                {{ key === "emplacement_id" ? getNomEmplacement(value) : value }}
+              </span>
             </span>
           </span>
           <button
@@ -419,7 +458,7 @@ onMounted(async () => {
                       </div>
                     </td>
                     <!--Nom et modele-->
-                    <th scope="col">
+                    <th :data-order="piece.nom_piecedetache" scope="col">
                       <strong
                         ><RouterLink
                           class="routerlink_piece"
@@ -429,6 +468,9 @@ onMounted(async () => {
                             :description="piece.modele?.nom_modele"
                           /> </RouterLink
                       ></strong>
+                      <hr />
+                      <i class="material-icons fe-16 mr-2 notranslate">sell</i>
+                      {{ piece.code_article || "N/A" }}
                     </th>
 
                     <td :data-order="piece.prix_unitaire">
@@ -499,6 +541,10 @@ onMounted(async () => {
 .nb {
   line-height: 0;
   vertical-align: middle;
+}
+
+hr {
+  border: 1px solid #80837b;
 }
 
 .layers {

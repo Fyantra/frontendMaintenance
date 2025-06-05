@@ -100,6 +100,7 @@ const submitForm = async () => {
   if (!v$.value.$invalid) {
     const formData = new FormData();
     formData.append("nom_piecedetache", form.nom_piecedetache);
+    formData.append("code_article", form.code_article || "");
     formData.append("description", form.description || "");
     formData.append("modele_id", String(form.modele_id || ""));
     formData.append("date_achat", String(form.date_achat || ""));
@@ -434,6 +435,17 @@ onMounted(async () => {
                 class="error"
                 >{{ error.$message }}</span
               >
+            </div>
+
+            <div class="form-group">
+              <label for="code">Code article</label>
+              <input
+                type="text"
+                class="form-control"
+                id="code"
+                placeholder="Permet de lier la pièce détachée à votre ERP"
+                v-model="form.code_article"
+              />
             </div>
 
             <div class="form-group">

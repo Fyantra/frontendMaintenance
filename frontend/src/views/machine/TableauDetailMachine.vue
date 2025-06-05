@@ -4,6 +4,7 @@ import {
   HistoriqueDeplacementmachine,
   MachineRelation,
   Status,
+  HistoriqueStatutMachine,
 } from "@/types/MachineType";
 import { PieceDetachee } from "@/types/PieceDetacheType";
 import ForeignKeyDisplay from "../templates_composant/ForeignKeyDisplay.vue";
@@ -35,6 +36,7 @@ const props = defineProps<{
   historiqueDeplacement: HistoriqueDeplacementmachine[];
   taches: Tache[];
   activites: ActiviteTache[];
+  historiqueStatut: HistoriqueStatutMachine[];
 }>();
 
 // Références pour le tri et le filtre
@@ -167,6 +169,19 @@ const activeTab = ref("machines");
                 aria-controls="historique_tache"
                 aria-selected="false"
                 >Historique des tâches</a
+              >
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                id="historiqueStatut-tab"
+                data-toggle="tab"
+                href="#historique_statut"
+                role="tab"
+                aria-controls="historique_statut"
+                aria-selected="false"
+                >Historique statut</a
               >
             </li>
           </ul>
@@ -534,6 +549,40 @@ const activeTab = ref("machines");
           aria-labelledby="document-tab"
         >
           <DocumentManager model-type="machine" :model-id="Number($route.params.id)" />
+        </div>
+
+        <!--Historique statut-->
+        <div
+          class="tab-pane fade"
+          id="historique_statut"
+          role="tabpanel"
+          aria-labelledby="historiqueStatut-tab"
+        >
+          <div class="card shadow">
+            <div class="card-body">
+              <table
+                id="datatable-historique_statut"
+                class="table table-borderless table-striped table-hover"
+              >
+                <thead>
+                  <tr>
+                    <th class="w-30">Date et heure de changement</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="historique in historiqueStatut" :key="historique.id">
+                    <th :data-order="historique.date_creation" scope="row">
+                      {{ formatDateTime(String(historique.date_creation)) }}<br />
+                    </th>
+                    <td>
+                      {{ historique.description }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
